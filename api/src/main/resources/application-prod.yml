@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.connection.characterEncoding: UTF-8
+      hibernate.connection.useUnicode: true
+  logging:
+    level:
+      root: WARN
+      com.api: INFO
+
+security:
+    public-urls:
+      - /api/v1/auth/**
+    cors:
+      allowed-origins:
+        - http://localhost:4200
+        - http://frontend
+
+auth:
+  cookie:
+    secure: true
+

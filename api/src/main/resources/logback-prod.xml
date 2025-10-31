@@ -1,0 +1,78 @@
+<included>
+    <!-- Console JSON (stdout) -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <threadName/>
+                <loggerName/>
+                <message/>
+                <arguments/>
+                <mdc/>
+                <stackTrace/>
+                <globalCustomFields>{"app":"${APP_NAME}","env":"${APP_ENV}"}</globalCustomFields>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Logs estruturados para ficheiro -->
+    <appender name="STRUCTURED" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/api.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/api.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <threadName/>
+                <loggerName/>
+                <message/>
+                <arguments/>
+                <mdc/>
+                <globalCustomFields>{"app":"${APP_NAME}","env":"${APP_ENV}"}</globalCustomFields>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Logs de erro separados -->
+    <appender name="ERRORS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/error.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <loggerName/>
+                <message/>
+                <stackTrace/>
+                <mdc/>
+                <globalCustomFields>{"app":"${APP_NAME}","env":"${APP_ENV}"}</globalCustomFields>
+            </providers>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- Logger do projeto -->
+    <logger name="com.api" level="INFO"/>
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="JSON_CONSOLE"/>
+        <!-- <appender-ref ref="PRETTY_CONSOLE"/> -->
+        <appender-ref ref="STRUCTURED"/>
+        <appender-ref ref="ERRORS"/>
+    </root>
+
+</included>
+

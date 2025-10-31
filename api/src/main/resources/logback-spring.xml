@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="api"/>
+    <springProperty scope="context" name="APP_ENV" source="spring.profiles.active" defaultValue="dev"/>
+
+    <springProfile name="dev">
+        <include resource="logback-dev.xml"/>
+    </springProfile>
+
+    <springProfile name="prod">
+        <include resource="logback-prod.xml"/>
+    </springProfile>
+
+</configuration>
+

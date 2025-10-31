@@ -1,0 +1,39 @@
+services:
+  spring-api:
+    container_name: spring-api
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      TZ: UTC
+    depends_on:
+      db:
+        condition: service_started
+    networks:
+      - api-network
+
+  db:
+    container_name: db
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - api-network
+
+volumes:
+  db-data:
+
+networks:
+  api-network:
+    driver: bridge
+
