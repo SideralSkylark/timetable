@@ -21,7 +21,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@SoftDelete(strategy = SoftDeleteType.ACTIVE)
+@SoftDelete(strategy = SoftDeleteType.DELETED)
 @Table(name = "users")
 @ToString(exclude = "password")
 public class ApplicationUser implements UserDetails {
@@ -52,15 +52,12 @@ public class ApplicationUser implements UserDetails {
     @Builder.Default
     private AccountStatus status = AccountStatus.INACTIVE;
 
-    @Builder.Default
-    private boolean deleted = false;
-
     private Instant deletedAt;
 
     private Long deletedByUserId;
 
     @Builder.Default
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -110,16 +107,19 @@ public class ApplicationUser implements UserDetails {
     }
 
     public void markAsDeleted(Long deletedByUserId) {
-        this.deleted = true;
         this.deletedAt = Instant.now();
         this.deletedByUserId = deletedByUserId;
         this.status = AccountStatus.INACTIVE;
     }
 
     public void restore() {
-        this.deleted = false;
         this.deletedAt = null;
         this.deletedByUserId = null;
+		this.status = AccountStatus.ACTIVE;
+    }
+
+	public boolean isDeleted() {
+        return deletedAt != null;  
     }
 
     // ====== SPRING SECURITY ======
@@ -133,12 +133,12 @@ public class ApplicationUser implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return !deleted;
+        return deletedAt == null;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return !deleted;
+        return deletedAt == null;
     }
 
     @Override
@@ -148,7 +148,7 @@ public class ApplicationUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return status == AccountStatus.ACTIVE && !deleted;
+        return status == AccountStatus.ACTIVE && deletedAt == null;
     }
 
     // ====== FACTORY ======
@@ -159,7 +159,6 @@ public class ApplicationUser implements UserDetails {
                 .email(email)
                 .password(password)
                 .status(AccountStatus.INACTIVE)
-                .deleted(false)
                 .roles(new HashSet<>())
                 .build();
     }
