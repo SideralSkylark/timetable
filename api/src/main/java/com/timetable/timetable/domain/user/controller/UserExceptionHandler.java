@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
  * It ensures consistent error reporting for client-side handling and improves
  * debuggability through logging.
  *
- * @author Workbridge Team
+ * @author Sideral Skylark
  *
  * @since 2025-06-22
  */

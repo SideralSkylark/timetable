@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import com.timetable.timetable.domain.user.dto.UpdateUserProfileDTO;
 import com.timetable.timetable.domain.user.dto.UserResponseDTO;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
-import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.entity.UserRole;
+import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.mapper.UserMapper;
 import com.timetable.timetable.domain.user.repository.UserRepository;
 import com.timetable.timetable.security.SecurityUtil;
@@ -23,33 +23,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Service class for managing user-related operations, including user retrieval, updates, role management,
- * provider requests, and account status changes. This service acts as the main business logic layer for user
- * management, interacting with repositories and mapping entities to DTOs for API responses.
- *
- * <p>Key responsibilities include:</p>
- * <ul>
- *   <li>Retrieving users (all, by role, or non-admins)</li>
- *   <li>Managing user accounts (create, update, delete, enable/disable)</li>
- *   <li>Handling provider requests (submit, approve, check status)</li>
- *   <li>Mapping between entities and DTOs</li>
- *   <li>Throwing domain-specific exceptions for error handling</li>
- * </ul>
- *
- * <p>Transactional methods ensure data consistency for operations that modify user or provider request state.</p>
- *
- * <p>Typical usage:</p>
- * <pre>
- *   userService.getAllUsers();
- *   userService.updateUser(username, userDto);
- *   userService.requestToBecomeProvider(username);
- *   userService.approveProviderRequest(requestId);
- * </pre>
- *
- * @author Workbridge Team
- * @since 2025-06-22
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -58,301 +31,120 @@ public class UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
 
-    /**
-     * Retrieves a paginated list of all users from the database.
-     *
-     * @param pageable the pagination and sorting information
-     * @return a page of UserResponseDTO objects
-     */
+    public UserResponseDTO getAuthenticatedUserProfile() {
+        String username = SecurityUtil.getAuthenticatedUsername();
+        ApplicationUser user = getUser(username);
+        return userMapper.toDTO(user);
+    }
+
     public Page<UserResponseDTO> getAllUsers(Pageable pageable) {
-        log.debug("Fetching all users with pagination: {}", pageable);
-        Page<UserResponseDTO> result = userRepository.findAll(pageable).
-                                map(userMapper::toDTO);
-        log.info("Fetched {} users", result.getTotalElements());
-        return result;
+        return userRepository.findAll(pageable).map(userMapper::toDTO);
     }
 
-    /**
-     * Retrieves all users from the database.
-     *
-     * @return List of UserResponseDTO objects representing all users.
-     */
     public List<UserResponseDTO> getAllUsers() {
-        log.debug("Fetching all users without pagination");
-        return getAllUsers(Pageable.unpaged()).getContent();
+        return userRepository.findAll().stream().map(userMapper::toDTO).toList();
     }
 
-    /**
-     * Retrieves a paginated list of all non-admin users from the database.
-     *
-     * @param pageable the pagination and sorting information
-     * @return a page of UserResponseDTO objects
-     */
-    public Page<UserResponseDTO> getAllNonAdminUsers(Pageable pageable) {
-        log.debug("Fetching all non-admin users with pagination: {}", pageable);
-        Page<UserResponseDTO> result = userRepository.findAllNonAdminUsers(pageable).map(userMapper::toDTO);
-        log.info("Fetched {} non admin users", result.getTotalElements());
-        return result;
-    }
-
-    /**
-     * Retrieves all non-admin users from the database.
-     *
-     * @return List of UserResponseDTO objects for users without the ADMIN role.
-     */
-    public List<UserResponseDTO> getAllNonAdminUsers() {
-        log.debug("Fetching all non-admin users without pagination");
-        return userRepository.findAllNonAdminUsers().stream().map(userMapper::toDTO).toList();
-    }
-
-    /**
-     * Retrieves users by a specific role.
-     *
-     * @param role The role to filter users by.
-     * @return List of UserResponseDTO objects for users with the specified role.
-     */
     public List<UserResponseDTO> getUsersByRole(UserRole role) {
-        log.debug("Fetching users by role: {}", role);
         return userRepository.findAllByRole(role).stream().map(userMapper::toDTO).toList();
     }
 
-    /**
-     * Retrieves a paginated list of users by a specific role.
-     *
-     * @param role The role to filter users by.
-     * @param pageable the pagination and sorting information
-     * @return a page of UserResponseDTO objects
-     */
     public Page<UserResponseDTO> getUsersByRole(UserRole role, Pageable pageable) {
-        log.debug("Fetching users by role: {} with pagination: {}", role, pageable);
-        Page<UserResponseDTO> result = userRepository.findAllByRole(role, pageable).map(userMapper::toDTO);
-        log.info("Fetched {}, users with role {}", result.getTotalElements(), role);
-        return result;
+        return userRepository.findAllByRole(role, pageable).map(userMapper::toDTO);
     }
 
-    /**
-     * Finds a user by their unique ID.
-     *
-     * @param id The user ID.
-     * @return Optional containing the user if found, or empty if not found.
-     */
     public Optional<ApplicationUser> findById(Long id) {
         return userRepository.findById(id);
     }
 
-    /**
-     * Finds a user by their username.
-     *
-     * @param username The username to search for.
-     * @return Optional containing the user if found, or empty if not found.
-     */
     public Optional<ApplicationUser> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
-    /**
-     * Finds a user by their email address.
-     *
-     * @param email The email to search for.
-     * @return Optional containing the user if found, or empty if not found.
-     */
     public Optional<ApplicationUser> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    /**
-     * Saves a user to the database (create or update).
-     *
-     * @param user The ApplicationUser entity to save.
-     * @return The saved ApplicationUser entity.
-     */
-    public ApplicationUser saveUser(ApplicationUser user) {
-        log.debug("Saving user: {}", user.getUsername());
-        return userRepository.save(user);
-    }
+	public UserResponseDTO updateAuthenticatedUserProfile (UpdateUserProfileDTO dto) {
+		String username = SecurityUtil.getAuthenticatedUsername();
 
-    /**
-     * Updates a user's information using validated profile update data.
-     *
-     * @param username The username of the user to update.
-     * @param dto The validated update profile DTO.
-     * @return The updated user.
-     * @throws UserNotFoundException if the user is not found.
-     */
+		ApplicationUser updated = updateUser(username, dto);
+
+		return userMapper.toDTO(updated);
+	}
+
     @Transactional
     public ApplicationUser updateUser(String username, UpdateUserProfileDTO dto) {
-        log.debug("Updating user '{}': {}", username, dto);
         ApplicationUser user = getUser(username);
-        user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setEnabled(dto.isEnabled());
+
+        user.setUsername(dto.username());
+        user.setEmail(dto.email());
         user.setUpdatedAt(LocalDateTime.now());
+
         ApplicationUser updated = userRepository.save(user);
-        log.info("User '{}' updated successfully at {}", username, user.getUpdatedAt());
+        log.info("User '{}' updated successfully", username);
         return updated;
     }
 
-    /**
-     * Deletes a user by their unique ID.
-     *
-     * @param id The user ID.
-     */
-    public void deleteUserById(Long id) {
-        log.warn("Deleting user with ID {}", id);
-        userRepository.deleteById(id);
-        log.info("User with ID {} deleted successfully", id);
-    }
+	public void deleteAuthenticatedUserProfile() {
+		String username = SecurityUtil.getAuthenticatedUsername();
+		deleteByUsername(username);
+	}
 
-    /**
-     * Deletes a user by their username.
-     *
-     * @param username The username of the user to delete.
-     * @throws UserNotFoundException if the user is not found.
-     */
     @Transactional
     public void deleteByUsername(String username) {
-        log.info("Deleting user with username '{}'", username);
         ApplicationUser user = getUser(username);
-
         if (user.isDeleted()) {
-            log.warn("User '{}' is already deleted. Skipping deletion.", username);
+            log.warn("User '{}' is already deleted.", username);
             return;
         }
 
         Long deleterId = SecurityUtil.getAuthenticatedId();
-
-        user.setDeleted(true);
-        user.setDeletedAt(Instant.now());
-        user.setDeletedByUserId(deleterId);
-
-        softDeleteRelatedEntities(user, deleterId);
-
+        user.markAsDeleted(deleterId);
         userRepository.save(user);
-        //TODO: refactor when implementing new functionalities(ie: chat payments and so on)
-        log.info("User '{}' deleted successfully", username);
+
+        log.info("User '{}' marked as deleted by {}", username, deleterId);
     }
 
-    /**
-     * Enables a user account by email.
-     *
-     * @param email The user's email address.
-     * @return true if the account was enabled, false if it was already enabled.
-     * @throws UserNotFoundException if the user is not found.
-     */
-    @Transactional
     public boolean enableAccount(String email) {
-        log.debug("Enabling account for email '{}'", email);
         return updateAccountStatus(email, true);
     }
 
-    /**
-     * Disables a user account by email.
-     *
-     * @param email The user's email address.
-     * @return true if the account was disabled, false if it was already disabled.
-     * @throws UserNotFoundException if the user is not found.
-     */
     @Transactional
     public boolean disableAccount(String email) {
-        log.debug("Enabling account for email '{}'", email);
         return updateAccountStatus(email, false);
     }
 
-    /**
-     * Converts a list of ApplicationUser entities to a list of UserResponseDTOs.
-     *
-     * @param users The list of ApplicationUser entities to convert.
-     * @return List of UserResponseDTO objects.
-     */
-    @SuppressWarnings("unused")
-    private List<UserResponseDTO> mapToUserResponseDTO(List<ApplicationUser> users) {
-        return users.stream().map(userMapper::toDTO).toList();
-    }
-
-    /**
-     * Helper method to get a user by username or throw a UserNotFoundException.
-     *
-     * @param username The username to search for.
-     * @return The ApplicationUser entity.
-     * @throws UserNotFoundException if the user is not found.
-     */
-    private ApplicationUser getUser(String username) {
-        return getOrThrow(
-            username,
-            userRepository::findByUsername,
-            "No user found with username: " + username);
-    }
-
-    /**
-     * Helper method to get a user by email or throw a UserNotFoundException.
-     *
-     * @param email The email to search for.
-     * @return The ApplicationUser entity.
-     * @throws UserNotFoundException if the user is not found.
-     */
-    private ApplicationUser getUserByEmailOrThrow(String email) {
-        return getOrThrow(email,
-        userRepository::findByEmail,
-        "No user found with email: " + email);
-    }
-
-    /**
-     * Generic helper to get an ApplicationUser by a value using a finder function, or throw a UserNotFoundException.
-     *
-     * @param value The value to search for (username or email).
-     * @param finder The function to find the user.
-     * @param errorMessage The error message for the exception.
-     * @return The ApplicationUser entity.
-     * @throws UserNotFoundException if the user is not found.
-     */
-    private <T> ApplicationUser getOrThrow(
-        T value,
-        Function<T, Optional<ApplicationUser>> finder,
-        String errorMessage) {
-
-        return finder.apply(value)
-                    .orElseThrow(() -> {
-                        log.warn("User lookup failed: {}", errorMessage);
-                        return new UserNotFoundException(errorMessage);
-                    });
-    }
-
-    /**
-     * Updates a user's account status (enable/disable) by email.
-     *
-     * @param email The user's email address.
-     * @param enable Whether to enable (true) or disable (false) the account.
-     * @return true if the status was changed, false if it was already in the desired state.
-     * @throws UserNotFoundException if the user is not found.
-     */
     private boolean updateAccountStatus(String email, boolean enable) {
         ApplicationUser user = getUserByEmailOrThrow(email);
-        if (user.isEnabled() == enable) {
-            log.debug("No status change for '{}': already {}", email, enable ? "enabled" : "disabled");
-            return false;
-        }
+        boolean alreadyEnabled = user.isEnabled();
 
-        user.setEnabled(enable);
-        user.setUpdatedAt(LocalDateTime.now());
+        if (enable && alreadyEnabled) return false;
+        if (!enable && !alreadyEnabled) return false;
+
+        if (enable) user.activate();
+        else user.deactivate();
+
         userRepository.save(user);
-        log.info("Account for '{}' set to {}", email, enable ? "ENABLED" : "DISABLED");
+        log.info("Account '{}' set to {}", email, enable ? "ENABLED" : "DISABLED");
         return true;
     }
 
-    /**
-     * Soft deletes all related entities to a user.
-     *
-     * @param user The ApplicationUser to delete its dependencies.
-     */
-    @Transactional
-    private void softDeleteRelatedEntities(ApplicationUser user, Long deleterId) {
-        log.info("Soft-deleting related entities for user '{}'", user.getUsername());
-
-        // reviewRepository.softDeleteByUser(user.getId(), deleterId);
-        // bookingRepository.softDeleteBySeeker(user.getId(), deleterId);
-        // serviceRepository.softDeleteByProvider(user.getId(), deleterId);
-
-        log.info("Soft-delete complete for related entities of user '{}'", user.getUsername());
+    private ApplicationUser getUser(String username) {
+        return getOrThrow(username, userRepository::findByUsername, "No user found with username: " + username);
     }
 
+    private ApplicationUser getUserByEmailOrThrow(String email) {
+        return getOrThrow(email, userRepository::findByEmail, "No user found with email: " + email);
+    }
+
+    private <T> ApplicationUser getOrThrow(
+            T value,
+            Function<T, Optional<ApplicationUser>> finder,
+            String errorMessage
+    ) {
+        return finder.apply(value)
+                .orElseThrow(() -> new UserNotFoundException(errorMessage));
+    }
 }
+

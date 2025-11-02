@@ -2,67 +2,80 @@ package com.timetable.timetable.domain.user.entity;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SoftDelete;
+import org.hibernate.annotations.SoftDeleteType;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Entity
+@Getter
+@Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Builder
-@SQLRestriction("deleted = false")
+@SoftDelete(strategy = SoftDeleteType.ACTIVE)
+@Table(name = "users")
+@ToString(exclude = "password")
 public class ApplicationUser implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 50, unique = true)
     private String username;
+
+    @Column(nullable = false, length = 100, unique = true)
     private String email;
-    private String password;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     @Column(nullable = false)
+    private String password;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     @Builder.Default
-    private boolean enabled = false;
+    private AccountStatus status = AccountStatus.INACTIVE;
 
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @Builder.Default
-    @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-         inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<UserRoleEntity> roles = new HashSet<>();
-
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     @Builder.Default
     private boolean deleted = false;
 
     private Instant deletedAt;
+
     private Long deletedByUserId;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> (GrantedAuthority) () -> "ROLE_" + role.getRole().name())
-                .toList();
+    @Builder.Default
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<UserRoleEntity> roles = new HashSet<>();
+
+    // ====== DOMAIN LOGIC ======
+
+    public boolean addRole(UserRoleEntity role) {
+        return roles.add(role);
     }
 
-    public void addRole(UserRoleEntity role) {
-        roles.add(role);
+    public boolean removeRole(UserRoleEntity role) {
+        return roles.remove(role);
     }
 
     public boolean hasRole(UserRole role) {
@@ -78,17 +91,54 @@ public class ApplicationUser implements UserDetails {
     }
 
     public boolean isUser() {
-        return hasRole(UserRole.USER);
+        return roles.size() == 1 && hasRole(UserRole.USER);
+    }
+
+    public UserRole getHighestPrivilegeRole() {
+        return roles.stream()
+                .map(UserRoleEntity::getRole)
+                .max(Comparator.comparingInt(UserRole::getPriority))
+                .orElse(UserRole.USER);
+    }
+
+    public void activate() {
+        this.status = AccountStatus.ACTIVE;
+    }
+
+    public void deactivate() {
+        this.status = AccountStatus.INACTIVE;
+    }
+
+    public void markAsDeleted(Long deletedByUserId) {
+        this.deleted = true;
+        this.deletedAt = Instant.now();
+        this.deletedByUserId = deletedByUserId;
+        this.status = AccountStatus.INACTIVE;
+    }
+
+    public void restore() {
+        this.deleted = false;
+        this.deletedAt = null;
+        this.deletedByUserId = null;
+    }
+
+    // ====== SPRING SECURITY ======
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream()
+                .map(role -> (GrantedAuthority) () -> "ROLE_" + role.getRole().name())
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return !deleted;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !deleted;
     }
 
     @Override
@@ -98,21 +148,34 @@ public class ApplicationUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return status == AccountStatus.ACTIVE && !deleted;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    // ====== FACTORY ======
+
+    public static ApplicationUser createUser(String username, String email, String password) {
+        return ApplicationUser.builder()
+                .username(username)
+                .email(email)
+                .password(password)
+                .status(AccountStatus.INACTIVE)
+                .deleted(false)
+                .roles(new HashSet<>())
+                .build();
     }
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
+    // ====== EQUALITY ======
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ApplicationUser user)) return false;
+        return Objects.equals(email, user.email);
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    @Override
+    public int hashCode() {
+        return Objects.hash(email);
     }
 }
+

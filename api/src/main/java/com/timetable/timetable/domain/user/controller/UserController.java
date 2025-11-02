@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -32,7 +33,7 @@ import org.springframework.web.bind.annotation.*;
  * <p>All endpoints require a valid authenticated session. Role-based
  * access control is enforced where applicable.</p>
  *
- * @author Workbridge Team
+ * @author Sideral Skylark
  *
  * @since 2025-06-22
  */
@@ -43,7 +44,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final UserMapper userMapper;
 
     /**
      * Get the profile of the currently authenticated user.
@@ -55,12 +55,12 @@ public class UserController {
      * @throws UserNotFoundException if the user cannot be found in the database
      * @throws IllegalStateException if the authentication context is invalid
      */
+	@PreAuthorize("hasRole('USER')")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponseDTO>> getUserDetails() {
-        ApplicationUser user = userService.findByUsername(SecurityUtil.getAuthenticatedUsername())
-            .orElseThrow(() -> new UserNotFoundException("User not found"));
+		log.debug("Fetching authenticated user profile");
         return ResponseFactory.ok(
-            userMapper.toDTO(user),
+            userService.getAuthenticatedUserProfile(),
             "User profile retrieved successfully"
         );
     }
@@ -76,15 +76,14 @@ public class UserController {
      * @throws UserNotFoundException if the user cannot be found
      * @throws IllegalStateException if the authentication context is invalid
      */
+	@PreAuthorize("hasRole('USER')")
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<UserResponseDTO>> updateUserDetails(
         @Valid @RequestBody UpdateUserProfileDTO payload) {
-        ApplicationUser updated = userService.updateUser(
-            SecurityUtil.getAuthenticatedUsername(),
-            payload);
-        return ResponseFactory.ok(
-            userMapper.toDTO(updated),
-            "User profile updated successfully"
+        log.debug("Updating authenticated user profile");
+		return ResponseFactory.ok(
+            userService.updateAuthenticatedUserProfile(payload),
+			"User profile updated successfully"
         );
     }
 
@@ -97,9 +96,11 @@ public class UserController {
      * @throws UserNotFoundException if the user cannot be found
      * @throws IllegalStateException if the authentication context is invalid
      */
+	@PreAuthorize("hasRole('USER')")
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteUser() {
-        userService.deleteByUsername(SecurityUtil.getAuthenticatedUsername());
+		log.debug("Deleting authenticated user account");
+        userService.deleteAuthenticatedUserProfile();
         return ResponseEntity.noContent().build();
     }
 }
