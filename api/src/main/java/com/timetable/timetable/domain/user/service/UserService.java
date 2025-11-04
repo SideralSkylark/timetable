@@ -1,6 +1,5 @@
 package com.timetable.timetable.domain.user.service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;

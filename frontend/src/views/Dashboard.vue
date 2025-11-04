@@ -11,8 +11,8 @@ const name = ref('')
 const role = ref('')
 
 onMounted(() => {
-  name.value = localStorage.getItem('userName') || ''
-  role.value = localStorage.getItem('userRole') || ''
+  name.value = localStorage.getItem('user.username') || ''
+  role.value = localStorage.getItem('user.roles') || ''
 })
 </script>
 

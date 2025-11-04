@@ -2,12 +2,10 @@ package com.timetable.timetable.domain.user.controller;
 
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.common.response.ApiResponse;
-import com.timetable.timetable.security.SecurityUtil;
 import com.timetable.timetable.domain.user.dto.UpdateUserProfileDTO;
 import com.timetable.timetable.domain.user.dto.UserResponseDTO;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.exception.UserNotFoundException;
-import com.timetable.timetable.domain.user.mapper.UserMapper;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import jakarta.validation.Valid;
