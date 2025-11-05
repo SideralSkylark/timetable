@@ -3,39 +3,68 @@ import authService from '@/services/authService'
 import type { User } from '@/services/types/user'
 
 interface AuthState {
-  user: User | null;
+  user: User | null
   isAuthenticated: boolean
+  loading: boolean
+  error: string | null
 }
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: authService.getCurrentUser(),
     isAuthenticated: authService.isAuthenticated(),
+    loading: false,
+    error: null,
   }),
+
+  getters: {
+    username: (state) => state.user?.username ?? '',
+    roles: (state) => state.user?.roles ?? [],
+    isAdmin: (state) => state.user?.roles.includes('ADMIN') ?? false,
+  },
 
   actions: {
     async login(email: string, password: string) {
-      const data = await authService.login(email, password)
-      this.user = data;
-      this.isAuthenticated = true
+      this.loading = true
+      this.error = null
+
+      try {
+        const user = await authService.login(email, password)
+        this.user = user
+        this.isAuthenticated = true
+      } catch (err: any) {
+        this.error = err.response?.data?.message || 'Erro ao autenticar.'
+        throw err
+      } finally {
+        this.loading = false
+      }
     },
 
     async register(username: string, email: string, password: string) {
-      if (!this.user?.roles.includes('ADMIN')) {
-        throw new Error("Nao tem autorizacao para realizar esta acao.");
+      if (!this.isAdmin) {
+        throw new Error('Não tem autorização para realizar esta ação.')
       }
-      await authService.register(username, email, password);
+
+      try {
+        await authService.register(username, email, password)
+      } catch (err: any) {
+        this.error = err.response?.data?.message || 'Erro ao registar utilizador.'
+        throw err
+      }
     },
 
-    logout() {
-      authService.logout()
-      this.user = null
-      this.isAuthenticated = false
+    async logout() {
+      try {
+        await authService.logout()
+      } finally {
+        this.user = null
+        this.isAuthenticated = false
+      }
     },
 
     setUser(user: User | null) {
       this.user = user
       this.isAuthenticated = !!user
-    }
-  }
+    },
+  },
 })

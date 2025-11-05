@@ -24,8 +24,6 @@ import org.springframework.web.bind.annotation.*;
  *   <li>Retrieving the logged-in user's profile</li>
  *   <li>Updating user details</li>
  *   <li>Deleting user account</li>
- *   <li>Requesting to become a service provider</li>
- *   <li>Checking the status of a provider request</li>
  * </ul>
  *
  * <p>All endpoints require a valid authenticated session. Role-based
