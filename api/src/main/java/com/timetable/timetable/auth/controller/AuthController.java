@@ -61,7 +61,7 @@ import jakarta.validation.Valid;
  * <p>All request DTOs are validated using {@code @Valid}. Exception handling is centralized via
  * {@link com.workbridge.workbridge_app.auth.exception} and custom handlers.</p>
  *
- * @author WorkBridge
+ * @author Sideral Skylark
  * @since 2025-06-22
  */
 @RestController
@@ -70,7 +70,7 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthenticationService authenticationService;
-
+//TODO: remove register(send to an admin class), verify and resend verification. Keep logut and list endpoints
     /**
      * Registers a new user account and sends a verification email.
      *
@@ -78,7 +78,7 @@ public class AuthController {
      * @return 201 Created with the user's email
      * @throws UserAlreadyExistsException if username or email already exists
      */
-    @PostMapping("/register")
+    @PostMapping("/register") //TODO: guard this route to used only by admins (send it to another controller)
     public ResponseEntity<ApiResponse<RegisterResponseDTO>>
      register(@Valid @RequestBody RegisterRequestDTO registerRequest) {
         return ResponseFactory.created(

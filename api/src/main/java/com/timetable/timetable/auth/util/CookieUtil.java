@@ -34,7 +34,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *   String token = cookieUtil.extractTokenFromCookie(request, CookieUtil.ACCESS_TOKEN_COOKIE);
  * </pre>
  *
- * @author WorkBridge
+ * @author Sideral Skylark
  * @since 2025-06-22
  */
 @Component

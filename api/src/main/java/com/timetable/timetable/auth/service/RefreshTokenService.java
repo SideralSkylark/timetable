@@ -39,7 +39,7 @@ import lombok.RequiredArgsConstructor;
  *
  * <p>Default expiration is configurable via the property {@code auth.refresh-token-validity-days} (default = 7).</p>
  *
- * @author WorkBridge
+ * @author Sideral Skylark
  * @since 2025-06-22
  */
 @Service

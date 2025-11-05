@@ -1,9 +1,10 @@
 import api from './api';
 import type { ApiResponse } from './responses/apiResponse';
-import type { MessageResponse } from './responses/messageResponse';
 import type { LoginRequest } from './dto/loginRequest';
 import type { LoginResponse } from './dto/loginResponse';
 import type { User } from './types/user';
+import type { RegisterResponse } from './dto/registerResponse';
+import type { RegisterRequest } from './dto/registerRequest';
 
 
 class AuthService {
@@ -22,6 +23,15 @@ class AuthService {
 
       localStorage.setItem('user', JSON.stringify(user));
       return user;
+  }
+
+  async register(username: string, email: string, password: string): Promise<RegisterResponse> {
+    const response = await api.post<ApiResponse<RegisterResponse>>(
+      '/v1/auth/register',
+      { username, email, password} as RegisterRequest
+    );
+
+    return response.data.data;
   }
 
   async logout(): Promise<void> {

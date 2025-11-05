@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Throws {@link IllegalStateException} if no authenticated user is found in the security context.</p>
  *
- * @author Workbridge Team
+ * @author Sideral Skylark
  * @since 2025-06-26
  */
 @Component

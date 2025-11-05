@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>All exceptions are logged using SLF4J for audit and debugging purposes.</p>
  *
- * @author Workbridge Team
+ * @author Sideral Skylark
  * @since 2025-06-22
  */
 @RestControllerAdvice(assignableTypes = AuthController.class)

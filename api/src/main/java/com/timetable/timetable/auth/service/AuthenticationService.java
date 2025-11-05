@@ -65,7 +65,7 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>{@link SessionMapper} – for transforming session entities to DTOs</li>
  * </ul>
  *
- * @author WorkBridge
+ * @author Sideral Skylark
  * @since 2025-06-22
  */
 @Slf4j
@@ -103,9 +103,8 @@ public class AuthenticationService {
     @Transactional
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) {
         log.debug("Attempting to register user with email: {}", registerRequestDTO.email());
-
+        //TODO: change implementation(idealy admin would use this service to register students and teachears && activate accounts right away)
         validateUniqueUser(registerRequestDTO);
-
         ApplicationUser user = createUser(registerRequestDTO);
         userRepository.save(user);
         verificationService.createAndSendVerificationToken(user);
@@ -397,9 +396,9 @@ public class AuthenticationService {
         log.debug("Building authentication response for user: {}", user.getEmail());
 
 		AuthenticationResponseDTO response = new AuthenticationResponseDTO(
-			user.getId(), 
-			user.getUsername(), 
-			user.getEmail(), 
+			user.getId(),
+			user.getUsername(),
+			user.getEmail(),
 			user.getRoles().stream()
 				.map(role -> role.getRole().name())
                 .collect(Collectors.toSet()),
