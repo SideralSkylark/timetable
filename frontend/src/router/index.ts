@@ -6,46 +6,47 @@ import Users from '@/views/Users.vue'
 import Reports from '@/views/Reports.vue'
 import Login from '@/views/Login.vue'
 import NotFound from '@/views/NotFound.vue'
-import Forbiden from '@/views/Forbidden.vue'
 import Forbidden from '@/views/Forbidden.vue'
+
+const routes = [
+  {
+    path: '/',
+    name: 'Login',
+    component: Login,
+    meta: { requiresGuest: true },
+  },
+  {
+    path: '/dashboard',
+    component: DashboardLayout,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'DashboardHome',
+        component: Dashboard,
+        meta: { roles: ['USER', 'ADMIN'], label: 'Início' },
+      },
+      {
+        path: 'users',
+        name: 'Users',
+        component: Users,
+        meta: { roles: ['ADMIN'], label: 'Utilizadores' },
+      },
+      {
+        path: 'reports',
+        name: 'Reports',
+        component: Reports,
+        meta: { roles: ['ADMIN', 'USER'], label: 'Relatórios' },
+      },
+    ],
+  },
+  { path: '/forbidden', name: 'Forbidden', component: Forbidden },
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'Login',
-      component: Login,
-      meta: { requiresGuest: true },
-    },
-    {
-      path: '/dashboard',
-      component: DashboardLayout,
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: '',
-          name: 'DashboardHome',
-          component: Dashboard,
-          meta: { roles: ['USER', 'ADMIN'], label: 'Início' },
-        },
-        {
-          path: 'users',
-          name: 'Users',
-          component: Users,
-          meta: { roles: ['ADMIN'], label: 'Utilizadores' },
-        },
-        {
-          path: 'reports',
-          name: 'Reports',
-          component: Reports,
-          meta: { roles: ['ADMIN', 'USER'], label: 'Relatórios' },
-        },
-      ],
-    },
-    { path: '/forbidden', name: 'Forbidden', component: Forbidden, meta: { label: "Acesso negado "} },
-    { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
-  ],
+  routes,
 })
 
 router.beforeEach((to) => {
@@ -59,7 +60,6 @@ router.beforeEach((to) => {
     return { name: 'DashboardHome' }
   }
 
-  // Validação de roles
   if (to.meta.roles) {
     const roles = auth.user?.roles ?? []
     const allowed = (to.meta.roles as string[]).some((r) => roles.includes(r))
