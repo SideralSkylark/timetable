@@ -12,19 +12,25 @@
           v-for="item in allowedRoutes"
           :key="item.name"
           :to="{ name: item.name }"
-          class="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+          class="group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
           :class="{ 'bg-indigo-100 text-indigo-700': isActive(item) }"
         >
-          {{ item.label }}
+          <component
+            :is="item.icon"
+            class="w-5 h-5 flex-shrink-0 transition-colors duration-150"
+            :class="{ 'text-indigo-600': isActive(item), 'text-gray-500 group-hover:text-indigo-600': !isActive(item) }"
+          />
+          <span class="truncate">{{ item.label }}</span>
         </RouterLink>
       </nav>
 
       <!-- Logout -->
       <button
         @click="logout"
-        class="mx-4 mb-6 mt-auto px-3 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-md hover:bg-red-50 hover:border-red-300"
+        class="mx-4 mb-6 mt-auto flex items-center gap-3 px-3 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-md hover:bg-red-50 hover:border-red-300 transition-all duration-150"
       >
-        Terminar sessão
+        <LogOut class="w-5 h-5 flex-shrink-0 text-red-500" />
+        <span>Terminar sessão</span>
       </button>
     </aside>
 
@@ -39,15 +45,16 @@
 import { computed } from 'vue'
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { Home, Users, FileText, LogOut } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
 const dashboardRoutes = [
-  { name: 'DashboardHome', label: 'Início', roles: ['USER', 'ADMIN'] },
-  { name: 'Users', label: 'Utilizadores', roles: ['ADMIN'] },
-  { name: 'Reports', label: 'Relatórios', roles: ['ADMIN', 'USER'] },
+  { name: 'DashboardHome', label: 'Início', icon: Home, roles: ['USER', 'ADMIN'] },
+  { name: 'Users', label: 'Utilizadores', icon: Users , roles: ['ADMIN'] },
+  { name: 'Reports', label: 'Relatórios', icon: FileText, roles: ['ADMIN', 'USER'] },
 ]
 
 const allowedRoutes = computed(() => {
