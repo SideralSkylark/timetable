@@ -24,3 +24,4 @@ public class UserRoleEntity {
         this.role = role;
     }
 }
+
