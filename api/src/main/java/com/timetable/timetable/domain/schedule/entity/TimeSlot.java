@@ -66,9 +66,13 @@ public class TimeSlot {
     @PrePersist
     @PreUpdate
     private void validateTimes() {
-        if (startTime != null && endTime != null && !startTime.isBefore(endTime)) {
-            throw new IllegalArgumentException("Start time must be before end time");
+        if (startTime == null || endTime == null) {
+            throw new IllegalArgumentException("TimeSlot must have valid start and end times.");
+        }
+        if (!startTime.isBefore(endTime)) {
+            throw new IllegalArgumentException("Start time must be before end time.");
         }
     }
+
 }
 

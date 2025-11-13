@@ -13,7 +13,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -34,15 +33,14 @@ public class Timetable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "timetable", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "timetable", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TimeSlot> timeSlots;
 
-    // ADICIONAR: Status do horário
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     @Column(nullable = false)
     private TimetableStatus status = TimetableStatus.DRAFT;
 
-    // ADICIONAR: Período acadêmico
     private String academicPeriod; // ex: "2024.1", "Fall 2024"
     
     @CreationTimestamp
