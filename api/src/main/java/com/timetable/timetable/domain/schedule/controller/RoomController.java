@@ -1,18 +1,12 @@
 package com.timetable.timetable.domain.schedule.controller;
 
-import java.util.List;
-
-import com.timetable.timetable.common.response.ApiResponse;
-import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.dto.CreateRoomRequest;
 import com.timetable.timetable.domain.schedule.dto.RoomResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateRoomRequest;
-import com.timetable.timetable.domain.schedule.entity.Room;
 import com.timetable.timetable.domain.schedule.service.RoomService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -8,4 +8,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CourseService {
     private final com.timetable.timetable.domain.schedule.repository.CourseRepository CourseRepository;
+
+    //TODO: crud
 }

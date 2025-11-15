@@ -10,4 +10,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CohortService {
     private final CohortRepository cohortRepository;
+
+    //TODO: crud
 }
