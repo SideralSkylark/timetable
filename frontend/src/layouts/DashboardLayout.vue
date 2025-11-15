@@ -45,7 +45,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { Home, Users, FileText, LogOut } from 'lucide-vue-next'
+import { Home, Building, School, Users, LogOut } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -53,8 +53,9 @@ const auth = useAuthStore()
 
 const dashboardRoutes = [
   { name: 'DashboardHome', label: 'Início', icon: Home, roles: ['USER', 'ADMIN'] },
+  { name: 'Rooms', label: 'Salas', icon: Building, roles: ['ADMIN'] },
+  { name: 'Courses', label: 'Cursos', icon: School, roles: ['ADMIN'] },
   { name: 'Users', label: 'Utilizadores', icon: Users , roles: ['ADMIN'] },
-  { name: 'Reports', label: 'Relatórios', icon: FileText, roles: ['ADMIN', 'USER'] },
 ]
 
 const allowedRoutes = computed(() => {

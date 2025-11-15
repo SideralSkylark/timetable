@@ -3,10 +3,11 @@ import { useAuthStore } from '@/stores/auth'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Users from '@/views/Users.vue'
-import Reports from '@/views/Reports.vue'
 import Login from '@/views/Login.vue'
 import NotFound from '@/views/NotFound.vue'
 import Forbidden from '@/views/Forbidden.vue'
+import Rooms from '@/views/Rooms.vue'
+import Courses from '@/views/Courses.vue'
 
 const routes = [
   {
@@ -27,16 +28,22 @@ const routes = [
         meta: { roles: ['USER', 'ADMIN'], label: 'Início' },
       },
       {
+        path: 'rooms',
+        name: 'Rooms',
+        component: Rooms,
+        meta: { roles: ['ADMIN'], label: 'Salas' },
+      },
+      {
+        path: 'courses',
+        name: 'Courses',
+        component: Courses,
+        meta: { roles: ['ADMIN'], label: 'Cursos' },
+      },
+      {
         path: 'users',
         name: 'Users',
         component: Users,
         meta: { roles: ['ADMIN'], label: 'Utilizadores' },
-      },
-      {
-        path: 'reports',
-        name: 'Reports',
-        component: Reports,
-        meta: { roles: ['ADMIN', 'USER'], label: 'Relatórios' },
       },
     ],
   },
