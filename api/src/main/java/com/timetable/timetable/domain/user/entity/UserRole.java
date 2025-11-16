@@ -2,8 +2,10 @@ package com.timetable.timetable.domain.user.entity;
 
 public enum UserRole {
     USER(1),
-    COORDINATOR(2),
-    ADMIN(3);
+    STUDENT(2),
+    TEACHER(3),
+    COORDINATOR(4),
+    ADMIN(5);
 
     private final int priority;
 

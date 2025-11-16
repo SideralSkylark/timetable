@@ -1,9 +1,17 @@
 package com.timetable.timetable.domain.schedule.repository;
 
+import java.util.List;
+
+import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.entity.Subject;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SubjectRepository extends JpaRepository<Subject, Long> { } 
+public interface SubjectRepository extends JpaRepository<Subject, Long> {
+    boolean existsByNameAndCourse(String name, Course course);
+    Page<Subject> findByCourse(Course course, Pageable pageable);
+} 
