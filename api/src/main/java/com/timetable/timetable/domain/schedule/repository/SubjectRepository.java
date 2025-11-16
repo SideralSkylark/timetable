@@ -1,7 +1,5 @@
 package com.timetable.timetable.domain.schedule.repository;
 
-import java.util.List;
-
 import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.entity.Subject;
 

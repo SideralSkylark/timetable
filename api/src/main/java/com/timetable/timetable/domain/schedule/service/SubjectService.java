@@ -19,6 +19,7 @@ import com.timetable.timetable.domain.schedule.repository.SubjectRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.repository.UserRepository;
+import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,15 +27,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SubjectService {
     private final SubjectRepository subjectRepository;
-    private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
+    private final CourseService courseService;
+    private final UserService userService;
 
     @Transactional
     public SubjectResponse createSubject(CreateSubjectRequest createRequest) {
-        Course course = courseRepository.findById(createRequest.courseId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Course with id %d not found".formatted(createRequest.courseId())
-            ));
+        Course course = courseService.getCourseById(createRequest.courseId());
 
         if (subjectRepository.existsByNameAndCourse(createRequest.name(), course)) {
             throw new IllegalStateException(
@@ -63,10 +61,7 @@ public class SubjectService {
     }
 
     public Page<SubjectResponse> getAllByCourse(Long courseId, Pageable pageable) {
-        Course course = courseRepository.findById(courseId)
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Course with id %d not found".formatted(courseId)
-            ));
+        Course course = courseService.getCourseById(courseId);
         
         return subjectRepository.findByCourse(course, pageable)
             .map(SubjectResponse::from);
@@ -78,6 +73,14 @@ public class SubjectService {
                 "Subject with id %d not found".formatted(id)
             ));
         return SubjectResponse.from(subject);
+    }
+
+    public Subject getSubjectById(Long id) {
+        Subject subject = subjectRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Subject with id %d not found".formatted(id)
+            ));
+        return subject;
     }
 
     @Transactional
@@ -120,7 +123,7 @@ public class SubjectService {
         Set<ApplicationUser> teachers = new HashSet<>();
         
         for (Long teacherId : teacherIds) {
-            ApplicationUser user = userRepository.findById(teacherId)
+            ApplicationUser user = userService.findById(teacherId)
                 .orElseThrow(() -> new IllegalArgumentException(
                     "User with id %d not found".formatted(teacherId)
                 ));

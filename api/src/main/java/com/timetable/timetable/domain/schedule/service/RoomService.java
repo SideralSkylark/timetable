@@ -44,6 +44,13 @@ public class RoomService {
         return RoomResponse.from(room);
     }
 
+    public Room getRoomById(Long id) {
+        Room room = roomRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Room not found."));
+
+        return room;
+    }
+
     public RoomResponse updateRoom(Long id, UpdateRoomRequest updateRequest) {
         Room room = roomRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Room not found."));

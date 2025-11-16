@@ -25,6 +25,7 @@ import com.timetable.timetable.domain.schedule.repository.TimetableRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.repository.UserRepository;
+import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,29 +33,28 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TimeSlotService {
     private final TimeSlotRepository timeSlotRepository;
-    private final SubjectRepository subjectRepository;
-    private final TimetableRepository timetableRepository;
-    private final UserRepository userRepository;
-    private final RoomRepository roomRepository;
-    private final CohortRepository cohortRepository;
+    private final SubjectService subjectService;
+    private final TimetableService timetableService;
+    private final UserService userService;
+    private final RoomService roomService;
+    private final CohortService cohortService;
+
+    // private final SubjectRepository subjectRepository;
+    // private final TimetableRepository timetableRepository;
+    // private final UserRepository userRepository;
+    // private final RoomRepository roomRepository;
+    // private final CohortRepository cohortRepository;
 
     @Transactional
     public TimeSlotResponse createTimeSlot(CreateTimeSlotRequest createRequest) {
-        // Validate all entities exist
-        Subject subject = subjectRepository.findById(createRequest.subjectId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Subject with id %d not found".formatted(createRequest.subjectId())
-            ));
+        Subject subject = subjectService.getSubjectById(createRequest.subjectId());
 
         Timetable timetable = null;
         if (createRequest.timetableId() != null) {
-            timetable = timetableRepository.findById(createRequest.timetableId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                    "Timetable with id %d not found".formatted(createRequest.timetableId())
-                ));
+            timetable = timetableService.getTimetableById(createRequest.timetableId());
         }
 
-        ApplicationUser teacher = userRepository.findById(createRequest.teacherId())
+        ApplicationUser teacher = userService.findById(createRequest.teacherId())
             .orElseThrow(() -> new IllegalArgumentException(
                 "User with id %d not found".formatted(createRequest.teacherId())
             ));
@@ -74,15 +74,9 @@ public class TimeSlotService {
             );
         }
 
-        Room room = roomRepository.findById(createRequest.roomId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Room with id %d not found".formatted(createRequest.roomId())
-            ));
+        Room room = roomService.getRoomById(createRequest.roomId());
 
-        Cohort cohort = cohortRepository.findById(createRequest.cohortId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Cohort with id %d not found".formatted(createRequest.cohortId())
-            ));
+        Cohort cohort = cohortService.getCohortById(createRequest.cohortId());
 
         // Validate time constraints
         validateTimeConstraints(createRequest.startTime(), createRequest.endTime());
@@ -119,27 +113,21 @@ public class TimeSlotService {
     }
 
     public Page<TimeSlotResponse> getByTimetable(Long timetableId, Pageable pageable) {
-        Timetable timetable = timetableRepository.findById(timetableId)
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Timetable with id %d not found".formatted(timetableId)
-            ));
+        Timetable timetable = timetableService.getTimetableById(timetableId);
         
         return timeSlotRepository.findByTimetable(timetable, pageable)
             .map(TimeSlotResponse::from);
     }
 
     public Page<TimeSlotResponse> getByCohort(Long cohortId, Pageable pageable) {
-        Cohort cohort = cohortRepository.findById(cohortId)
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Cohort with id %d not found".formatted(cohortId)
-            ));
+        Cohort cohort = cohortService.getCohortById(cohortId);
         
         return timeSlotRepository.findByCohort(cohort, pageable)
             .map(TimeSlotResponse::from);
     }
 
     public Page<TimeSlotResponse> getByTeacher(Long teacherId, Pageable pageable) {
-        ApplicationUser teacher = userRepository.findById(teacherId)
+        ApplicationUser teacher = userService.findById(teacherId)
             .orElseThrow(() -> new IllegalArgumentException(
                 "User with id %d not found".formatted(teacherId)
             ));
@@ -170,12 +158,9 @@ public class TimeSlotService {
             ));
 
         // Validate all entities exist
-        Subject subject = subjectRepository.findById(updateRequest.subjectId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Subject with id %d not found".formatted(updateRequest.subjectId())
-            ));
+        Subject subject = subjectService.getSubjectById(updateRequest.subjectId());
 
-        ApplicationUser teacher = userRepository.findById(updateRequest.teacherId())
+        ApplicationUser teacher = userService.findById(updateRequest.teacherId())
             .orElseThrow(() -> new IllegalArgumentException(
                 "User with id %d not found".formatted(updateRequest.teacherId())
             ));
@@ -195,15 +180,9 @@ public class TimeSlotService {
             );
         }
 
-        Room room = roomRepository.findById(updateRequest.roomId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Room with id %d not found".formatted(updateRequest.roomId())
-            ));
+        Room room = roomService.getRoomById(updateRequest.roomId());
 
-        Cohort cohort = cohortRepository.findById(updateRequest.cohortId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Cohort with id %d not found".formatted(updateRequest.cohortId())
-            ));
+        Cohort cohort = cohortService.getCohortById(updateRequest.cohortId());
 
         // Validate time constraints
         validateTimeConstraints(updateRequest.startTime(), updateRequest.endTime());

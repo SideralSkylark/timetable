@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import com.timetable.timetable.domain.schedule.entity.Cohort;
 
-
 public record CohortResponse(
     Long id,
     String name,

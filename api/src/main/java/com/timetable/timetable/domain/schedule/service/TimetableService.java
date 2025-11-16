@@ -55,6 +55,14 @@ public class TimetableService {
         return TimetableResponse.from(timetable);
     }
 
+    public Timetable getTimetableById(Long id) {
+        Timetable timetable = timetableRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Timetable with id %d not found".formatted(id)
+            ));
+        return timetable;
+    }
+
     public TimetableResponse getByAcademicPeriod(String academicPeriod) {
         Timetable timetable = timetableRepository.findByAcademicPeriod(academicPeriod)
             .orElseThrow(() -> new IllegalArgumentException(

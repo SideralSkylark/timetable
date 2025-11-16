@@ -56,6 +56,13 @@ public class CourseService {
         return CourseRespose.from(course);        
     }
 
+    public Course getCourseById(Long id) {
+        Course course = courseRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("No course with id: %d".formatted(id)));
+
+        return course;        
+    }
+
     public CourseRespose updateCourse(Long id, UpdateCourseRequest updateRequest) {
         Course course = courseRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("No course found with id: %d".formatted(id)));

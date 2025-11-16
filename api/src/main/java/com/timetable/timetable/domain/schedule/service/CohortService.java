@@ -15,10 +15,9 @@ import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
 import com.timetable.timetable.domain.schedule.entity.Cohort;
 import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.repository.CohortRepository;
-import com.timetable.timetable.domain.schedule.repository.CourseRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
-import com.timetable.timetable.domain.user.repository.UserRepository;
+import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,8 +25,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CohortService {
     private final CohortRepository cohortRepository;
-    private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
+    private final CourseService courseService;
+    private final UserService userService;
 
     @Transactional
     public CohortResponse createCohort(CreateCohortRequest createRequest) {
@@ -35,21 +34,19 @@ public class CohortService {
             throw new IllegalStateException("Cohort with name '%s' already exists".formatted(createRequest.name()));
         }
 
-        Course course = courseRepository.findById(createRequest.courseId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Course with id %d not found".formatted(createRequest.courseId())
-            ));
+        Course course = courseService.getCourseById(createRequest.courseId());
 
         Set<ApplicationUser> students = new HashSet<>();
         if (createRequest.studentIds() != null && !createRequest.studentIds().isEmpty()) {
             students = validateAndFetchStudents(createRequest.studentIds());
         }
 
-        Cohort cohort = new Cohort();
-        cohort.setName(createRequest.name());
-        cohort.setCourse(course);
-        cohort.setStudents(students);
-
+        Cohort cohort = Cohort.builder()
+            .name(createRequest.name())
+            .course(course)
+            .students(students)
+            .build();
+        
         Cohort saved = cohortRepository.save(cohort);
         return CohortResponse.from(saved);
     }
@@ -64,7 +61,17 @@ public class CohortService {
             .orElseThrow(() -> new IllegalArgumentException(
                 "Cohort with id %d not found".formatted(id)
             ));
+
         return CohortResponse.from(cohort);
+    }
+
+    public Cohort getCohortById(Long id) {
+        Cohort cohort = cohortRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Cohort with id %d not found".formatted(id)
+            ));
+
+        return cohort;
     }
 
     @Transactional
@@ -104,7 +111,7 @@ public class CohortService {
         Set<ApplicationUser> students = new HashSet<>();
         
         for (Long studentId : studentIds) {
-            ApplicationUser user = userRepository.findById(studentId)
+            ApplicationUser user = userService.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException(
                     "User with id %d not found".formatted(studentId)
                 ));
