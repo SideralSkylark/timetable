@@ -14,9 +14,11 @@ import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
 import com.timetable.timetable.domain.schedule.entity.Cohort;
 import com.timetable.timetable.domain.schedule.entity.Course;
+import com.timetable.timetable.domain.schedule.exception.CohortNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.CohortRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
+import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -58,7 +60,7 @@ public class CohortService {
 
     public CohortResponse getById(Long id) {
         Cohort cohort = cohortRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new CohortNotFoundException(
                 "Cohort with id %d not found".formatted(id)
             ));
 
@@ -67,7 +69,7 @@ public class CohortService {
 
     public Cohort getCohortById(Long id) {
         Cohort cohort = cohortRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new CohortNotFoundException(
                 "Cohort with id %d not found".formatted(id)
             ));
 
@@ -77,7 +79,7 @@ public class CohortService {
     @Transactional
     public CohortResponse updateCohort(Long id, UpdateCohortRequest updateRequest) {
         Cohort cohort = cohortRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new CohortNotFoundException(
                 "Cohort with id %d not found".formatted(id)
             ));
 
@@ -100,7 +102,7 @@ public class CohortService {
     @Transactional
     public void deleteCohort(Long id) {
         if (!cohortRepository.existsById(id)) {
-            throw new IllegalArgumentException(
+            throw new CohortNotFoundException(
                 "Cohort with id %d not found".formatted(id)
             );
         }
@@ -112,7 +114,7 @@ public class CohortService {
         
         for (Long studentId : studentIds) {
             ApplicationUser user = userService.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new UserNotFoundException(
                     "User with id %d not found".formatted(studentId)
                 ));
             

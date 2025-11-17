@@ -4,6 +4,7 @@ import com.timetable.timetable.domain.schedule.dto.CourseRespose;
 import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;
+import com.timetable.timetable.domain.schedule.exception.CourseNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.CourseRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
@@ -51,21 +52,21 @@ public class CourseService {
 
     public CourseRespose getById(Long id) {
         Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("No course with id: %d".formatted(id)));
+            .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
 
         return CourseRespose.from(course);        
     }
 
     public Course getCourseById(Long id) {
         Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("No course with id: %d".formatted(id)));
+            .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
 
         return course;        
     }
 
     public CourseRespose updateCourse(Long id, UpdateCourseRequest updateRequest) {
         Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("No course found with id: %d".formatted(id)));
+            .orElseThrow(() -> new CourseNotFoundException("No course found with id: %d".formatted(id)));
 
         if (!course.getName().equals(updateRequest.name()) && courseRepository.existsByName(updateRequest.name())) {
             throw new IllegalArgumentException("Another course with that name already exists.");

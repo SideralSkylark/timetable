@@ -17,14 +17,11 @@ import com.timetable.timetable.domain.schedule.entity.Room;
 import com.timetable.timetable.domain.schedule.entity.Subject;
 import com.timetable.timetable.domain.schedule.entity.TimeSlot;
 import com.timetable.timetable.domain.schedule.entity.Timetable;
-import com.timetable.timetable.domain.schedule.repository.CohortRepository;
-import com.timetable.timetable.domain.schedule.repository.RoomRepository;
-import com.timetable.timetable.domain.schedule.repository.SubjectRepository;
+import com.timetable.timetable.domain.schedule.exception.TimeSlotNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.TimeSlotRepository;
-import com.timetable.timetable.domain.schedule.repository.TimetableRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
-import com.timetable.timetable.domain.user.repository.UserRepository;
+import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -39,12 +36,6 @@ public class TimeSlotService {
     private final RoomService roomService;
     private final CohortService cohortService;
 
-    // private final SubjectRepository subjectRepository;
-    // private final TimetableRepository timetableRepository;
-    // private final UserRepository userRepository;
-    // private final RoomRepository roomRepository;
-    // private final CohortRepository cohortRepository;
-
     @Transactional
     public TimeSlotResponse createTimeSlot(CreateTimeSlotRequest createRequest) {
         Subject subject = subjectService.getSubjectById(createRequest.subjectId());
@@ -55,7 +46,7 @@ public class TimeSlotService {
         }
 
         ApplicationUser teacher = userService.findById(createRequest.teacherId())
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new UserNotFoundException(
                 "User with id %d not found".formatted(createRequest.teacherId())
             ));
         
@@ -144,7 +135,7 @@ public class TimeSlotService {
 
     public TimeSlotResponse getById(Long id) {
         TimeSlot timeSlot = timeSlotRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             ));
         return TimeSlotResponse.from(timeSlot);
@@ -153,7 +144,7 @@ public class TimeSlotService {
     @Transactional
     public TimeSlotResponse updateTimeSlot(Long id, UpdateTimeSlotRequest updateRequest) {
         TimeSlot timeSlot = timeSlotRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             ));
 
@@ -161,7 +152,7 @@ public class TimeSlotService {
         Subject subject = subjectService.getSubjectById(updateRequest.subjectId());
 
         ApplicationUser teacher = userService.findById(updateRequest.teacherId())
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new UserNotFoundException(
                 "User with id %d not found".formatted(updateRequest.teacherId())
             ));
         
@@ -213,7 +204,7 @@ public class TimeSlotService {
     @Transactional
     public void deleteTimeSlot(Long id) {
         if (!timeSlotRepository.existsById(id)) {
-            throw new IllegalArgumentException(
+            throw new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             );
         }

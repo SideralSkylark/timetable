@@ -4,6 +4,7 @@ import com.timetable.timetable.domain.schedule.dto.CreateRoomRequest;
 import com.timetable.timetable.domain.schedule.dto.RoomResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateRoomRequest;
 import com.timetable.timetable.domain.schedule.entity.Room;
+import com.timetable.timetable.domain.schedule.exception.RoomNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.RoomRepository;
 
 import org.springframework.data.domain.Page;
@@ -39,21 +40,21 @@ public class RoomService {
 
     public RoomResponse getById(Long id) {
         Room room = roomRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Room not found."));
+            .orElseThrow(() -> new RoomNotFoundException("Room not found."));
 
         return RoomResponse.from(room);
     }
 
     public Room getRoomById(Long id) {
         Room room = roomRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Room not found."));
+            .orElseThrow(() -> new RoomNotFoundException("Room not found."));
 
         return room;
     }
 
     public RoomResponse updateRoom(Long id, UpdateRoomRequest updateRequest) {
         Room room = roomRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Room not found."));
+            .orElseThrow(() -> new RoomNotFoundException("Room not found."));
 
         if (!room.getName().equals(updateRequest.name()) && roomRepository.existsByName(updateRequest.name())) {
             throw new IllegalArgumentException("Another room with that name already exists.");
@@ -69,7 +70,7 @@ public class RoomService {
 
     public void deleteRoom(Long id) {
         if (!roomRepository.existsById(id)) {
-            throw new IllegalArgumentException("Room not found.");
+            throw new RoomNotFoundException("Room not found.");
         }
 
         roomRepository.deleteById(id);

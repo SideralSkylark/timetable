@@ -14,11 +14,11 @@ import com.timetable.timetable.domain.schedule.dto.SubjectResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateSubjectRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.entity.Subject;
-import com.timetable.timetable.domain.schedule.repository.CourseRepository;
+import com.timetable.timetable.domain.schedule.exception.SubjectNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.SubjectRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
-import com.timetable.timetable.domain.user.repository.UserRepository;
+import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -69,7 +69,7 @@ public class SubjectService {
 
     public SubjectResponse getById(Long id) {
         Subject subject = subjectRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new SubjectNotFoundException(
                 "Subject with id %d not found".formatted(id)
             ));
         return SubjectResponse.from(subject);
@@ -77,7 +77,7 @@ public class SubjectService {
 
     public Subject getSubjectById(Long id) {
         Subject subject = subjectRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new SubjectNotFoundException(
                 "Subject with id %d not found".formatted(id)
             ));
         return subject;
@@ -86,7 +86,7 @@ public class SubjectService {
     @Transactional
     public SubjectResponse updateSubject(Long id, UpdateSubjectRequest updateRequest) {
         Subject subject = subjectRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new SubjectNotFoundException(
                 "Subject with id %d not found".formatted(id)
             ));
 
@@ -112,7 +112,7 @@ public class SubjectService {
     @Transactional
     public void deleteSubject(Long id) {
         if (!subjectRepository.existsById(id)) {
-            throw new IllegalArgumentException(
+            throw new SubjectNotFoundException(
                 "Subject with id %d not found".formatted(id)
             );
         }
@@ -124,7 +124,7 @@ public class SubjectService {
         
         for (Long teacherId : teacherIds) {
             ApplicationUser user = userService.findById(teacherId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new UserNotFoundException(
                     "User with id %d not found".formatted(teacherId)
                 ));
             

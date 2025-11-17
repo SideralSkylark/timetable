@@ -10,6 +10,7 @@ import com.timetable.timetable.domain.schedule.dto.TimetableResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateTimetableRequest;
 import com.timetable.timetable.domain.schedule.entity.Timetable;
 import com.timetable.timetable.domain.schedule.entity.TimetableStatus;
+import com.timetable.timetable.domain.schedule.exception.TimetableNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.TimetableRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -49,7 +50,7 @@ public class TimetableService {
 
     public TimetableResponse getById(Long id) {
         Timetable timetable = timetableRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
             ));
         return TimetableResponse.from(timetable);
@@ -57,7 +58,7 @@ public class TimetableService {
 
     public Timetable getTimetableById(Long id) {
         Timetable timetable = timetableRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
             ));
         return timetable;
@@ -65,7 +66,7 @@ public class TimetableService {
 
     public TimetableResponse getByAcademicPeriod(String academicPeriod) {
         Timetable timetable = timetableRepository.findByAcademicPeriod(academicPeriod)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable for academic period '%s' not found".formatted(academicPeriod)
             ));
         return TimetableResponse.from(timetable);
@@ -74,7 +75,7 @@ public class TimetableService {
     @Transactional
     public TimetableResponse updateTimetable(Long id, UpdateTimetableRequest updateRequest) {
         Timetable timetable = timetableRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
             ));
 
@@ -96,7 +97,7 @@ public class TimetableService {
     @Transactional
     public TimetableResponse publishTimetable(Long id) {
         Timetable timetable = timetableRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
             ));
 
@@ -120,7 +121,7 @@ public class TimetableService {
     @Transactional
     public TimetableResponse archiveTimetable(Long id) {
         Timetable timetable = timetableRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
             ));
 
@@ -138,7 +139,7 @@ public class TimetableService {
     @Transactional
     public TimetableResponse revertToDraft(Long id) {
         Timetable timetable = timetableRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
             ));
 
@@ -162,7 +163,7 @@ public class TimetableService {
     @Transactional
     public void deleteTimetable(Long id) {
         Timetable timetable = timetableRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
             ));
 
