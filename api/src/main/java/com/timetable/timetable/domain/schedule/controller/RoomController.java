@@ -1,5 +1,7 @@
 package com.timetable.timetable.domain.schedule.controller;
 
+import com.timetable.timetable.common.response.ApiResponse;
+import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.dto.CreateRoomRequest;
 import com.timetable.timetable.domain.schedule.dto.RoomResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateRoomRequest;
@@ -7,6 +9,7 @@ import com.timetable.timetable.domain.schedule.service.RoomService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,29 +29,42 @@ public class RoomController {
     private final RoomService roomService;
 
     @PostMapping
-    public RoomResponse create(@Valid @RequestBody CreateRoomRequest request) {
-        return roomService.createRoom(request);
+    public ResponseEntity<ApiResponse<RoomResponse>> create(@Valid @RequestBody CreateRoomRequest request) {
+        return ResponseFactory.ok(
+            roomService.createRoom(request),
+            "Room created successfully."
+        );
     }
 
     @GetMapping
-    public Page<RoomResponse> getAll(Pageable pageable) {
-        return roomService.getAll(pageable);
+    public ResponseEntity<ApiResponse<Page<RoomResponse>>> getAll(Pageable pageable) {
+        return ResponseFactory.ok(
+            roomService.getAll(pageable),
+            "Rooms fetched successfully."
+        );
     }
 
     @GetMapping("/{id}")
-    public RoomResponse getById(@PathVariable Long id) {
-        return roomService.getById(id);
+    public ResponseEntity<ApiResponse<RoomResponse>> getById(@PathVariable Long id) {
+        return ResponseFactory.ok(
+            roomService.getById(id),
+            "Room fetched successfully."
+        );
     }
 
     @PutMapping("/{id}")
-    public RoomResponse update(
+    public ResponseEntity<ApiResponse<RoomResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateRoomRequest request) {
-        return roomService.updateRoom(id, request);
+        return ResponseFactory.ok(
+            roomService.updateRoom(id, request),
+            "Room updated successfully."
+        );
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         roomService.deleteRoom(id);
+        return ResponseEntity.noContent().build();
     }
 }

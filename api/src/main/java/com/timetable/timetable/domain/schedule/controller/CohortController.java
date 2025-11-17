@@ -2,10 +2,10 @@ package com.timetable.timetable.domain.schedule.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
-import com.timetable.timetable.domain.schedule.dto.CourseRespose;
-import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
-import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
-import com.timetable.timetable.domain.schedule.service.CourseService;
+import com.timetable.timetable.domain.schedule.dto.CohortResponse;
+import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
+import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
+import com.timetable.timetable.domain.schedule.service.CohortService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,47 +24,48 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/courses")
-public class CourseController {
-    private final CourseService courseService;
+@RequestMapping("api/v1/rooms")
+public class CohortController {
+    private final CohortService cohortService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CourseRespose>> create(@Valid @RequestBody CreateCourseRequest request) {
+    public ResponseEntity<ApiResponse<CohortResponse>> create(@Valid @RequestBody CreateCohortRequest request) {
         return ResponseFactory.ok(
-            courseService.createCourse(request),
-            "Course created successfully."
+            cohortService.createCohort(request),
+            "Cohort created successfully."
         );
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<CourseRespose>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<CohortResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            courseService.getAll(pageable),
-            "Courses fetched successfully."
+            cohortService.getAll(pageable),
+            "Cohorts fetched successfully."
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseRespose>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CohortResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            courseService.getById(id),
-            "Course fetched successfully."
+            cohortService.getById(id),
+            "Cohort fetched successfully."
         );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseRespose>> update(
+    public ResponseEntity<ApiResponse<CohortResponse>> update(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateCourseRequest request) {
+            @Valid @RequestBody UpdateCohortRequest request) {
         return ResponseFactory.ok(
-            courseService.updateCourse(id, request),
-            "Course updated successfully."
+            cohortService.updateCohort(id, request),
+            "Cohort updated successfully."
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        courseService.deleteCourse(id); 
+        cohortService.deleteCohort(id);
         return ResponseEntity.noContent().build();
     }
 }
+

@@ -2,10 +2,10 @@ package com.timetable.timetable.domain.schedule.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
-import com.timetable.timetable.domain.schedule.dto.CourseRespose;
-import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
-import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
-import com.timetable.timetable.domain.schedule.service.CourseService;
+import com.timetable.timetable.domain.schedule.dto.CreateSubjectRequest;
+import com.timetable.timetable.domain.schedule.dto.SubjectResponse;
+import com.timetable.timetable.domain.schedule.dto.UpdateSubjectRequest;
+import com.timetable.timetable.domain.schedule.service.CohortService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,47 +24,49 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/courses")
-public class CourseController {
-    private final CourseService courseService;
+@RequestMapping("api/v1/rooms")
+public class SubjectController {
+    private final SubjectService subjectService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CourseRespose>> create(@Valid @RequestBody CreateCourseRequest request) {
+    public ResponseEntity<ApiResponse<SubjectResponse>> create(@Valid @RequestBody CreateSubjectRequest request) {
         return ResponseFactory.ok(
-            courseService.createCourse(request),
-            "Course created successfully."
+            subjectService.createSubject(request),
+            "subject created successfully."
         );
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<CourseRespose>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<SubjectResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            courseService.getAll(pageable),
-            "Courses fetched successfully."
+            subjectService.getAll(pageable),
+            "Subjects fetched successfully."
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseRespose>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<SubjectResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            courseService.getById(id),
-            "Course fetched successfully."
+            subjectService.getById(id),
+            "Subject fetched successfully."
         );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseRespose>> update(
+    public ResponseEntity<ApiResponse<SubjectResponse>> update(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateCourseRequest request) {
+            @Valid @RequestBody UpdateSubjectRequest request) {
         return ResponseFactory.ok(
-            courseService.updateCourse(id, request),
-            "Course updated successfully."
+            subjectService.updateSubject(id, request),
+            "subject updated successfully."
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        courseService.deleteCourse(id); 
+        subjectService.deleteSubject(id);
         return ResponseEntity.noContent().build();
     }
 }
+
+

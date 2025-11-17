@@ -2,10 +2,10 @@ package com.timetable.timetable.domain.schedule.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
-import com.timetable.timetable.domain.schedule.dto.CourseRespose;
-import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
-import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
-import com.timetable.timetable.domain.schedule.service.CourseService;
+import com.timetable.timetable.domain.schedule.dto.CreateTimeSlotRequest;
+import com.timetable.timetable.domain.schedule.dto.TimeSlotResponse;
+import com.timetable.timetable.domain.schedule.dto.UpdateTimeSlotRequest;
+import com.timetable.timetable.domain.schedule.service.TimeSlotService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,47 +24,50 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/courses")
-public class CourseController {
-    private final CourseService courseService;
+@RequestMapping("api/v1/rooms")
+public class TimeSlotController {
+    private final TimeSlotService timeSlotService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CourseRespose>> create(@Valid @RequestBody CreateCourseRequest request) {
+    public ResponseEntity<ApiResponse<TimeSlotResponse>> create(@Valid @RequestBody CreateTimeSlotRequest request) {
         return ResponseFactory.ok(
-            courseService.createCourse(request),
-            "Course created successfully."
+            timeSlotService.createTimeSlot(request),
+            "Time slot created successfully."
         );
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<CourseRespose>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<TimeSlotResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            courseService.getAll(pageable),
-            "Courses fetched successfully."
+            timeSlotService.getAll(pageable),
+            "Time slots fetched successfully."
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseRespose>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<TimeSlotResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            courseService.getById(id),
-            "Course fetched successfully."
+            timeSlotService.getById(id),
+            "Time slot fetched successfully."
         );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseRespose>> update(
+    public ResponseEntity<ApiResponse<TimeSlotResponse>> update(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateCourseRequest request) {
+            @Valid @RequestBody UpdateTimeSlotRequest request) {
         return ResponseFactory.ok(
-            courseService.updateCourse(id, request),
-            "Course updated successfully."
+            timeSlotService.updateTimeSlot(id, request),
+            "Time slot updated successfully."
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        courseService.deleteCourse(id); 
+        timeSlotService.deleteTimeSlot(id);
         return ResponseEntity.noContent().build();
     }
 }
+
+
+
