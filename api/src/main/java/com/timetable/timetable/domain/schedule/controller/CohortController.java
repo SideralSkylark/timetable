@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/rooms")
+@RequestMapping("api/v1/cohorts")
 public class CohortController {
     private final CohortService cohortService;
 

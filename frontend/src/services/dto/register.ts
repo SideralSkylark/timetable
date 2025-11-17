@@ -4,3 +4,7 @@ export interface RegisterRequest {
     password: string;
     roles: string[];
 }
+
+export interface RegisterResponse {
+    email: string;
+}

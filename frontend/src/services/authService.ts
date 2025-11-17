@@ -1,9 +1,7 @@
 import api from './api'
 import type { ApiResponse } from './responses/apiResponse'
-import type { LoginRequest } from './dto/loginRequest'
-import type { LoginResponse } from './dto/loginResponse'
-import type { RegisterRequest } from './dto/registerRequest'
-import type { RegisterResponse } from './dto/registerResponse'
+import type { LoginRequest, LoginResponse } from './dto/login'
+import type { RegisterRequest, RegisterResponse} from './dto/register'
 import type { User } from './types/user'
 
 const USER_KEY = 'user'
