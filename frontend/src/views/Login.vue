@@ -72,7 +72,7 @@ const handleLogin = async () => {
     await authStore.login(email.value, password.value)
     router.push('/dashboard')
   } catch (err: any) {
-    error.value = err.message || 'Falha ao fazer login'
+    error.value = 'Falha ao fazer login'
   } finally {
     loading.value = false
   }

@@ -31,6 +31,12 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    const skipRefresh = (originalRequest as any)?.skipAuthRefresh
+
+    if (error.response.status == 401 && skipRefresh) {
+      return Promise.reject(error)
+    }
+
     if (error.response.status === 401) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -50,7 +56,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError)
         localStorage.removeItem('user')
-        window.location.href = '/login'
+        window.location.href = '/'
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

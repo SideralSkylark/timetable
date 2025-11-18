@@ -10,7 +10,8 @@ class AuthService {
   async login(email: string, password: string): Promise<User> {
     const { data } = await api.post<ApiResponse<LoginResponse>>(
       '/v1/auth/login',
-      { email, password } as LoginRequest
+      { email, password } as LoginRequest,
+      { skipAuthRefresh: true } as any
     )
 
     const user: User = {
