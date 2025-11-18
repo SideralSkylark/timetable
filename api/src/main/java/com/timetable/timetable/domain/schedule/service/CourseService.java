@@ -1,6 +1,6 @@
 package com.timetable.timetable.domain.schedule.service;
 
-import com.timetable.timetable.domain.schedule.dto.CourseRespose;
+import com.timetable.timetable.domain.schedule.dto.CourseResponse;
 import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;
@@ -22,7 +22,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
 
-    public CourseRespose createCourse(CreateCourseRequest createRequest) {
+    public CourseResponse createCourse(CreateCourseRequest createRequest) {
         if (courseRepository.existsByName(createRequest.name())) {
             throw new IllegalStateException("Course already exists"); 
         }
@@ -42,19 +42,19 @@ public class CourseService {
 
         Course saved = courseRepository.save(course);
 
-        return CourseRespose.from(saved);
+        return CourseResponse.from(saved);
     }
 
-    public Page<CourseRespose> getAll(Pageable pageable) {
+    public Page<CourseResponse> getAll(Pageable pageable) {
         return courseRepository.findAll(pageable)
-            .map(CourseRespose::from);
+            .map(CourseResponse::from);
     }
 
-    public CourseRespose getById(Long id) {
+    public CourseResponse getById(Long id) {
         Course course = courseRepository.findById(id)
             .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
 
-        return CourseRespose.from(course);        
+        return CourseResponse.from(course);        
     }
 
     public Course getCourseById(Long id) {
@@ -64,7 +64,7 @@ public class CourseService {
         return course;        
     }
 
-    public CourseRespose updateCourse(Long id, UpdateCourseRequest updateRequest) {
+    public CourseResponse updateCourse(Long id, UpdateCourseRequest updateRequest) {
         Course course = courseRepository.findById(id)
             .orElseThrow(() -> new CourseNotFoundException("No course found with id: %d".formatted(id)));
 
@@ -85,7 +85,7 @@ public class CourseService {
 
         Course updated = courseRepository.save(course);
 
-        return CourseRespose.from(updated);
+        return CourseResponse.from(updated);
     }
 
     public void deleteCourse(Long id) {

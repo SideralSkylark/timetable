@@ -2,7 +2,7 @@ package com.timetable.timetable.domain.schedule.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
-import com.timetable.timetable.domain.schedule.dto.CourseRespose;
+import com.timetable.timetable.domain.schedule.dto.CourseResponse;
 import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.service.CourseService;
@@ -29,7 +29,7 @@ public class CourseController {
     private final CourseService courseService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CourseRespose>> create(@Valid @RequestBody CreateCourseRequest request) {
+    public ResponseEntity<ApiResponse<CourseResponse>> create(@Valid @RequestBody CreateCourseRequest request) {
         return ResponseFactory.ok(
             courseService.createCourse(request),
             "Course created successfully."
@@ -37,7 +37,7 @@ public class CourseController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<CourseRespose>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<CourseResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
             courseService.getAll(pageable),
             "Courses fetched successfully."
@@ -45,7 +45,7 @@ public class CourseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseRespose>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CourseResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
             courseService.getById(id),
             "Course fetched successfully."
@@ -53,7 +53,7 @@ public class CourseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseRespose>> update(
+    public ResponseEntity<ApiResponse<CourseResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateCourseRequest request) {
         return ResponseFactory.ok(

@@ -6,6 +6,7 @@ import com.timetable.timetable.domain.schedule.dto.CreateSubjectRequest;
 import com.timetable.timetable.domain.schedule.dto.SubjectResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateSubjectRequest;
 import com.timetable.timetable.domain.schedule.service.CohortService;
+import com.timetable.timetable.domain.schedule.service.SubjectService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
