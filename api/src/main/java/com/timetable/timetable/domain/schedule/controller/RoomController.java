@@ -9,6 +9,7 @@ import com.timetable.timetable.domain.schedule.service.RoomService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,9 +38,9 @@ public class RoomController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<RoomResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<RoomResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            roomService.getAll(pageable),
+            new PagedModel<>(roomService.getAll(pageable)),
             "Rooms fetched successfully."
         );
     }

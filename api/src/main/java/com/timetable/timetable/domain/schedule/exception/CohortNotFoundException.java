@@ -1,6 +1,8 @@
 package com.timetable.timetable.domain.schedule.exception;
 
-public class CohortNotFoundException extends RuntimeException {
+import com.timetable.timetable.common.exception.ResourceNotFoundException;
+
+public class CohortNotFoundException extends ResourceNotFoundException {
     public CohortNotFoundException(String message) {
         super(message);
     }

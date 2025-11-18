@@ -9,6 +9,7 @@ import com.timetable.timetable.domain.schedule.service.CohortService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,9 +38,9 @@ public class CohortController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<CohortResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<CohortResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            cohortService.getAll(pageable),
+            new PagedModel<>(cohortService.getAll(pageable)),
             "Cohorts fetched successfully."
         );
     }

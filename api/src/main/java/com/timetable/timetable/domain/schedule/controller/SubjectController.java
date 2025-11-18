@@ -5,11 +5,11 @@ import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.dto.CreateSubjectRequest;
 import com.timetable.timetable.domain.schedule.dto.SubjectResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateSubjectRequest;
-import com.timetable.timetable.domain.schedule.service.CohortService;
 import com.timetable.timetable.domain.schedule.service.SubjectService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/rooms")
+@RequestMapping("api/v1/subjects")
 public class SubjectController {
     private final SubjectService subjectService;
 
@@ -38,9 +38,9 @@ public class SubjectController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<SubjectResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<SubjectResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            subjectService.getAll(pageable),
+            new PagedModel<>(subjectService.getAll(pageable)),
             "Subjects fetched successfully."
         );
     }

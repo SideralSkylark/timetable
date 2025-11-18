@@ -24,40 +24,14 @@ import com.timetable.timetable.domain.user.exception.UserNotAuthorizedException;
 
 import java.util.stream.Collectors;
 
-/**
- * Global exception handler for application-wide concerns.
- *
- * <p>This class intercepts and handles exceptions thrown by any {@code @RestController}
- * in the application. It transforms these exceptions into consistent and meaningful
- * HTTP responses using the {@link ResponseFactory} utility.</p>
- *
- * <p>Handled exception types include:</p>
- * <ul>
- *   <li>Validation errors (400)</li>
- *   <li>Unauthorized and forbidden access (401/403)</li>
- *   <li>Missing endpoints (404)</li>
- *   <li>Unsupported methods (405)</li>
- *   <li>Malformed requests and argument mismatches (400)</li>
- *   <li>Unhandled internal exceptions (500)</li>
- * </ul>
- *
- * <p>All exceptions are logged with appropriate detail to support debugging and observability.</p>
- *
- * @author Workbridge Team
- * @since 2025-07-16
- */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    /**
-     * Handles validation errors caused by {@code @Valid} annotations in DTOs.
-     * Returns all field-level validation messages in a single response.
-     *
-     * @param ex the validation exception
-     * @param request the originating HTTP request
-     * @return HTTP 400 Bad Request with field-specific error messages
-     */
+    // ================================
+    // Validation Errors (400)
+    // ================================
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
         MethodArgumentNotValidException ex,
@@ -83,28 +57,10 @@ public class GlobalExceptionHandler {
         return ResponseFactory.error(HttpStatus.BAD_REQUEST, message, request);
     }
 
-    /**
-     * Handles authorization failures thrown by Spring Security.
-     *
-     * @param ex the thrown AuthorizationDeniedException
-     * @param request the originating HTTP request
-     * @return HTTP 403 Forbidden with the exception message
-     */
-    @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAuthorizationDenied(
-        AuthorizationDeniedException ex,
-        HttpServletRequest request) {
-        log.warn("Access denied: {} {}", request.getMethod(), request.getRequestURI());
-        return ResponseFactory.error(HttpStatus.FORBIDDEN, ex.getMessage(), request);
-    }
+    // ================================
+    // Authorization (401/403)
+    // ================================
 
-    /**
-     * Handles user-specific authorization failures.
-     *
-     * @param ex the thrown UserNotAuthorizedException
-     * @param request the originating HTTP request
-     * @return HTTP 401 Unauthorized with the exception message
-     */
     @ExceptionHandler(UserNotAuthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUserNotAuthorized(
         UserNotAuthorizedException ex,
@@ -113,13 +69,26 @@ public class GlobalExceptionHandler {
         return ResponseFactory.error(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
-    /**
-     * Handles requests to undefined routes.
-     *
-     * @param ex the thrown NoHandlerFoundException
-     * @param request the originating HTTP request
-     * @return HTTP 404 Not Found with a generic message
-     */
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDenied(
+        AuthorizationDeniedException ex,
+        HttpServletRequest request) {
+        log.warn("Access denied: {} {}", request.getMethod(), request.getRequestURI());
+        return ResponseFactory.error(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    // ================================
+    // Not Found (404)
+    // ================================
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(
+            ResourceNotFoundException ex,
+            HttpServletRequest request) {
+        log.warn("404 Resource Not Found: {} {} - {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        return ResponseFactory.error(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(
         NoHandlerFoundException ex,
@@ -137,7 +106,7 @@ public class GlobalExceptionHandler {
     }
 
     // ================================
-    // Bad Request
+    // Bad Request (400)
     // ================================
 
     @ExceptionHandler({
@@ -152,13 +121,15 @@ public class GlobalExceptionHandler {
 
         String message;
 
-        if (ex instanceof MethodArgumentTypeMismatchException mae) {
+        if (ex instanceof HttpMessageNotReadableException) {
+            message = "Malformed JSON or invalid request body";
+        } else if (ex instanceof MethodArgumentTypeMismatchException mae) {
             message = String.format("Invalid value for parameter '%s': expected type '%s'",
                     mae.getName(), mae.getRequiredType() != null ? mae.getRequiredType().getSimpleName() : "unknown");
-        } else if (ex instanceof IllegalArgumentException | ex instanceof IllegalStateException) {
+        } else if (ex instanceof IllegalArgumentException || ex instanceof IllegalStateException) {
             message = ex.getMessage() != null ? ex.getMessage() : "Invalid request";
         } else {
-            message = "Malformed request body";
+            message = "Bad request";
         }
 
         log.warn("400 Bad Request: {} {} - {}", request.getMethod(), request.getRequestURI(), message);
@@ -166,7 +137,7 @@ public class GlobalExceptionHandler {
     }
 
     // ================================
-    // Conflict
+    // Conflict (409)
     // ================================
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -183,14 +154,10 @@ public class GlobalExceptionHandler {
         return ResponseFactory.error(HttpStatus.CONFLICT, message, request);
     }
 
+    // ================================
+    // Method Not Allowed (405)
+    // ================================
 
-    /**
-     * Handles HTTP requests using unsupported methods.
-     *
-     * @param ex the thrown HttpRequestMethodNotSupportedException
-     * @param request the originating HTTP request
-     * @return HTTP 405 Method Not Allowed with the exception message
-     */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(
         HttpRequestMethodNotSupportedException ex,
@@ -199,61 +166,10 @@ public class GlobalExceptionHandler {
         return ResponseFactory.error(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request);
     }
 
-    /**
-     * Handles malformed or unreadable JSON bodies.
-     *
-     * @param ex the thrown HttpMessageNotReadableException
-     * @param request the originating HTTP request
-     * @return HTTP 400 Bad Request with a generic message about malformed body
-     */
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleMalformedJson(
-        HttpMessageNotReadableException ex,
-        HttpServletRequest request) {
-        log.warn("400 Malformed JSON in request body: {} {}", request.getMethod(), request.getRequestURI());
-        return ResponseFactory.error(HttpStatus.BAD_REQUEST, "Malformed JSON or invalid request body", request);
-    }
+    // ================================
+    // Internal Server Error (500)
+    // ================================
 
-    /**
-     * Handles type mismatches in request parameters (e.g., passing a string where a number is expected).
-     *
-     * @param ex the thrown MethodArgumentTypeMismatchException
-     * @param request the originating HTTP request
-     * @return HTTP 400 Bad Request with a message about the expected type
-     */
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatch(
-        MethodArgumentTypeMismatchException ex,
-        HttpServletRequest request) {
-        String message = String.format("Invalid value for parameter '%s': expected type '%s'",
-                ex.getName(), ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
-        log.warn("400 Type mismatch: {} {} - {}", request.getMethod(), request.getRequestURI(), message);
-        return ResponseFactory.error(HttpStatus.BAD_REQUEST, message, request);
-    }
-
-    /**
-     * Handles illegal arguments passed to controller methods.
-     *
-     * @param ex the thrown IllegalArgumentException
-     * @param request the originating HTTP request
-     * @return HTTP 400 Bad Request with the exception message
-     */
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(
-        IllegalArgumentException ex,
-        HttpServletRequest request) {
-        log.warn("400 Illegal argument: {} {} - {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
-        return ResponseFactory.error(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
-    }
-
-    /**
-     * Fallback handler for all unhandled exceptions.
-     * Returns HTTP 500 and logs the full stack trace.
-     *
-     * @param ex the uncaught exception
-     * @param request the originating HTTP request
-     * @return HTTP 500 Internal Server Error with a generic message
-     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
         Exception ex,
@@ -262,12 +178,10 @@ public class GlobalExceptionHandler {
         return ResponseFactory.internalError(ex, request);
     }
 
-    /**
-     * Formats a validation error for logging and response messages.
-     *
-     * @param error the field error
-     * @return formatted string message
-     */
+    // ================================
+    // Utility Methods
+    // ================================
+
     private String formatFieldError(FieldError error) {
         return String.format("Field '%s' %s", error.getField(), error.getDefaultMessage());
     }

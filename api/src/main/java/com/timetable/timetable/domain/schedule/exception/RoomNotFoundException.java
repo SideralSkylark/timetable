@@ -1,6 +1,8 @@
 package com.timetable.timetable.domain.schedule.exception;
 
-public class RoomNotFoundException  extends RuntimeException {
+import com.timetable.timetable.common.exception.ResourceNotFoundException;
+
+public class RoomNotFoundException  extends ResourceNotFoundException {
     public RoomNotFoundException(String message) {
         super(message);
     }

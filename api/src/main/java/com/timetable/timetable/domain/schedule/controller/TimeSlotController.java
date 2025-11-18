@@ -9,6 +9,7 @@ import com.timetable.timetable.domain.schedule.service.TimeSlotService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/rooms")
+@RequestMapping("api/v1/timeslots")
 public class TimeSlotController {
     private final TimeSlotService timeSlotService;
 
@@ -37,9 +38,9 @@ public class TimeSlotController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<TimeSlotResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<TimeSlotResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            timeSlotService.getAll(pageable),
+            new PagedModel<>(timeSlotService.getAll(pageable)),
             "Time slots fetched successfully."
         );
     }

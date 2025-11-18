@@ -1,6 +1,8 @@
 package com.timetable.timetable.domain.schedule.exception;
 
-public class SubjectNotFoundException extends RuntimeException {
+import com.timetable.timetable.common.exception.ResourceNotFoundException;
+
+public class SubjectNotFoundException extends ResourceNotFoundException {
     public SubjectNotFoundException(String message) {
         super(message);
     }

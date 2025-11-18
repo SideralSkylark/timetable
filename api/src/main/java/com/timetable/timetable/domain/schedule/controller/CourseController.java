@@ -9,6 +9,7 @@ import com.timetable.timetable.domain.schedule.service.CourseService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,9 +38,9 @@ public class CourseController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<CourseResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<CourseResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            courseService.getAll(pageable),
+            new PagedModel<>(courseService.getAll(pageable)),
             "Courses fetched successfully."
         );
     }

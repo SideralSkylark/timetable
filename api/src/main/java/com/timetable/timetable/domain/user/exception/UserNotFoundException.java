@@ -1,6 +1,8 @@
 package com.timetable.timetable.domain.user.exception;
 
-public class UserNotFoundException extends RuntimeException {
+import com.timetable.timetable.common.exception.ResourceNotFoundException;
+
+public class UserNotFoundException extends ResourceNotFoundException {
     public UserNotFoundException(String message) {
         super(message);
     }

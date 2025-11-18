@@ -2,17 +2,14 @@ package com.timetable.timetable.domain.schedule.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
-import com.timetable.timetable.domain.schedule.dto.CreateTimeSlotRequest;
 import com.timetable.timetable.domain.schedule.dto.CreateTimetableRequest;
-import com.timetable.timetable.domain.schedule.dto.TimeSlotResponse;
 import com.timetable.timetable.domain.schedule.dto.TimetableResponse;
-import com.timetable.timetable.domain.schedule.dto.UpdateTimeSlotRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateTimetableRequest;
-import com.timetable.timetable.domain.schedule.service.TimeSlotService;
 import com.timetable.timetable.domain.schedule.service.TimetableService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/rooms")
+@RequestMapping("api/v1/timatables")
 public class TimetableController {
     private final TimetableService timetableService;
 
@@ -41,9 +38,9 @@ public class TimetableController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<TimetableResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<TimetableResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            timetableService.getAll(pageable),
+            new PagedModel<>(timetableService.getAll(pageable)),
             "Timetables fetched successfully."
         );
     }
