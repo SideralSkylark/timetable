@@ -38,11 +38,18 @@ public class AdminUserInitializer implements CommandLineRunner {
                         return roleRepository.save(newRole);
                     });
 
+            UserRoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                    .orElseGet(() -> {
+                        UserRoleEntity newRole = new UserRoleEntity();
+                        newRole.setRole(UserRole.USER);
+                        return roleRepository.save(newRole);
+                    });
+
             ApplicationUser admin = ApplicationUser.builder()
                     .username("admin")
                     .email(email)
                     .password(passwordEncoder.encode("admin123"))
-                    .roles(Set.of(adminRole))
+                    .roles(Set.of(adminRole, userRole))
                     .build();
 
             admin.activate();
@@ -50,7 +57,22 @@ public class AdminUserInitializer implements CommandLineRunner {
 
             log.info("Default admin created: {} / {}", admin.getEmail(), "admin123");
         } else {
-            log.info("Admin user already exists — skipping initialization.");
+            log.info("Admin user already exists — checking roles...");
+
+            ApplicationUser admin = userRepository.findByEmail(email).get();
+
+            UserRoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                    .orElseGet(() -> {
+                        UserRoleEntity newRole = new UserRoleEntity();
+                        newRole.setRole(UserRole.USER);
+                        return roleRepository.save(newRole);
+                    });
+
+            if (!admin.getRoles().contains(userRole)) {
+                admin.getRoles().add(userRole);
+                userRepository.save(admin);
+                log.info("Added missing USER role to existing admin.");
+            }
         }
     }
 }

@@ -53,6 +53,7 @@ __screenshots__/
 *.njsproj
 *.sln
 *.sw?
+.zed/
 
 # ==========================
 # Environment / Config
