@@ -1,6 +1,5 @@
 package com.timetable.timetable.auth.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,21 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.timetable.timetable.auth.dto.AuthenticationResponseDTO;
-import com.timetable.timetable.auth.dto.EmailVerificationDTO;
 import com.timetable.timetable.auth.dto.LoginRequestDTO;
-import com.timetable.timetable.auth.dto.RegisterRequestDTO;
-import com.timetable.timetable.auth.dto.RegisterResponseDTO;
 import com.timetable.timetable.auth.dto.SessionDTO;
 import com.timetable.timetable.auth.entity.RefreshToken;
 import com.timetable.timetable.auth.exception.InvalidCredentialsException;
 import com.timetable.timetable.auth.exception.InvalidTokenException;
-import com.timetable.timetable.auth.exception.TokenExpiredException;
-import com.timetable.timetable.auth.exception.TokenVerificationException;
-import com.timetable.timetable.auth.exception.UserAlreadyExistsException;
 import com.timetable.timetable.auth.mapper.SessionMapper;
 import com.timetable.timetable.auth.util.CookieUtil;
 import com.timetable.timetable.auth.util.CookieUtil.TokenType;
-import com.timetable.timetable.domain.user.entity.AccountStatus;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.entity.UserRoleEntity;
@@ -84,87 +76,6 @@ public class AuthenticationService {
     private final RefreshTokenService refreshTokenService;
     private final CookieUtil cookieUtil;
     private final SessionMapper sessionMapper;
-
-   /**
-     * Registers a new user account.
-     *
-     * <p>This method performs the following steps:
-     * <ol>
-     *   <li>Validates that the username and email are not already taken</li>
-     *   <li>Creates a new {@link ApplicationUser} with encoded password and default disabled status</li>
-     *   <li>Assigns user roles</li>
-     *   <li>Sends a verification email to the user</li>
-     * </ol>
-     *
-     * @param registerRequestDTO DTO containing the user's registration data
-     * @return a response containing the user's email
-     * @throws UserAlreadyExistsException if the username or email is already in use
-     */
-    @Transactional
-    public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) {
-        log.debug("Attempting to register user with email: {}", registerRequestDTO.email());
-        //TODO: change implementation(idealy admin would use this service to register students and teachears && activate accounts right away)
-        validateUniqueUser(registerRequestDTO);
-        ApplicationUser user = createUser(registerRequestDTO);
-        userRepository.save(user);
-        verificationService.createAndSendVerificationToken(user);
-
-        log.info("User registered successfully: {}", user.getEmail());
-        return new RegisterResponseDTO(user.getEmail());
-    }
-
-    /**
-     * Verifies a user's email using a verification code.
-     *
-     * <p>If verification is successful, the user's account is enabled
-     * and a JWT token is issued.
-     *
-     * @param emailVerificationDTO DTO containing the email and code to verify
-     * @return an {@link AuthenticationResponseDTO} with JWT and user details
-     * @throws UserNotFoundException if the user is not found
-     * @throws TokenVerificationException if the code is invalid
-     * @throws TokenExpiredException if the code has expired
-     */
-    @Transactional
-    public AuthenticationResponseDTO verify(EmailVerificationDTO emailVerificationDTO) {
-        log.debug("Verifying email: {}", emailVerificationDTO.email());
-
-        verificationService.verifyToken(emailVerificationDTO.email(), emailVerificationDTO.code());
-
-        ApplicationUser user = findUserByEmailOrThrow(emailVerificationDTO.email());
-        user.activate();
-        userRepository.save(user);
-
-        log.info("Email verified successfully for user: {}", user.getEmail());
-        return buildAuthenticationResponse(user);
-    }
-
-    /**
-     * Resends the email verification code to a user.
-     *
-     * <p>If the user is already verified, no new code is sent.
-     * Otherwise, a new verification token is generated and emailed.
-     *
-     * @param email the email address of the user
-     * @return a {@link RegisterResponseDTO} containing the user's email
-     * @throws UserNotFoundException if the user does not exist
-     */
-    @Transactional
-    public RegisterResponseDTO resendVerificationCode(String email) {
-        log.debug("Resending verification code to: {}", email);
-
-        ApplicationUser user = findUserByEmailOrThrow(email);
-        if (user.isEnabled()) {
-            log.info("User already verified: {}", email);
-            return new RegisterResponseDTO(user.getEmail());
-        }
-
-        verificationService.deleteExistingToken(email);
-        verificationService.createAndSendVerificationToken(user);
-
-        log.info("Verification code resent to: {}", email);
-        return new RegisterResponseDTO(user.getEmail());
-    }
 
     /**
      * Authenticates a user and returns a JWT token upon successful login.
@@ -294,54 +205,6 @@ public class AuthenticationService {
         log.info("Session invalidated for token: {}", tokenId);
     }
 
-
-    /**
-     * Validates whether the given username and email are unique.
-     *
-     * @param request the registration request
-     * @throws UserAlreadyExistsException if the username or email is already taken
-     */
-    private void validateUniqueUser(RegisterRequestDTO request) {
-        if (userRepository.existsByUsername(request.username())) {
-            log.warn("Username taken: {}", request.username());
-            throw new UserAlreadyExistsException("Username is already taken");
-        }
-        if (userRepository.existsByEmail(request.email())) {
-            log.warn("Email in use: {}", request.email());
-            throw new UserAlreadyExistsException("Email is already in use");
-        }
-    }
-
-    /**
-     * Creates a new {@link ApplicationUser} entity from the registration request.
-     *
-     * <p>This method sets up all user fields including:
-     * <ul>
-     *   <li>Username, email, and encoded password</li>
-     *   <li>Account status as disabled</li>
-     *   <li>Timestamp metadata</li>
-     *   <li>User roles</li>
-     * </ul>
-     *
-     * @param request the registration request
-     * @return the created {@link ApplicationUser} instance
-     * @throws IllegalArgumentException if a provided role is invalid
-     */
-    private ApplicationUser createUser(RegisterRequestDTO request) {
-        log.debug("Creating user with username: {}, roles: {}", request.username(), request.roles());
-
-        Set<UserRoleEntity> roles = resolveRoles(request.roles());
-
-        return ApplicationUser.builder()
-            .username(request.username())
-            .email(request.email())
-            .password(passwordEncoder.encode(request.password()))
-            .status(AccountStatus.INACTIVE)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .roles(roles)
-            .build();
-    }
 
     /**
      * Resolves a list of role names (as strings) into corresponding {@link UserRoleEntity} objects.

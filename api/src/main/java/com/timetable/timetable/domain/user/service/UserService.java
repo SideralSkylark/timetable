@@ -12,8 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.timetable.timetable.auth.dto.RegisterRequestDTO;
 import com.timetable.timetable.auth.exception.UserAlreadyExistsException;
+import com.timetable.timetable.domain.user.dto.AdminUpdateUserDTO;
+import com.timetable.timetable.domain.user.dto.CreateUser;
 import com.timetable.timetable.domain.user.dto.UpdateUserProfileDTO;
 import com.timetable.timetable.domain.user.dto.UserResponseDTO;
 import com.timetable.timetable.domain.user.entity.AccountStatus;
@@ -40,7 +41,7 @@ public class UserService {
     private final UserRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     
-    public UserResponseDTO createUser(RegisterRequestDTO request) {
+    public UserResponseDTO createUser(CreateUser request) {
         validateUniqueUser(request);
         log.debug("Creating user with username: {}, roles: {}", request.username(), request.roles());
         
@@ -88,6 +89,11 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    public UserResponseDTO findUserById(Long id) {
+        ApplicationUser user = getUserByIdOrThrow(id);
+        return UserResponseDTO.from(user);
+    }
+
     public ApplicationUser getUserByIdOrThrow(Long id) {
         return userRepository.findById(id)
             .orElseThrow(() -> new UserNotFoundException("User %d not found".formatted(id)));
@@ -108,6 +114,68 @@ public class UserService {
 
 		return userMapper.toDTO(updated);
 	}
+
+    @Transactional
+    public UserResponseDTO updateUserById(Long id, AdminUpdateUserDTO payload) {
+        ApplicationUser user = getUserByIdOrThrow(id);
+
+    // ---- VALIDAR USERNAME ÚNICO ----
+        userRepository.findByUsername(payload.username())
+            .filter(other -> !other.getId().equals(id))
+            .ifPresent(other -> {
+                throw new UserAlreadyExistsException("Username is already taken");
+            });
+
+    // ---- VALIDAR EMAIL ÚNICO ----
+        userRepository.findByEmail(payload.email())
+            .filter(other -> !other.getId().equals(id))
+            .ifPresent(other -> {
+                throw new UserAlreadyExistsException("Email is already in use");
+            });
+
+
+    // --------------------------------------------------
+    //  PROCESSAR ROLES
+    // --------------------------------------------------
+        Set<UserRoleEntity> newRoles = payload.roles().stream()
+            .map(roleName -> {
+                UserRole role;
+                try {
+                    role = UserRole.valueOf(roleName.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Invalid role: " + roleName);
+                }
+
+                return roleRepository.findByRole(role)
+                .orElseThrow(() -> new IllegalStateException("Role not found in database: " + role));
+            })
+            .collect(Collectors.toSet());
+
+    // Evitar que o último admin perca ADMIN
+        boolean isRemovingAdmin =
+            user.hasRole(UserRole.ADMIN) && !newRoles.stream().anyMatch(r -> r.getRole() == UserRole.ADMIN);
+
+        long adminCount = userRepository.countUsersByRole(UserRole.ADMIN);
+
+        if (isRemovingAdmin && adminCount == 1) {
+            throw new IllegalArgumentException("Cannot remove ADMIN role from the only admin user.");
+        }
+
+
+    // --------------------------------------------------
+    // Atualizar campos
+    // --------------------------------------------------
+        user.setUsername(payload.username());
+        user.setEmail(payload.email());
+        user.setRoles(newRoles);
+        user.setUpdatedAt(LocalDateTime.now());
+
+        userRepository.save(user);
+
+        log.info("Admin updated user {} with new roles {}", id, newRoles);
+
+        return UserResponseDTO.from(user);
+    }
 
     @Transactional
     public ApplicationUser updateUser(String username, UpdateUserProfileDTO dto) {
@@ -140,6 +208,21 @@ public class UserService {
         userRepository.save(user);
 
         log.info("User '{}' marked as deleted by {}", username, deleterId);
+    }
+    
+    @Transactional
+    public void deleteById(Long id) {
+        ApplicationUser user = getUserByIdOrThrow(id);
+        if (user.isDeleted()) {
+            log.warn("User '{}' is already deleted.", user.getUsername());
+            return;
+        }
+
+        Long deleterId = SecurityUtil.getAuthenticatedId();
+        user.markAsDeleted(deleterId);
+        userRepository.save(user);
+
+        log.info("User '{}' marked as deleted by {}", user.getUsername(), deleterId);
     }
 
     public boolean enableAccount(String email) {
@@ -190,7 +273,7 @@ public class UserService {
      * @param request the registration request
      * @throws UserAlreadyExistsException if the username or email is already taken
      */
-    private void validateUniqueUser(RegisterRequestDTO request) {
+    private void validateUniqueUser(CreateUser request) {
         if (userRepository.existsByUsername(request.username())) {
             log.warn("Username taken: {}", request.username());
             throw new UserAlreadyExistsException("Username is already taken");

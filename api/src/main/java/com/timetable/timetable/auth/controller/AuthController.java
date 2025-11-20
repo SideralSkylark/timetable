@@ -13,15 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timetable.timetable.auth.dto.AuthenticationResponseDTO;
-import com.timetable.timetable.auth.dto.EmailVerificationDTO;
 import com.timetable.timetable.auth.dto.LoginRequestDTO;
-import com.timetable.timetable.auth.dto.RegisterRequestDTO;
-import com.timetable.timetable.auth.dto.RegisterResponseDTO;
 import com.timetable.timetable.auth.dto.SessionDTO;
 import com.timetable.timetable.auth.exception.InvalidCredentialsException;
-import com.timetable.timetable.auth.exception.TokenExpiredException;
-import com.timetable.timetable.auth.exception.TokenVerificationException;
-import com.timetable.timetable.auth.exception.UserAlreadyExistsException;
 import com.timetable.timetable.auth.service.AuthenticationService;
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.MessageResponse;
@@ -36,12 +30,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 /**
- * REST controller responsible for user authentication and registration operations.
+ * REST controller responsible for user authentication operations.
  *
  * <p>This controller provides endpoints for:</p>
  * <ul>
- *   <li>User registration</li>
- *   <li>Email verification and resending verification codes</li>
  *   <liUser login with JWT issuance</li>
  *   <li>Access token refresh</li>
  *   <li>Logout (current and remote sessions)</li>
@@ -53,8 +45,7 @@ import jakarta.validation.Valid;
  *
  * <p>Typical responses:</p>
  * <ul>
- *   <li><b>201 Created</b> – for successful registration</li>
- *   <li><b>200 OK</b> – for successful login, verification, logout, etc.</li>
+ *   <li><b>200 OK</b> – for successful login, logout, etc.</li>
  *   <li><b>4xx</b> – for user, token, or credential-related errors</li>
  * </ul>
  *
@@ -70,59 +61,6 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthenticationService authenticationService;
-//TODO: remove register(send to an admin class), verify and resend verification. Keep logut and list endpoints
-    /**
-     * Registers a new user account and sends a verification email.
-     *
-     * @param registerRequest DTO containing username, email, password, and roles
-     * @return 201 Created with the user's email
-     * @throws UserAlreadyExistsException if username or email already exists
-     */
-    @PostMapping("/register") //TODO: guard this route to used only by admins (send it to another controller)
-    public ResponseEntity<ApiResponse<RegisterResponseDTO>>
-     register(@Valid @RequestBody RegisterRequestDTO registerRequest) {
-        return ResponseFactory.created(
-            authenticationService.register(registerRequest),
-            "User registered successfully."
-        );
-    }
-
-    /**
-     * Verifies a user’s email address using the verification code sent to their inbox.
-     *
-     * <p>Also activates the user and returns a JWT token.</p>
-     *
-     * @param emailVerificationDTO DTO with email and verification code
-     * @return 200 OK with authentication response (token and user info)
-     * @throws UserNotFoundException if the user doesn't exist
-     * @throws TokenVerificationException if token is invalid
-     * @throws TokenExpiredException if the token has expired
-     */
-    @PostMapping("/verify")
-    public ResponseEntity<ApiResponse<AuthenticationResponseDTO>>
-     verify(@Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
-        return ResponseFactory.ok(
-            authenticationService.verify(emailVerificationDTO),
-            "Email verified successfully."
-        );
-    }
-
-    /**
-     * Resends a new verification code to the specified email address.
-     *
-     * @param email User's email address
-     * @return 200 OK confirming the dispatch
-     * @throws UserNotFoundException if no user exists for the given email
-     */
-    @PostMapping("/resend-verification/{email}")
-    public ResponseEntity<ApiResponse<RegisterResponseDTO>>
-     resendVerification(@PathVariable String email) {
-        return ResponseFactory.ok(
-            authenticationService.resendVerificationCode(email),
-            "Verification code resent successfully."
-        );
-    }
-
     /**
      * Logs in a user and returns a JWT access token and refresh token via HTTP-only cookie.
      *

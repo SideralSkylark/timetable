@@ -49,4 +49,12 @@ public interface UserRepository extends JpaRepository<ApplicationUser, Long> {
 
     @Query("SELECT u FROM ApplicationUser u JOIN u.roles r WHERE r.role = :role")
     Page<ApplicationUser> findAllByRole(@Param("role") com.timetable.timetable.domain.user.entity.UserRole role, Pageable pageable);
+
+    @Query("""
+        SELECT COUNT(u)
+        FROM ApplicationUser u
+        JOIN u.roles r
+        WHERE r.role = :role
+    """)
+    long countUsersByRole(@Param("role") UserRole role);
 }
