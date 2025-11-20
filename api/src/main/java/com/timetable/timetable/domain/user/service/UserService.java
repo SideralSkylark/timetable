@@ -138,13 +138,15 @@ public class UserService {
     @Transactional
     public void deleteByUsername(String username) {
         ApplicationUser user = getByUsernameOrThrow(username);
-        markAsDeleted(user);
+
+        userRepository.delete(user);
     }
 
     @Transactional
     public void deleteById(Long id) {
         ApplicationUser user = getByIdOrThrow(id);
-        markAsDeleted(user);
+
+        userRepository.delete(user);
     }
 
     // ============================================================
@@ -200,13 +202,6 @@ public class UserService {
         user.setUsername(username);
         user.setEmail(email);
         user.setUpdatedAt(LocalDateTime.now());
-    }
-
-    private void markAsDeleted(ApplicationUser user) {
-        if (user.isDeleted()) return;
-        user.markAsDeleted(SecurityUtil.getAuthenticatedId());
-        userRepository.save(user);
-        log.info("User '{}' marked as deleted", user.getUsername());
     }
 
     // ============================================================

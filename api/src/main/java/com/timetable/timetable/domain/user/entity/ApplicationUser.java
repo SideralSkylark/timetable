@@ -1,13 +1,10 @@
 package com.timetable.timetable.domain.user.entity;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SoftDelete;
-import org.hibernate.annotations.SoftDeleteType;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,7 +18,6 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@SoftDelete(strategy = SoftDeleteType.DELETED)
 @Table(name = "users")
 @ToString(exclude = "password")
 public class ApplicationUser implements UserDetails {
@@ -51,10 +47,6 @@ public class ApplicationUser implements UserDetails {
     @Column(nullable = false, length = 20)
     @Builder.Default
     private AccountStatus status = AccountStatus.INACTIVE;
-
-    private Instant deletedAt;
-
-    private Long deletedByUserId;
 
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
@@ -106,22 +98,6 @@ public class ApplicationUser implements UserDetails {
         this.status = AccountStatus.INACTIVE;
     }
 
-    public void markAsDeleted(Long deletedByUserId) {
-        this.deletedAt = Instant.now();
-        this.deletedByUserId = deletedByUserId;
-        this.status = AccountStatus.INACTIVE;
-    }
-
-    public void restore() {
-        this.deletedAt = null;
-        this.deletedByUserId = null;
-		this.status = AccountStatus.ACTIVE;
-    }
-
-	public boolean isDeleted() {
-        return deletedAt != null;  
-    }
-
     // ====== SPRING SECURITY ======
 
     @Override
@@ -133,12 +109,12 @@ public class ApplicationUser implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return deletedAt == null;
+        return (status != null)? true : false;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return deletedAt == null;
+        return (status != null)? true : false;
     }
 
     @Override
@@ -148,7 +124,7 @@ public class ApplicationUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return status == AccountStatus.ACTIVE && deletedAt == null;
+        return status == AccountStatus.ACTIVE;
     }
 
     // ====== FACTORY ======

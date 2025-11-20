@@ -84,15 +84,30 @@ const fetchUsers = async (page = 0) => {
 }
 
 const createUser = async (data: any) => {
+  if (data.rolesString) {
+    data.roles = data.rolesString.split(',').map((r: string) => r.trim())
+    delete data.rolesString
+  }
   await userStore.createUser(data)
-  showCreateForm.value = false // fecha o formulário após criação
+  showCreateForm.value = false
   fetchUsers(currentPage.value)
 }
 
-const openEdit = (user: UserResponse) => { editingUser.value = user }
+const openEdit = (user: UserResponse) => { 
+  editingUser.value = {
+    ...user,
+    rolesString: user.roles.join(', '),
+  } as any 
+}
 
 const updateUser = async (data: any) => {
   if (!editingUser.value) return
+
+  if (data.rolesString) {
+    data.roles = data.rolesString.split(',').map((r: string) => r.trim())
+    delete data.rolesString
+  }
+
   await userStore.updateUser(editingUser.value.id, data)
   editingUser.value = null
   fetchUsers(currentPage.value)
