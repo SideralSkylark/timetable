@@ -9,7 +9,7 @@ import type {
 
 const BASE_URL = '/v1/rooms'
 
-export const courseService = {
+export const roomService = {
   async create(data: CreateRoomRequest) {
     const res = await api.post<ApiResponse<RoomResponse>>(BASE_URL, data)
     return res.data.data
