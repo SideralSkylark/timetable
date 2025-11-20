@@ -123,10 +123,7 @@ public class SubjectService {
         Set<ApplicationUser> teachers = new HashSet<>();
         
         for (Long teacherId : teacherIds) {
-            ApplicationUser user = userService.findById(teacherId)
-                .orElseThrow(() -> new UserNotFoundException(
-                    "User with id %d not found".formatted(teacherId)
-                ));
+            ApplicationUser user = userService.getUserEntityById(teacherId);
             
             if (!user.hasRole(UserRole.TEACHER)) {
                 throw new IllegalArgumentException(

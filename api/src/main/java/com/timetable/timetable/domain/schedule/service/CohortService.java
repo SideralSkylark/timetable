@@ -113,11 +113,8 @@ public class CohortService {
         Set<ApplicationUser> students = new HashSet<>();
         
         for (Long studentId : studentIds) {
-            ApplicationUser user = userService.findById(studentId)
-                .orElseThrow(() -> new UserNotFoundException(
-                    "User with id %d not found".formatted(studentId)
-                ));
-            
+            ApplicationUser user = userService.getUserEntityById(studentId);
+     
             if (!user.hasRole(UserRole.STUDENT)) {
                 throw new IllegalArgumentException(
                     "User with id %d is not a student".formatted(studentId)

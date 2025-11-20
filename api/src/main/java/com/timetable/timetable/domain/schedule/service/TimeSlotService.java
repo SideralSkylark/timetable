@@ -45,10 +45,7 @@ public class TimeSlotService {
             timetable = timetableService.getTimetableById(createRequest.timetableId());
         }
 
-        ApplicationUser teacher = userService.findById(createRequest.teacherId())
-            .orElseThrow(() -> new UserNotFoundException(
-                "User with id %d not found".formatted(createRequest.teacherId())
-            ));
+        ApplicationUser teacher = userService.getUserEntityById(createRequest.teacherId());
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
             throw new IllegalArgumentException(
@@ -118,10 +115,7 @@ public class TimeSlotService {
     }
 
     public Page<TimeSlotResponse> getByTeacher(Long teacherId, Pageable pageable) {
-        ApplicationUser teacher = userService.findById(teacherId)
-            .orElseThrow(() -> new IllegalArgumentException(
-                "User with id %d not found".formatted(teacherId)
-            ));
+        ApplicationUser teacher = userService.getUserEntityById(teacherId);
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
             throw new IllegalArgumentException(
@@ -151,10 +145,7 @@ public class TimeSlotService {
         // Validate all entities exist
         Subject subject = subjectService.getSubjectById(updateRequest.subjectId());
 
-        ApplicationUser teacher = userService.findById(updateRequest.teacherId())
-            .orElseThrow(() -> new UserNotFoundException(
-                "User with id %d not found".formatted(updateRequest.teacherId())
-            ));
+        ApplicationUser teacher = userService.getUserEntityById(updateRequest.teacherId());
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
             throw new IllegalArgumentException(

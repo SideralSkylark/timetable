@@ -3,7 +3,7 @@ package com.timetable.timetable.domain.user.controller;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.domain.user.dto.UpdateUserProfileDTO;
-import com.timetable.timetable.domain.user.dto.UserResponseDTO;
+import com.timetable.timetable.domain.user.dto.UserResponse;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.service.UserService;
@@ -53,7 +53,7 @@ public class UserController {
      */
 	@PreAuthorize("hasRole('USER')")
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserDetails() {
+    public ResponseEntity<ApiResponse<UserResponse>> getUserDetails() {
 		log.debug("Fetching authenticated user profile");
         return ResponseFactory.ok(
             userService.getAuthenticatedUserProfile(),
@@ -74,7 +74,7 @@ public class UserController {
      */
 	@PreAuthorize("hasRole('USER')")
     @PutMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUserDetails(
+    public ResponseEntity<ApiResponse<UserResponse>> updateUserDetails(
         @Valid @RequestBody UpdateUserProfileDTO payload) {
         log.debug("Updating authenticated user profile");
 		return ResponseFactory.ok(

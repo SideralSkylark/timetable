@@ -4,6 +4,7 @@ import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.user.dto.AdminUpdateUserDTO;
 import com.timetable.timetable.domain.user.dto.CreateUser;
+import com.timetable.timetable.domain.user.dto.UserResponse;
 import com.timetable.timetable.domain.user.dto.UserResponseDTO;
 import com.timetable.timetable.domain.user.service.UserService;
 
@@ -25,7 +26,7 @@ public class AdminController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(
+    public ResponseEntity<ApiResponse<UserResponse>> createUser(
         @Valid 
         @RequestBody CreateUser createUser) {
         return ResponseFactory.ok(
@@ -35,7 +36,7 @@ public class AdminController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedModel<UserResponseDTO>>> getUsers(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<UserResponse>>> getUsers(Pageable pageable) {
         return ResponseFactory.ok(
             new PagedModel<>(userService.getAllUsers(pageable)),
             "Users fetched sucessfully."
@@ -43,7 +44,7 @@ public class AdminController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
         return ResponseFactory.ok(
             userService.findUserById(id),
             "User fetched sucessfully."
@@ -51,7 +52,7 @@ public class AdminController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
         @PathVariable Long id,
         @RequestBody AdminUpdateUserDTO updateRequest
     ) {
@@ -67,3 +68,4 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 }
+
