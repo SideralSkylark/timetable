@@ -2,19 +2,19 @@ import api from './api'
 import type { ApiResponse } from './responses/apiResponse'
 import type { LoginRequest, LoginResponse } from './dto/login'
 import type { RegisterRequest, RegisterResponse} from './dto/register'
-import type { User } from './types/user'
+import type { UserResponse } from './dto/user'
 
 const USER_KEY = 'user'
 
 class AuthService {
-  async login(email: string, password: string): Promise<User> {
+  async login(email: string, password: string): Promise<UserResponse> {
     const { data } = await api.post<ApiResponse<LoginResponse>>(
       '/v1/auth/login',
       { email, password } as LoginRequest,
       { skipAuthRefresh: true } as any
     )
 
-    const user: User = {
+    const user: UserResponse = {
       id: data.data.id,
       username: data.data.username,
       email: data.data.email,
@@ -41,7 +41,7 @@ class AuthService {
     }
   }
 
-  getCurrentUser(): User | null {
+  getCurrentUser(): UserResponse | null {
     const stored = localStorage.getItem(USER_KEY)
     return stored ? JSON.parse(stored) : null
   }

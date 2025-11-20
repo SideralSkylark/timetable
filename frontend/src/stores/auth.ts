@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import authService from '@/services/authService'
-import type { User } from '@/services/types/user'
+import type { UserResponse } from '@/services/dto/user'
 
 interface AuthState {
-  user: User | null
+  user: UserResponse | null
   isAuthenticated: boolean
   loading: boolean
   error: string | null
@@ -62,7 +62,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    setUser(user: User | null) {
+    setUser(user: UserResponse | null) {
       this.user = user
       this.isAuthenticated = !!user
     },

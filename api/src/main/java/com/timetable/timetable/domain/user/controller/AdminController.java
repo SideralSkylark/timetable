@@ -5,7 +5,6 @@ import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.user.dto.AdminUpdateUserDTO;
 import com.timetable.timetable.domain.user.dto.CreateUser;
 import com.timetable.timetable.domain.user.dto.UserResponse;
-import com.timetable.timetable.domain.user.dto.UserResponseDTO;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
