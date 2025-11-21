@@ -132,7 +132,7 @@
     <!-- Modal Curso -->
 <div
   v-if="showCourseModal"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+  class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
 >
   <!-- Criar Curso -->
   <CrudForm
@@ -158,7 +158,7 @@
   <!-- Modal Disciplina -->
 <div
   v-if="showDisciplineModal"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+  class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
 >
   <!-- Criar Disciplina -->
   <CrudForm

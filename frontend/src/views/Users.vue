@@ -15,40 +15,13 @@
           </div>
 
           <button
-            v-if="!showCreateForm"
-            @click="showCreateForm = true"
+            @click="openUserModal"
             class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition"
           >
             <Plus class="w-5 h-5" />
             Novo Utilizador
           </button>
         </div>
-      </div>
-    </div>
-
-    <!-- Create Form -->
-    <div v-if="showCreateForm" class="max-w-4xl mx-auto mb-8">
-      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <CrudForm
-          :fields="createFields"
-          title="Criar novo usuário"
-          is-create
-          @submit="createUser"
-          @cancel="showCreateForm = false"
-        />
-      </div>
-    </div>
-
-    <!-- Edit Form -->
-    <div v-if="editingUser" class="max-w-4xl mx-auto mb-8">
-      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <CrudForm
-          :fields="editFields"
-          :data="editingUser"
-          title="Editar usuário"
-          @submit="updateUser"
-          @cancel="editingUser = null"
-        />
       </div>
     </div>
 
@@ -66,6 +39,32 @@
         />
       </div>
     </div>
+
+    <!-- Modal Utilizador -->
+    <div
+      v-if="showUserModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+    >
+      <!-- Criar Utilizador -->
+      <CrudForm
+        v-if="!editingUser"
+        :fields="userFields"
+        title="Novo Utilizador"
+        is-create
+        @cancel="() => { showUserModal = false }"
+        @submit="createUser"
+      />
+
+      <!-- Editar Utilizador -->
+      <CrudForm
+        v-else
+        :fields="userFields"
+        :data="editingUser"
+        :title="`Editar Utilizador — ${editingUser.username}`"
+        @cancel="() => { showUserModal = false; editingUser = null }"
+        @submit="updateUser"
+      />
+    </div>
   </div>
 </template>
 
@@ -80,7 +79,7 @@ import { User as UserIcon, Plus } from 'lucide-vue-next'
 
 const userStore = useUserStore()
 const editingUser = ref<UserResponse | null>(null)
-const showCreateForm = ref(false)
+const showUserModal = ref(false)
 const pagedUsers = ref(userStore.pagedUsers)
 const currentPage = ref(0)
 
@@ -91,16 +90,10 @@ const tableColumns = [
   { key: 'roles', label: 'Roles' },
 ]
 
-const createFields = [
+const userFields = [
   { name: 'username', type: 'text', placeholder: 'Username' },
   { name: 'email', type: 'email', placeholder: 'Email' },
   { name: 'password', type: 'password', placeholder: 'Password' },
-  { name: 'rolesString', type: 'text', placeholder: 'Roles (comma separated)' },
-]
-
-const editFields = [
-  { name: 'username', type: 'text', placeholder: 'Username' },
-  { name: 'email', type: 'email', placeholder: 'Email' },
   { name: 'rolesString', type: 'text', placeholder: 'Roles (comma separated)' },
 ]
 
@@ -116,7 +109,7 @@ const createUser = async (data: any) => {
     delete data.rolesString
   }
   await userStore.createUser(data)
-  showCreateForm.value = false
+  showUserModal.value = false
   fetchUsers(currentPage.value)
 }
 
@@ -125,6 +118,8 @@ const openEdit = (user: UserResponse) => {
     ...user,
     rolesString: user.roles.join(', '),
   } as any 
+
+  showUserModal.value = true
 }
 
 const updateUser = async (data: any) => {
@@ -137,12 +132,18 @@ const updateUser = async (data: any) => {
 
   await userStore.updateUser(editingUser.value.id, data)
   editingUser.value = null
+  showUserModal.value = false
   fetchUsers(currentPage.value)
 }
 
 const deleteUser = async (id: number) => {
   await userStore.deleteUser(id)
   fetchUsers(currentPage.value)
+}
+
+const openUserModal = () => {
+  editingUser.value = null
+  showUserModal.value = true
 }
 
 onMounted(fetchUsers)
