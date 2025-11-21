@@ -1,46 +1,71 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">Gerir Utilizadores</h1>
+  <div class="min-h-screen bg-gray-50 p-6">
+    <!-- Header -->
+    <div class="max-w-6xl mx-auto mb-8">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="bg-blue-900 p-3 rounded-lg">
+              <UserIcon class="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900">Gestão de Utilizadores</h1>
+              <p class="text-gray-500 text-sm">Gerir contas, emails e permissões</p>
+            </div>
+          </div>
 
-    <!-- Botão para abrir o formulário de criação -->
-    <button
-      v-if="!showCreateForm"
-      @click="showCreateForm = true"
-      class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-    >
-      Criar novo usuário
-    </button>
+          <button
+            v-if="!showCreateForm"
+            @click="showCreateForm = true"
+            class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition"
+          >
+            <Plus class="w-5 h-5" />
+            Novo Utilizador
+          </button>
+        </div>
+      </div>
+    </div>
 
-    <!-- Formulário de criação -->
-    <CrudForm
-      v-if="showCreateForm"
-      :fields="createFields"
-      title="Criar novo usuário"
-      isCreate
-      @submit="createUser"
-      @cancel="showCreateForm = false"
-    />
+    <!-- Create Form -->
+    <div v-if="showCreateForm" class="max-w-4xl mx-auto mb-8">
+      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <CrudForm
+          :fields="createFields"
+          title="Criar novo usuário"
+          is-create
+          @submit="createUser"
+          @cancel="showCreateForm = false"
+        />
+      </div>
+    </div>
 
-    <!-- Formulário de edição -->
-    <CrudForm
-      v-if="editingUser"
-      :fields="editFields"
-      :data="editingUser"
-      title="Editar usuário"
-      @submit="updateUser"
-      @cancel="editingUser = null"
-    />
+    <!-- Edit Form -->
+    <div v-if="editingUser" class="max-w-4xl mx-auto mb-8">
+      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <CrudForm
+          :fields="editFields"
+          :data="editingUser"
+          title="Editar usuário"
+          @submit="updateUser"
+          @cancel="editingUser = null"
+        />
+      </div>
+    </div>
 
-    <!-- Tabela de usuários -->
-    <CrudTable
-      :columns="tableColumns"
-      :rows="pagedUsers?.content ?? []"
-      :currentPage="currentPage"
-      :totalPages="pagedUsers?.page.totalPages ?? 0"
-      @edit="openEdit"
-      @delete="deleteUser"
-      @change-page="fetchUsers"
-    />
+    <!-- Tabela -->
+    <div class="max-w-6xl mx-auto">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <CrudTable
+          :columns="tableColumns"
+          :rows="pagedUsers?.content ?? []"
+          :currentPage="currentPage"
+          :totalPages="pagedUsers?.page.totalPages ?? 0"
+          @edit="openEdit"
+          @delete="deleteUser"
+          @change-page="fetchUsers"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -50,6 +75,8 @@ import { useUserStore } from '@/stores/user'
 import type { UserResponse } from '@/services/dto/user'
 import CrudForm from '@/component/ui/CrudForm.vue'
 import CrudTable from '@/component/ui/CrudTable.vue'
+
+import { User as UserIcon, Plus } from 'lucide-vue-next'
 
 const userStore = useUserStore()
 const editingUser = ref<UserResponse | null>(null)

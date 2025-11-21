@@ -1,46 +1,71 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">Gerir Salas</h1>
+  <div class="min-h-screen bg-gray-50 p-6">
+    <!-- Header -->
+    <div class="max-w-6xl mx-auto mb-8">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="bg-blue-900 p-3 rounded-lg">
+              <Building class="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900">Gestão de Salas</h1>
+              <p class="text-gray-500 text-sm">Gerir salas e suas capacidades</p>
+            </div>
+          </div>
 
-    <!-- Botão para abrir o formulário de criação -->
-    <button
-      v-if="!showCreateForm"
-      @click="showCreateForm = true"
-      class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-    >
-      Criar nova sala
-    </button>
+          <button
+            v-if="!showCreateForm"
+            @click="showCreateForm = true"
+            class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition"
+          >
+            <Plus class="w-5 h-5" />
+            Nova Sala
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Formulário de criação -->
-    <CrudForm
-      v-if="showCreateForm"
-      :fields="createFields"
-      title="Criar nova sala"
-      isCreate
-      @submit="createRoom"
-      @cancel="showCreateForm = false"
-    />
+    <div v-if="showCreateForm" class="max-w-4xl mx-auto mb-8">
+      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <CrudForm
+          :fields="createFields"
+          title="Criar nova sala"
+          is-create
+          @submit="createRoom"
+          @cancel="showCreateForm = false"
+        />
+      </div>
+    </div>
 
     <!-- Formulário de edição -->
-    <CrudForm
-      v-if="editingRoom"
-      :fields="editFields"
-      :data="editingRoom"
-      title="Editar sala"
-      @submit="updateRoom"
-      @cancel="editingRoom = null"
-    />
+    <div v-if="editingRoom" class="max-w-4xl mx-auto mb-8">
+      <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <CrudForm
+          :fields="editFields"
+          :data="editingRoom"
+          title="Editar sala"
+          @submit="updateRoom"
+          @cancel="editingRoom = null"
+        />
+      </div>
+    </div>
 
-    <!-- Tabela de salas -->
-    <CrudTable
-      :columns="tableColumns"
-      :rows="pagedRooms?.content ?? []"
-      :currentPage="currentPage"
-      :totalPages="pagedRooms?.page.totalPages ?? 0"
-      @edit="openEdit"
-      @delete="deleteRoom"
-      @change-page="fetchRooms"
-    />
+    <!-- Tabela -->
+    <div class="max-w-6xl mx-auto">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <CrudTable
+          :columns="tableColumns"
+          :rows="pagedRooms?.content ?? []"
+          :currentPage="currentPage"
+          :totalPages="pagedRooms?.page.totalPages ?? 0"
+          @edit="openEdit"
+          @delete="deleteRoom"
+          @change-page="fetchRooms"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -50,6 +75,8 @@ import { useRoomStore } from '@/stores/room'
 import type { RoomResponse } from '@/services/dto/room'
 import CrudForm from '@/component/ui/CrudForm.vue'
 import CrudTable from '@/component/ui/CrudTable.vue'
+
+import { Building, Plus } from 'lucide-vue-next'
 
 const roomStore = useRoomStore()
 const editingRoom = ref<RoomResponse | null>(null)
