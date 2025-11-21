@@ -55,6 +55,7 @@ public class SubjectService {
         return SubjectResponse.from(saved);
     }
 
+    @Transactional
     public Page<SubjectResponse> getAll(Pageable pageable) {
         return subjectRepository.findAll(pageable)
             .map(SubjectResponse::from);

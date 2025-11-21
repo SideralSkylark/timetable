@@ -7,9 +7,9 @@ import type {
   SubjectResponse
 } from './dto/subject'
 
-const BASE_URL = '/v1/subject'
+const BASE_URL = '/v1/subjects'
 
-export const courseService = {
+export const subjectService = {
   async create(data: CreateSubjectRequest) {
     const res = await api.post<ApiResponse<SubjectResponse>>(BASE_URL, data)
     return res.data.data
