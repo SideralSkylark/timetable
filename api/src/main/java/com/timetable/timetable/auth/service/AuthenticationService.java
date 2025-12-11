@@ -40,8 +40,6 @@ import lombok.extern.slf4j.Slf4j;
  * It provides functionality for:
  *
  * <ul>
- *   <li>User registration and role assignment</li>
- *   <li>Email verification (initial and resend)</li>
  *   <li>User login (authentication) and token issuance</li>
  *   <li>JWT refresh token lifecycle handling</li>
  *   <li>User logout and session revocation</li>
@@ -50,7 +48,6 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>Collaborates with:
  * <ul>
- *   <li>{@link VerificationService} – for email verification logic</li>
  *   <li>{@link JwtService} – for generating access tokens</li>
  *   <li>{@link RefreshTokenService} – for refresh token lifecycle management</li>
  *   <li>{@link CookieUtil} – for secure cookie handling</li>
@@ -72,7 +69,6 @@ public class AuthenticationService {
     private final UserRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final VerificationService verificationService;
     private final RefreshTokenService refreshTokenService;
     private final CookieUtil cookieUtil;
     private final SessionMapper sessionMapper;

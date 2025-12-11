@@ -1,4 +1,4 @@
-package com.timetable.timetable.timefold.solver;
+package com.timetable.timetable.scheduler_engine.solver;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -12,8 +12,8 @@ public class TimetableSolverConfig {
     @Bean
     public SolverFactory<?> solverFactory() {
         return SolverFactory.create(new SolverConfig()
-            .withSolutionClass(com.timetable.timetable.timefold.domain.TimetableSolution.class)
-            .withEntityClasses(com.timetable.timetable.timefold.domain.LessonAssignment.class)
+            .withSolutionClass(com.timetable.timetable.scheduler_engine.domain.TimetableSolution.class)
+            .withEntityClasses(com.timetable.timetable.scheduler_engine.domain.LessonAssignment.class)
             .withConstraintProviderClass(TimetableConstraintProvider.class)
         );
     }

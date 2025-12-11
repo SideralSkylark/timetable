@@ -1,7 +1,7 @@
-package com.timetable.timetable.timefold.mapper;
+package com.timetable.timetable.scheduler_engine.mapper;
 
 import com.timetable.timetable.domain.schedule.entity.*;
-import com.timetable.timetable.timefold.domain.*;
+import com.timetable.timetable.scheduler_engine.domain.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

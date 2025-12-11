@@ -1,8 +1,8 @@
-package com.timetable.timetable.timefold.solver;
+package com.timetable.timetable.scheduler_engine.solver;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.*;
-import com.timetable.timetable.timefold.domain.*;
+import com.timetable.timetable.scheduler_engine.domain.*;
 
 public class TimetableConstraintProvider implements ConstraintProvider {
 

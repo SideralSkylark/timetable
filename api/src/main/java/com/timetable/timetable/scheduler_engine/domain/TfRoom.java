@@ -1,4 +1,4 @@
-package com.timetable.timetable.timefold.domain;
+package com.timetable.timetable.scheduler_engine.domain;
 
 import lombok.*;
 

@@ -34,7 +34,7 @@ import jakarta.validation.Valid;
  *
  * <p>This controller provides endpoints for:</p>
  * <ul>
- *   <liUser login with JWT issuance</li>
+ *   <li>User login with JWT issuance</li>
  *   <li>Access token refresh</li>
  *   <li>Logout (current and remote sessions)</li>
  *   <li>Listing active sessions</li>

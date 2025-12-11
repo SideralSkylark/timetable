@@ -1,8 +1,8 @@
-package com.timetable.timetable.timefold.solver;
+package com.timetable.timetable.scheduler_engine.solver;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import com.timetable.timetable.timefold.domain.TimetableSolution;
+import com.timetable.timetable.scheduler_engine.domain.TimetableSolution;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

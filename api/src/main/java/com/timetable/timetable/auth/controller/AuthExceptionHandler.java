@@ -41,24 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthExceptionHandler {
     /**
-     * Handles cases where a user already exists during registration.
-     *
-     * @param ex      the thrown UserAlreadyExistsException
-     * @param request the HTTP request for extracting the URI
-     * @return 409 CONFLICT with a descriptive error message
-     */
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> userAlreadyExists(
-        UserAlreadyExistsException ex,
-        HttpServletRequest request) {
-        return ResponseFactory.error(
-            HttpStatus.CONFLICT,
-            ex.getMessage(),
-            request
-        );
-    }
-
-    /**
      * Handles cases where a user is not found during authentication or verification.
      *
      * @param ex      the thrown UserNotFoundException
@@ -128,5 +110,5 @@ public class AuthExceptionHandler {
             ex.getMessage(),
             request
         );
-    }
+        }
 }

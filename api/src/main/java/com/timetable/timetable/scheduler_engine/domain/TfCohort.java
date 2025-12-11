@@ -1,11 +1,10 @@
-package com.timetable.timetable.timefold.domain;
+package com.timetable.timetable.scheduler_engine.domain;
 
 import lombok.*;
 
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
-public class TfSubject {
+public class TfCohort {
     private Long id;
     private String name;
 }
-
