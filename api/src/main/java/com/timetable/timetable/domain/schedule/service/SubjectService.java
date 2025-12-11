@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.timetable.timetable.domain.schedule.dto.CreateSubjectRequest;
-import com.timetable.timetable.domain.schedule.dto.SubjectResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateSubjectRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.entity.Subject;

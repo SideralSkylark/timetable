@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.timetable.timetable.domain.schedule.dto.CohortResponse;
 import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
 import com.timetable.timetable.domain.schedule.entity.Cohort;
@@ -35,7 +34,7 @@ public class CohortService {
             throw new IllegalStateException("Cohort with name '%s' already exists".formatted(createRequest.name()));
         }
 
-        Course course = courseService.getCourseById(createRequest.courseId());
+        Course course = courseService.getById(createRequest.courseId());
 
         Set<ApplicationUser> students = new HashSet<>();
         if (createRequest.studentIds() != null && !createRequest.studentIds().isEmpty()) {

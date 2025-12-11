@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.timetable.timetable.domain.schedule.dto.CreateTimeSlotRequest;
-import com.timetable.timetable.domain.schedule.dto.TimeSlotResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateTimeSlotRequest;
 import com.timetable.timetable.domain.schedule.entity.Cohort;
 import com.timetable.timetable.domain.schedule.entity.Room;
@@ -41,7 +40,7 @@ public class TimeSlotService {
 
         Timetable timetable = null;
         if (createRequest.timetableId() != null) {
-            timetable = timetableService.getTimetableById(createRequest.timetableId());
+            timetable = timetableService.getById(createRequest.timetableId());
         }
 
         ApplicationUser teacher = userService.getUserById(createRequest.teacherId());
@@ -99,7 +98,7 @@ public class TimeSlotService {
     }
 
     public Page<TimeSlot> getByTimetable(Long timetableId, Pageable pageable) {
-        Timetable timetable = timetableService.getTimetableById(timetableId);
+        Timetable timetable = timetableService.getById(timetableId);
         
         return timeSlotRepository.findByTimetable(timetable, pageable);
     }

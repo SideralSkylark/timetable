@@ -1,6 +1,5 @@
 package com.timetable.timetable.domain.schedule.service;
 
-import com.timetable.timetable.domain.schedule.dto.CourseResponse;
 import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.timetable.timetable.domain.schedule.dto.CreateTimetableRequest;
-import com.timetable.timetable.domain.schedule.dto.TimetableResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateTimetableRequest;
 import com.timetable.timetable.domain.schedule.entity.Timetable;
 import com.timetable.timetable.domain.schedule.entity.TimetableStatus;

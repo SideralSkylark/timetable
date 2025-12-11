@@ -1,7 +1,6 @@
 package com.timetable.timetable.domain.schedule.service;
 
 import com.timetable.timetable.domain.schedule.dto.CreateRoomRequest;
-import com.timetable.timetable.domain.schedule.dto.RoomResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateRoomRequest;
 import com.timetable.timetable.domain.schedule.entity.Room;
 import com.timetable.timetable.domain.schedule.exception.RoomNotFoundException;
