@@ -15,7 +15,6 @@ import com.timetable.timetable.auth.exception.UserAlreadyExistsException;
 import com.timetable.timetable.domain.user.dto.*;
 import com.timetable.timetable.domain.user.entity.*;
 import com.timetable.timetable.domain.user.exception.UserNotFoundException;
-import com.timetable.timetable.domain.user.mapper.UserMapper;
 import com.timetable.timetable.domain.user.repository.UserRepository;
 import com.timetable.timetable.domain.user.repository.UserRoleRepository;
 import com.timetable.timetable.security.SecurityUtil;
@@ -28,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserService {
 
-    private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final UserRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -37,7 +35,7 @@ public class UserService {
     // CREATE USER
     // ============================================================
     @Transactional
-    public UserResponse createUser(CreateUser request) {
+    public ApplicationUser createUser(CreateUser request) {
         validateUniqueUser(request);
         Set<UserRoleEntity> roles = resolveRoles(request.roles());
 
@@ -53,49 +51,37 @@ public class UserService {
 
         userRepository.save(user);
         log.info("Created new user '{}' with roles {}", user.getUsername(), roles);
-        return userMapper.toDTO(user);
+        return user;
     }
 
     // ============================================================
     // READ USERS
     // ============================================================
-    public UserResponse getAuthenticatedUserProfile() {
-        return userMapper.toDTO(getByUsernameOrThrow(SecurityUtil.getAuthenticatedUsername()));
+    public ApplicationUser getAuthenticatedUserProfile() {
+        return getByUsernameOrThrow(SecurityUtil.getAuthenticatedUsername());
     }
 
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(userMapper::toDTO)
-                .toList();
+    public List<ApplicationUser> getAllUsers() {
+        return userRepository.findAll();
     }
 
-    public Page<UserResponse> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable)
-                .map(userMapper::toDTO);
+    public Page<ApplicationUser> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
-    public List<UserResponse> getUsersByRole(UserRole role) {
-        return userRepository.findAllByRole(role)
-                .stream()
-                .map(userMapper::toDTO)
-                .toList();
+    public List<ApplicationUser> getUsersByRole(UserRole role) {
+        return userRepository.findAllByRole(role);
     }
 
-    public Page<UserResponse> getUsersByRole(UserRole role, Pageable pageable) {
-        return userRepository.findAllByRole(role, pageable)
-                .map(userMapper::toDTO);
+    public Page<ApplicationUser> getUsersByRole(UserRole role, Pageable pageable) {
+        return userRepository.findAllByRole(role, pageable);
     }
 
-    public UserResponse findUserById(Long id) {
-        return userMapper.toDTO(getByIdOrThrow(id));
-    }
-
-    public ApplicationUser getUserEntityById(Long id) {
+    public ApplicationUser getUserById(Long id) {
         return getByIdOrThrow(id);
     }
 
-    public ApplicationUser getUserEntityByUsername(String username) {
+    public ApplicationUser getUserByUsername(String username) {
         return getByUsernameOrThrow(username);
     }
 
@@ -103,15 +89,15 @@ public class UserService {
     // UPDATE USERS
     // ============================================================
     @Transactional
-    public UserResponse updateAuthenticatedUserProfile(UpdateUserProfileDTO dto) {
+    public ApplicationUser updateAuthenticatedUserProfile(UpdateUserProfileDTO dto) {
         ApplicationUser user = getByUsernameOrThrow(SecurityUtil.getAuthenticatedUsername());
         updateBasicFields(user, dto.username(), dto.email());
         log.info("User '{}' updated their profile", user.getUsername());
-        return userMapper.toDTO(userRepository.save(user));
+        return userRepository.save(user);
     }
 
     @Transactional
-    public UserResponse updateUserById(Long id, AdminUpdateUserDTO payload) {
+    public ApplicationUser updateUserById(Long id, AdminUpdateUserDTO payload) {
         ApplicationUser user = getByIdOrThrow(id);
 
         validateUniqueUpdate(id, payload.username(), payload.email());
@@ -124,7 +110,7 @@ public class UserService {
 
         userRepository.save(user);
         log.info("Admin updated user '{}' with roles {}", id, newRoles);
-        return userMapper.toDTO(user);
+        return user;
     }
 
     // ============================================================

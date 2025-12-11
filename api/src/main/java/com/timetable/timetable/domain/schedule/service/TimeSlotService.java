@@ -21,7 +21,6 @@ import com.timetable.timetable.domain.schedule.exception.TimeSlotNotFoundExcepti
 import com.timetable.timetable.domain.schedule.repository.TimeSlotRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
-import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -45,7 +44,7 @@ public class TimeSlotService {
             timetable = timetableService.getTimetableById(createRequest.timetableId());
         }
 
-        ApplicationUser teacher = userService.getUserEntityById(createRequest.teacherId());
+        ApplicationUser teacher = userService.getUserById(createRequest.teacherId());
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
             throw new IllegalArgumentException(
@@ -115,7 +114,7 @@ public class TimeSlotService {
     }
 
     public Page<TimeSlotResponse> getByTeacher(Long teacherId, Pageable pageable) {
-        ApplicationUser teacher = userService.getUserEntityById(teacherId);
+        ApplicationUser teacher = userService.getUserById(teacherId);
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
             throw new IllegalArgumentException(
@@ -145,7 +144,7 @@ public class TimeSlotService {
         // Validate all entities exist
         Subject subject = subjectService.getSubjectById(updateRequest.subjectId());
 
-        ApplicationUser teacher = userService.getUserEntityById(updateRequest.teacherId());
+        ApplicationUser teacher = userService.getUserById(updateRequest.teacherId());
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
             throw new IllegalArgumentException(

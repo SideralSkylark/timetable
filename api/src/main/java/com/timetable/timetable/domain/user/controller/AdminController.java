@@ -5,6 +5,7 @@ import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.user.dto.AdminUpdateUserDTO;
 import com.timetable.timetable.domain.user.dto.CreateUser;
 import com.timetable.timetable.domain.user.dto.UserResponse;
+import com.timetable.timetable.domain.user.mapper.UserMapper;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,13 +24,14 @@ import jakarta.validation.Valid;
 @Slf4j
 public class AdminController {
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
         @Valid 
         @RequestBody CreateUser createUser) {
         return ResponseFactory.ok(
-            userService.createUser(createUser),
+            userMapper.toDTO(userService.createUser(createUser)),
             "User created sucessfully."
         );
     }
@@ -37,7 +39,7 @@ public class AdminController {
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<UserResponse>>> getUsers(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(userService.getAllUsers(pageable)),
+            new PagedModel<>(userService.getAllUsers(pageable).map(userMapper::toDTO)),
             "Users fetched sucessfully."
         );
     }
@@ -45,7 +47,7 @@ public class AdminController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            userService.findUserById(id),
+            userMapper.toDTO(userService.getUserById(id)),
             "User fetched sucessfully."
         );
     }
@@ -56,7 +58,7 @@ public class AdminController {
         @RequestBody AdminUpdateUserDTO updateRequest
     ) {
         return ResponseFactory.ok(
-            userService.updateUserById(id, updateRequest),
+            userMapper.toDTO(userService.updateUserById(id, updateRequest)),
             "User updated sucessfully."
         );
     }

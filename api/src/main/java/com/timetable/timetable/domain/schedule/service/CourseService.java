@@ -27,7 +27,7 @@ public class CourseService {
             throw new IllegalStateException("Course already exists"); 
         }
         
-        ApplicationUser coordinator = userService.getUserEntityById(createRequest.coordinatorId());
+        ApplicationUser coordinator = userService.getUserById(createRequest.coordinatorId());
 
         if (!coordinator.hasRole(UserRole.COORDINATOR)) {
             throw new IllegalArgumentException(
@@ -72,7 +72,7 @@ public class CourseService {
             throw new IllegalArgumentException("Another course with that name already exists.");
         }
         
-        ApplicationUser coordinator = userService.getUserEntityById(updateRequest.coordinatorId());
+        ApplicationUser coordinator = userService.getUserById(updateRequest.coordinatorId());
 
         if (!coordinator.hasRole(UserRole.COORDINATOR)) {
             throw new IllegalArgumentException(

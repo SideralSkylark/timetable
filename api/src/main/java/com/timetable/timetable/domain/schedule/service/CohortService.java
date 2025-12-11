@@ -18,7 +18,6 @@ import com.timetable.timetable.domain.schedule.exception.CohortNotFoundException
 import com.timetable.timetable.domain.schedule.repository.CohortRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
-import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -113,7 +112,7 @@ public class CohortService {
         Set<ApplicationUser> students = new HashSet<>();
         
         for (Long studentId : studentIds) {
-            ApplicationUser user = userService.getUserEntityById(studentId);
+            ApplicationUser user = userService.getUserById(studentId);
      
             if (!user.hasRole(UserRole.STUDENT)) {
                 throw new IllegalArgumentException(

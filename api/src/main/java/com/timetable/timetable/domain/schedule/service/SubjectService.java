@@ -18,7 +18,6 @@ import com.timetable.timetable.domain.schedule.exception.SubjectNotFoundExceptio
 import com.timetable.timetable.domain.schedule.repository.SubjectRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
-import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -124,7 +123,7 @@ public class SubjectService {
         Set<ApplicationUser> teachers = new HashSet<>();
         
         for (Long teacherId : teacherIds) {
-            ApplicationUser user = userService.getUserEntityById(teacherId);
+            ApplicationUser user = userService.getUserById(teacherId);
             
             if (!user.hasRole(UserRole.TEACHER)) {
                 throw new IllegalArgumentException(
