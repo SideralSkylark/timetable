@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class RoomService {
     private final RoomRepository roomRepository;
     
-    public RoomResponse createRoom(CreateRoomRequest roomRequest) {
+    public Room createRoom(CreateRoomRequest roomRequest) {
         if (roomRepository.existsByName(roomRequest.name())) {
             throw new IllegalStateException();
         } 
@@ -30,29 +30,21 @@ public class RoomService {
 
         Room saved = roomRepository.save(room);
         
-        return RoomResponse.from(saved);
+        return saved;
     }
 
-    public Page<RoomResponse> getAll(Pageable pageable) {
-        return roomRepository.findAll(pageable)
-            .map(RoomResponse::from);
+    public Page<Room> getAll(Pageable pageable) {
+        return roomRepository.findAll(pageable);
     }
 
-    public RoomResponse getById(Long id) {
-        Room room = roomRepository.findById(id)
-            .orElseThrow(() -> new RoomNotFoundException("Room not found."));
-
-        return RoomResponse.from(room);
-    }
-
-    public Room getRoomById(Long id) {
+    public Room getById(Long id) {
         Room room = roomRepository.findById(id)
             .orElseThrow(() -> new RoomNotFoundException("Room not found."));
 
         return room;
     }
 
-    public RoomResponse updateRoom(Long id, UpdateRoomRequest updateRequest) {
+    public Room updateRoom(Long id, UpdateRoomRequest updateRequest) {
         Room room = roomRepository.findById(id)
             .orElseThrow(() -> new RoomNotFoundException("Room not found."));
 
@@ -65,7 +57,7 @@ public class RoomService {
 
         Room saved = roomRepository.save(room);
 
-        return RoomResponse.from(saved);
+        return saved;
     }
 
     public void deleteRoom(Long id) {

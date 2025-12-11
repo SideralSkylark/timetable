@@ -32,7 +32,7 @@ public class RoomController {
     @PostMapping
     public ResponseEntity<ApiResponse<RoomResponse>> create(@Valid @RequestBody CreateRoomRequest request) {
         return ResponseFactory.ok(
-            roomService.createRoom(request),
+            RoomResponse.from(roomService.createRoom(request)),
             "Room created successfully."
         );
     }
@@ -40,7 +40,7 @@ public class RoomController {
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<RoomResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(roomService.getAll(pageable)),
+            new PagedModel<>(roomService.getAll(pageable).map(RoomResponse::from)),
             "Rooms fetched successfully."
         );
     }
@@ -48,7 +48,7 @@ public class RoomController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RoomResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            roomService.getById(id),
+            RoomResponse.from(roomService.getById(id)),
             "Room fetched successfully."
         );
     }
@@ -58,7 +58,7 @@ public class RoomController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateRoomRequest request) {
         return ResponseFactory.ok(
-            roomService.updateRoom(id, request),
+            RoomResponse.from(roomService.updateRoom(id, request)),
             "Room updated successfully."
         );
     }

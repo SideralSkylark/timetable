@@ -31,7 +31,7 @@ public class SubjectController {
     @PostMapping
     public ResponseEntity<ApiResponse<SubjectResponse>> create(@Valid @RequestBody CreateSubjectRequest request) {
         return ResponseFactory.ok(
-            subjectService.createSubject(request),
+            SubjectResponse.from(subjectService.createSubject(request)),
             "subject created successfully."
         );
     }
@@ -39,7 +39,7 @@ public class SubjectController {
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<SubjectResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(subjectService.getAll(pageable)),
+            new PagedModel<>(subjectService.getAll(pageable).map(SubjectResponse::from)),
             "Subjects fetched successfully."
         );
     }
@@ -47,7 +47,7 @@ public class SubjectController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SubjectResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            subjectService.getById(id),
+            SubjectResponse.from(subjectService.getById(id)),
             "Subject fetched successfully."
         );
     }
@@ -57,7 +57,7 @@ public class SubjectController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateSubjectRequest request) {
         return ResponseFactory.ok(
-            subjectService.updateSubject(id, request),
+            SubjectResponse.from(subjectService.updateSubject(id, request)),
             "subject updated successfully."
         );
     }

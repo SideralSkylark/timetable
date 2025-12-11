@@ -21,7 +21,7 @@ public class TimetableService {
     private final TimetableRepository timetableRepository;
 
     @Transactional
-    public TimetableResponse createTimetable(CreateTimetableRequest createRequest) {
+    public Timetable createTimetable(CreateTimetableRequest createRequest) {
         // Check if timetable for this academic period already exists
         if (timetableRepository.existsByAcademicPeriod(createRequest.academicPeriod())) {
             throw new IllegalStateException(
@@ -35,28 +35,18 @@ public class TimetableService {
             .build();
 
         Timetable saved = timetableRepository.save(timetable);
-        return TimetableResponse.from(saved);
+        return saved;
     }
 
-    public Page<TimetableResponse> getAll(Pageable pageable) {
-        return timetableRepository.findAll(pageable)
-            .map(TimetableResponse::from);
+    public Page<Timetable> getAll(Pageable pageable) {
+        return timetableRepository.findAll(pageable);
     }
 
-    public Page<TimetableResponse> getByStatus(TimetableStatus status, Pageable pageable) {
-        return timetableRepository.findByStatus(status, pageable)
-            .map(TimetableResponse::from);
+    public Page<Timetable> getByStatus(TimetableStatus status, Pageable pageable) {
+        return timetableRepository.findByStatus(status, pageable);
     }
 
-    public TimetableResponse getById(Long id) {
-        Timetable timetable = timetableRepository.findById(id)
-            .orElseThrow(() -> new TimetableNotFoundException(
-                "Timetable with id %d not found".formatted(id)
-            ));
-        return TimetableResponse.from(timetable);
-    }
-
-    public Timetable getTimetableById(Long id) {
+    public Timetable getById(Long id) {
         Timetable timetable = timetableRepository.findById(id)
             .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
@@ -64,16 +54,16 @@ public class TimetableService {
         return timetable;
     }
 
-    public TimetableResponse getByAcademicPeriod(String academicPeriod) {
+    public Timetable getByAcademicPeriod(String academicPeriod) {
         Timetable timetable = timetableRepository.findByAcademicPeriod(academicPeriod)
             .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable for academic period '%s' not found".formatted(academicPeriod)
             ));
-        return TimetableResponse.from(timetable);
+        return timetable;
     }
 
     @Transactional
-    public TimetableResponse updateTimetable(Long id, UpdateTimetableRequest updateRequest) {
+    public Timetable updateTimetable(Long id, UpdateTimetableRequest updateRequest) {
         Timetable timetable = timetableRepository.findById(id)
             .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
@@ -91,11 +81,11 @@ public class TimetableService {
         timetable.setStatus(updateRequest.status());
 
         Timetable updated = timetableRepository.save(timetable);
-        return TimetableResponse.from(updated);
+        return updated;
     }
 
     @Transactional
-    public TimetableResponse publishTimetable(Long id) {
+    public Timetable publishTimetable(Long id) {
         Timetable timetable = timetableRepository.findById(id)
             .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
@@ -115,11 +105,11 @@ public class TimetableService {
 
         timetable.setStatus(TimetableStatus.PUBLISHED);
         Timetable updated = timetableRepository.save(timetable);
-        return TimetableResponse.from(updated);
+        return updated;
     }
 
     @Transactional
-    public TimetableResponse archiveTimetable(Long id) {
+    public Timetable archiveTimetable(Long id) {
         Timetable timetable = timetableRepository.findById(id)
             .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
@@ -133,11 +123,11 @@ public class TimetableService {
 
         timetable.setStatus(TimetableStatus.ARCHIVED);
         Timetable updated = timetableRepository.save(timetable);
-        return TimetableResponse.from(updated);
+        return updated;
     }
 
     @Transactional
-    public TimetableResponse revertToDraft(Long id) {
+    public Timetable revertToDraft(Long id) {
         Timetable timetable = timetableRepository.findById(id)
             .orElseThrow(() -> new TimetableNotFoundException(
                 "Timetable with id %d not found".formatted(id)
@@ -157,7 +147,7 @@ public class TimetableService {
 
         timetable.setStatus(TimetableStatus.DRAFT);
         Timetable updated = timetableRepository.save(timetable);
-        return TimetableResponse.from(updated);
+        return updated;
     }
 
     @Transactional

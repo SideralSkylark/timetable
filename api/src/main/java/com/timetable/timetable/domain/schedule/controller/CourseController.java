@@ -7,7 +7,6 @@ import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.service.CourseService;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +31,7 @@ public class CourseController {
     @PostMapping
     public ResponseEntity<ApiResponse<CourseResponse>> create(@Valid @RequestBody CreateCourseRequest request) {
         return ResponseFactory.ok(
-            courseService.createCourse(request),
+            CourseResponse.from(courseService.createCourse(request)),
             "Course created successfully."
         );
     }
@@ -40,7 +39,7 @@ public class CourseController {
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<CourseResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(courseService.getAll(pageable)),
+            new PagedModel<>(courseService.getAll(pageable).map(CourseResponse::from)),
             "Courses fetched successfully."
         );
     }
@@ -48,7 +47,7 @@ public class CourseController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CourseResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            courseService.getById(id),
+            CourseResponse.from(courseService.getById(id)),
             "Course fetched successfully."
         );
     }
@@ -58,7 +57,7 @@ public class CourseController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateCourseRequest request) {
         return ResponseFactory.ok(
-            courseService.updateCourse(id, request),
+            CourseResponse.from(courseService.updateCourse(id, request)),
             "Course updated successfully."
         );
     }

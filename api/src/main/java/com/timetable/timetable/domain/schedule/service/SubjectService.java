@@ -30,8 +30,8 @@ public class SubjectService {
     private final UserService userService;
 
     @Transactional
-    public SubjectResponse createSubject(CreateSubjectRequest createRequest) {
-        Course course = courseService.getCourseById(createRequest.courseId());
+    public Subject createSubject(CreateSubjectRequest createRequest) {
+        Course course = courseService.getById(createRequest.courseId());
 
         if (subjectRepository.existsByNameAndCourse(createRequest.name(), course)) {
             throw new IllegalStateException(
@@ -51,31 +51,21 @@ public class SubjectService {
             .build();
 
         Subject saved = subjectRepository.save(subject);
-        return SubjectResponse.from(saved);
+        return saved;
     }
 
     @Transactional
-    public Page<SubjectResponse> getAll(Pageable pageable) {
-        return subjectRepository.findAll(pageable)
-            .map(SubjectResponse::from);
+    public Page<Subject> getAll(Pageable pageable) {
+        return subjectRepository.findAll(pageable);
     }
 
-    public Page<SubjectResponse> getAllByCourse(Long courseId, Pageable pageable) {
-        Course course = courseService.getCourseById(courseId);
+    public Page<Subject> getAllByCourse(Long courseId, Pageable pageable) {
+        Course course = courseService.getById(courseId);
         
-        return subjectRepository.findByCourse(course, pageable)
-            .map(SubjectResponse::from);
+        return subjectRepository.findByCourse(course, pageable);
     }
 
-    public SubjectResponse getById(Long id) {
-        Subject subject = subjectRepository.findById(id)
-            .orElseThrow(() -> new SubjectNotFoundException(
-                "Subject with id %d not found".formatted(id)
-            ));
-        return SubjectResponse.from(subject);
-    }
-
-    public Subject getSubjectById(Long id) {
+    public Subject getById(Long id) {
         Subject subject = subjectRepository.findById(id)
             .orElseThrow(() -> new SubjectNotFoundException(
                 "Subject with id %d not found".formatted(id)
@@ -84,7 +74,7 @@ public class SubjectService {
     }
 
     @Transactional
-    public SubjectResponse updateSubject(Long id, UpdateSubjectRequest updateRequest) {
+    public Subject updateSubject(Long id, UpdateSubjectRequest updateRequest) {
         Subject subject = subjectRepository.findById(id)
             .orElseThrow(() -> new SubjectNotFoundException(
                 "Subject with id %d not found".formatted(id)
@@ -106,7 +96,7 @@ public class SubjectService {
         subject.setTeachers(teachers);
 
         Subject updated = subjectRepository.save(subject);
-        return SubjectResponse.from(updated);
+        return updated;
     }
 
     @Transactional

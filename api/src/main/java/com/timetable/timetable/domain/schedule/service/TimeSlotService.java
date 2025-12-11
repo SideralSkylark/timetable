@@ -36,8 +36,8 @@ public class TimeSlotService {
     private final CohortService cohortService;
 
     @Transactional
-    public TimeSlotResponse createTimeSlot(CreateTimeSlotRequest createRequest) {
-        Subject subject = subjectService.getSubjectById(createRequest.subjectId());
+    public TimeSlot createTimeSlot(CreateTimeSlotRequest createRequest) {
+        Subject subject = subjectService.getById(createRequest.subjectId());
 
         Timetable timetable = null;
         if (createRequest.timetableId() != null) {
@@ -61,9 +61,9 @@ public class TimeSlotService {
             );
         }
 
-        Room room = roomService.getRoomById(createRequest.roomId());
+        Room room = roomService.getById(createRequest.roomId());
 
-        Cohort cohort = cohortService.getCohortById(createRequest.cohortId());
+        Cohort cohort = cohortService.getById(createRequest.cohortId());
 
         // Validate time constraints
         validateTimeConstraints(createRequest.startTime(), createRequest.endTime());
@@ -91,29 +91,26 @@ public class TimeSlotService {
             .build();
 
         TimeSlot saved = timeSlotRepository.save(timeSlot);
-        return TimeSlotResponse.from(saved);
+        return saved;
     }
 
-    public Page<TimeSlotResponse> getAll(Pageable pageable) {
-        return timeSlotRepository.findAll(pageable)
-            .map(TimeSlotResponse::from);
+    public Page<TimeSlot> getAll(Pageable pageable) {
+        return timeSlotRepository.findAll(pageable);
     }
 
-    public Page<TimeSlotResponse> getByTimetable(Long timetableId, Pageable pageable) {
+    public Page<TimeSlot> getByTimetable(Long timetableId, Pageable pageable) {
         Timetable timetable = timetableService.getTimetableById(timetableId);
         
-        return timeSlotRepository.findByTimetable(timetable, pageable)
-            .map(TimeSlotResponse::from);
+        return timeSlotRepository.findByTimetable(timetable, pageable);
     }
 
-    public Page<TimeSlotResponse> getByCohort(Long cohortId, Pageable pageable) {
-        Cohort cohort = cohortService.getCohortById(cohortId);
+    public Page<TimeSlot> getByCohort(Long cohortId, Pageable pageable) {
+        Cohort cohort = cohortService.getById(cohortId);
         
-        return timeSlotRepository.findByCohort(cohort, pageable)
-            .map(TimeSlotResponse::from);
+        return timeSlotRepository.findByCohort(cohort, pageable);
     }
 
-    public Page<TimeSlotResponse> getByTeacher(Long teacherId, Pageable pageable) {
+    public Page<TimeSlot> getByTeacher(Long teacherId, Pageable pageable) {
         ApplicationUser teacher = userService.getUserById(teacherId);
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
@@ -122,27 +119,26 @@ public class TimeSlotService {
             );
         }
         
-        return timeSlotRepository.findByTeacher(teacher, pageable)
-            .map(TimeSlotResponse::from);
+        return timeSlotRepository.findByTeacher(teacher, pageable);
     }
 
-    public TimeSlotResponse getById(Long id) {
+    public TimeSlot getById(Long id) {
         TimeSlot timeSlot = timeSlotRepository.findById(id)
             .orElseThrow(() -> new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             ));
-        return TimeSlotResponse.from(timeSlot);
+        return timeSlot;
     }
 
     @Transactional
-    public TimeSlotResponse updateTimeSlot(Long id, UpdateTimeSlotRequest updateRequest) {
+    public TimeSlot updateTimeSlot(Long id, UpdateTimeSlotRequest updateRequest) {
         TimeSlot timeSlot = timeSlotRepository.findById(id)
             .orElseThrow(() -> new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             ));
 
         // Validate all entities exist
-        Subject subject = subjectService.getSubjectById(updateRequest.subjectId());
+        Subject subject = subjectService.getById(updateRequest.subjectId());
 
         ApplicationUser teacher = userService.getUserById(updateRequest.teacherId());
         
@@ -161,9 +157,9 @@ public class TimeSlotService {
             );
         }
 
-        Room room = roomService.getRoomById(updateRequest.roomId());
+        Room room = roomService.getById(updateRequest.roomId());
 
-        Cohort cohort = cohortService.getCohortById(updateRequest.cohortId());
+        Cohort cohort = cohortService.getById(updateRequest.cohortId());
 
         // Validate time constraints
         validateTimeConstraints(updateRequest.startTime(), updateRequest.endTime());
@@ -188,7 +184,7 @@ public class TimeSlotService {
         timeSlot.setEndTime(updateRequest.endTime());
 
         TimeSlot updated = timeSlotRepository.save(timeSlot);
-        return TimeSlotResponse.from(updated);
+        return updated;
     }
 
     @Transactional

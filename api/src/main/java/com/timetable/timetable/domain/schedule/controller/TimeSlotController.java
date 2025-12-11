@@ -32,7 +32,7 @@ public class TimeSlotController {
     @PostMapping
     public ResponseEntity<ApiResponse<TimeSlotResponse>> create(@Valid @RequestBody CreateTimeSlotRequest request) {
         return ResponseFactory.ok(
-            timeSlotService.createTimeSlot(request),
+            TimeSlotResponse.from(timeSlotService.createTimeSlot(request)),
             "Time slot created successfully."
         );
     }
@@ -40,7 +40,7 @@ public class TimeSlotController {
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<TimeSlotResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(timeSlotService.getAll(pageable)),
+            new PagedModel<>(timeSlotService.getAll(pageable).map(TimeSlotResponse::from)),
             "Time slots fetched successfully."
         );
     }
@@ -48,7 +48,7 @@ public class TimeSlotController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TimeSlotResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            timeSlotService.getById(id),
+            TimeSlotResponse.from(timeSlotService.getById(id)),
             "Time slot fetched successfully."
         );
     }
@@ -58,7 +58,8 @@ public class TimeSlotController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateTimeSlotRequest request) {
         return ResponseFactory.ok(
-            timeSlotService.updateTimeSlot(id, request),
+            
+            TimeSlotResponse.from(timeSlotService.updateTimeSlot(id, request)),
             "Time slot updated successfully."
         );
     }

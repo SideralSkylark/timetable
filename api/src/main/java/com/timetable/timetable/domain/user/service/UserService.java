@@ -85,6 +85,10 @@ public class UserService {
         return getByUsernameOrThrow(username);
     }
 
+    public ApplicationUser getUserByEmail(String email) {
+        return getByEmailOrThrow(email);
+    }
+
     // ============================================================
     // UPDATE USERS
     // ============================================================

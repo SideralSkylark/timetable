@@ -22,7 +22,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
 
-    public CourseResponse createCourse(CreateCourseRequest createRequest) {
+    public Course createCourse(CreateCourseRequest createRequest) {
         if (courseRepository.existsByName(createRequest.name())) {
             throw new IllegalStateException("Course already exists"); 
         }
@@ -42,29 +42,21 @@ public class CourseService {
 
         Course saved = courseRepository.save(course);
 
-        return CourseResponse.from(saved);
+        return saved;
     }
 
-    public Page<CourseResponse> getAll(Pageable pageable) {
-        return courseRepository.findAll(pageable)
-            .map(CourseResponse::from);
+    public Page<Course> getAll(Pageable pageable) {
+        return courseRepository.findAll(pageable);
     }
 
-    public CourseResponse getById(Long id) {
+    public Course getById(Long id) {
         Course course = courseRepository.findById(id)
             .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
 
-        return CourseResponse.from(course);        
+        return course;
     }
 
-    public Course getCourseById(Long id) {
-        Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
-
-        return course;        
-    }
-
-    public CourseResponse updateCourse(Long id, UpdateCourseRequest updateRequest) {
+    public Course updateCourse(Long id, UpdateCourseRequest updateRequest) {
         Course course = courseRepository.findById(id)
             .orElseThrow(() -> new CourseNotFoundException("No course found with id: %d".formatted(id)));
 
@@ -85,7 +77,7 @@ public class CourseService {
 
         Course updated = courseRepository.save(course);
 
-        return CourseResponse.from(updated);
+        return updated;
     }
 
     public void deleteCourse(Long id) {

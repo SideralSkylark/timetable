@@ -31,7 +31,7 @@ public class CohortController {
     @PostMapping
     public ResponseEntity<ApiResponse<CohortResponse>> create(@Valid @RequestBody CreateCohortRequest request) {
         return ResponseFactory.ok(
-            cohortService.createCohort(request),
+            CohortResponse.from(cohortService.createCohort(request)),
             "Cohort created successfully."
         );
     }
@@ -39,7 +39,7 @@ public class CohortController {
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<CohortResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(cohortService.getAll(pageable)),
+            new PagedModel<>(cohortService.getAll(pageable).map(CohortResponse::from)),
             "Cohorts fetched successfully."
         );
     }
@@ -47,7 +47,7 @@ public class CohortController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CohortResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            cohortService.getById(id),
+            CohortResponse.from(cohortService.getById(id)),
             "Cohort fetched successfully."
         );
     }
@@ -57,7 +57,7 @@ public class CohortController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateCohortRequest request) {
         return ResponseFactory.ok(
-            cohortService.updateCohort(id, request),
+            CohortResponse.from(cohortService.updateCohort(id, request)),
             "Cohort updated successfully."
         );
     }

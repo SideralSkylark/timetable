@@ -25,6 +25,7 @@ import com.timetable.timetable.domain.user.entity.UserRoleEntity;
 import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.repository.UserRepository;
 import com.timetable.timetable.domain.user.repository.UserRoleRepository;
+import com.timetable.timetable.domain.user.service.UserService;
 import com.timetable.timetable.security.JwtService;
 import com.timetable.timetable.security.SecurityUtil;
 
@@ -264,24 +265,6 @@ public class AuthenticationService {
 			user.getUpdatedAt()
 		);
 		return response;
-    }
-
-    /**
-     * Retrieves a user by their email or throws a {@link UserNotFoundException} if not found.
-     *
-     * <p>The email is expected to be already normalized (lowercased and trimmed) by the caller.
-     * If the user does not exist, a warning is logged and a {@code UserNotFoundException} is thrown.
-     *
-     * @param email The normalized email address of the user to retrieve
-     * @return The {@link ApplicationUser} corresponding to the given email
-     * @throws UserNotFoundException if no user is found with the specified email
-     */
-    private ApplicationUser findUserByEmailOrThrow(String email) {
-        return userRepository.findByEmail(email)
-            .orElseThrow(() -> {
-                log.warn("User not found for email: {}", email);
-                return new UserNotFoundException("User not found");
-            });
     }
 
     /**

@@ -32,7 +32,7 @@ public class TimetableController {
     @PostMapping
     public ResponseEntity<ApiResponse<TimetableResponse>> create(@Valid @RequestBody CreateTimetableRequest request) {
         return ResponseFactory.ok(
-            timetableService.createTimetable(request),
+            TimetableResponse.from(timetableService.createTimetable(request)),
             "Timetable created successfully."
         );
     }
@@ -40,7 +40,7 @@ public class TimetableController {
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<TimetableResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(timetableService.getAll(pageable)),
+            new PagedModel<>(timetableService.getAll(pageable).map(TimetableResponse::from)),
             "Timetables fetched successfully."
         );
     }
@@ -48,7 +48,7 @@ public class TimetableController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TimetableResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            timetableService.getById(id),
+            TimetableResponse.from(timetableService.getById(id)),
             "Timetable fetched successfully."
         );
     }
@@ -58,7 +58,7 @@ public class TimetableController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateTimetableRequest request) {
         return ResponseFactory.ok(
-            timetableService.updateTimetable(id, request),
+            TimetableResponse.from(timetableService.updateTimetable(id, request)),
             "Timetable updated successfully."
         );
     }

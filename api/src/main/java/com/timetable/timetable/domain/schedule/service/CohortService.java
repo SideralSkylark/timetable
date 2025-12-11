@@ -30,7 +30,7 @@ public class CohortService {
     private final UserService userService;
 
     @Transactional
-    public CohortResponse createCohort(CreateCohortRequest createRequest) {
+    public Cohort createCohort(CreateCohortRequest createRequest) {
         if (cohortRepository.existsByName(createRequest.name())) {
             throw new IllegalStateException("Cohort with name '%s' already exists".formatted(createRequest.name()));
         }
@@ -49,24 +49,14 @@ public class CohortService {
             .build();
         
         Cohort saved = cohortRepository.save(cohort);
-        return CohortResponse.from(saved);
+        return saved;
     }
 
-    public Page<CohortResponse> getAll(Pageable pageable) {
-        return cohortRepository.findAll(pageable)
-            .map(CohortResponse::from);
+    public Page<Cohort> getAll(Pageable pageable) {
+        return cohortRepository.findAll(pageable);
     }
 
-    public CohortResponse getById(Long id) {
-        Cohort cohort = cohortRepository.findById(id)
-            .orElseThrow(() -> new CohortNotFoundException(
-                "Cohort with id %d not found".formatted(id)
-            ));
-
-        return CohortResponse.from(cohort);
-    }
-
-    public Cohort getCohortById(Long id) {
+    public Cohort getById(Long id) {
         Cohort cohort = cohortRepository.findById(id)
             .orElseThrow(() -> new CohortNotFoundException(
                 "Cohort with id %d not found".formatted(id)
@@ -76,7 +66,7 @@ public class CohortService {
     }
 
     @Transactional
-    public CohortResponse updateCohort(Long id, UpdateCohortRequest updateRequest) {
+    public Cohort updateCohort(Long id, UpdateCohortRequest updateRequest) {
         Cohort cohort = cohortRepository.findById(id)
             .orElseThrow(() -> new CohortNotFoundException(
                 "Cohort with id %d not found".formatted(id)
@@ -95,7 +85,7 @@ public class CohortService {
         cohort.setStudents(students);
 
         Cohort updated = cohortRepository.save(cohort);
-        return CohortResponse.from(updated);
+        return updated;
     }
 
     @Transactional
