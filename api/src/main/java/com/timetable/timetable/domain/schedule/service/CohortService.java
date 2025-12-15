@@ -20,8 +20,10 @@ import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CohortService {
     private final CohortRepository cohortRepository;
@@ -30,7 +32,9 @@ public class CohortService {
 
     @Transactional
     public Cohort createCohort(CreateCohortRequest createRequest) {
+        log.debug("Creating cohort");
         if (cohortRepository.existsByName(createRequest.name())) {
+            log.warn("Another cohort already exists with that name");
             throw new IllegalStateException("Cohort with name '%s' already exists".formatted(createRequest.name()));
         }
 
@@ -48,24 +52,30 @@ public class CohortService {
             .build();
         
         Cohort saved = cohortRepository.save(cohort);
+
+        log.info("Cohort {} created", saved.getId());
         return saved;
     }
 
     public Page<Cohort> getAll(Pageable pageable) {
+        log.debug("Fetching all cohorts");
         return cohortRepository.findAll(pageable);
     }
 
     public Cohort getById(Long id) {
+        log.debug("Looking for cohort {}", id);
         Cohort cohort = cohortRepository.findById(id)
             .orElseThrow(() -> new CohortNotFoundException(
                 "Cohort with id %d not found".formatted(id)
             ));
 
+        log.info("Cohort {} found");
         return cohort;
     }
 
     @Transactional
     public Cohort updateCohort(Long id, UpdateCohortRequest updateRequest) {
+        log.debug("Updating cohort {}", id);
         Cohort cohort = cohortRepository.findById(id)
             .orElseThrow(() -> new CohortNotFoundException(
                 "Cohort with id %d not found".formatted(id)
@@ -73,6 +83,7 @@ public class CohortService {
 
         if (!cohort.getName().equals(updateRequest.name()) && 
             cohortRepository.existsByName(updateRequest.name())) {
+            log.warn("Another cohort with that name already exists");
             throw new IllegalArgumentException(
                 "Another cohort with name '%s' already exists".formatted(updateRequest.name())
             );
@@ -84,17 +95,23 @@ public class CohortService {
         cohort.setStudents(students);
 
         Cohort updated = cohortRepository.save(cohort);
+
+        log.info("Cohort {} updated", updated.getId());
         return updated;
     }
 
     @Transactional
     public void deleteCohort(Long id) {
+        log.debug("Deleting cohort {}", id);
         if (!cohortRepository.existsById(id)) {
+            log.warn("Cohort {} not found", id);
             throw new CohortNotFoundException(
                 "Cohort with id %d not found".formatted(id)
             );
         }
         cohortRepository.deleteById(id);
+
+        log.info("Cohort {} deleted");
     }
 
     private Set<ApplicationUser> validateAndFetchStudents(List<Long> studentIds) {

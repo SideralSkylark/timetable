@@ -36,6 +36,7 @@ public class UserService {
     // ============================================================
     @Transactional
     public ApplicationUser createUser(CreateUser request) {
+        log.debug("Creating user");
         validateUniqueUser(request);
         Set<UserRoleEntity> roles = resolveRoles(request.roles());
 
@@ -94,6 +95,7 @@ public class UserService {
     // ============================================================
     @Transactional
     public ApplicationUser updateAuthenticatedUserProfile(UpdateUserProfileDTO dto) {
+        log.debug("Updating user profile");
         ApplicationUser user = getByUsernameOrThrow(SecurityUtil.getAuthenticatedUsername());
         updateBasicFields(user, dto.username(), dto.email());
         log.info("User '{}' updated their profile", user.getUsername());
@@ -102,6 +104,7 @@ public class UserService {
 
     @Transactional
     public ApplicationUser updateUserById(Long id, AdminUpdateUserDTO payload) {
+        log.debug("Updating user {}", id);
         ApplicationUser user = getByIdOrThrow(id);
 
         validateUniqueUpdate(id, payload.username(), payload.email());

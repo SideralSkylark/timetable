@@ -14,21 +14,26 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
 
     public Course createCourse(CreateCourseRequest createRequest) {
+        log.debug("Creating course");
         if (courseRepository.existsByName(createRequest.name())) {
+            log.warn("Course already exists with name: {}", createRequest.name());
             throw new IllegalStateException("Course already exists"); 
         }
         
         ApplicationUser coordinator = userService.getUserById(createRequest.coordinatorId());
 
         if (!coordinator.hasRole(UserRole.COORDINATOR)) {
+            log.warn("User {}, is not a coordinator", createRequest.coordinatorId());
             throw new IllegalArgumentException(
                 "User %d is not a coordinator".formatted(createRequest.coordinatorId())
             );
@@ -41,6 +46,7 @@ public class CourseService {
 
         Course saved = courseRepository.save(course);
 
+        log.info("Course {} created", saved.getId());
         return saved;
     }
 
@@ -49,23 +55,28 @@ public class CourseService {
     }
 
     public Course getById(Long id) {
+        log.debug("Looking for course {}", id);
         Course course = courseRepository.findById(id)
             .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
 
+        log.info("Course {} found", id);
         return course;
     }
 
     public Course updateCourse(Long id, UpdateCourseRequest updateRequest) {
+        log.debug("Updating course {}", id);
         Course course = courseRepository.findById(id)
             .orElseThrow(() -> new CourseNotFoundException("No course found with id: %d".formatted(id)));
 
         if (!course.getName().equals(updateRequest.name()) && courseRepository.existsByName(updateRequest.name())) {
+            log.warn("Another course with that name already exists");
             throw new IllegalArgumentException("Another course with that name already exists.");
         }
         
         ApplicationUser coordinator = userService.getUserById(updateRequest.coordinatorId());
 
         if (!coordinator.hasRole(UserRole.COORDINATOR)) {
+            log.warn("User {} is not a coordinator", updateRequest.coordinatorId());
             throw new IllegalArgumentException(
                 "User %d is not a coordinator".formatted(updateRequest.coordinatorId())
             );
@@ -76,15 +87,18 @@ public class CourseService {
 
         Course updated = courseRepository.save(course);
 
+        log.info("Course {} updated", id);
         return updated;
     }
 
     public void deleteCourse(Long id) {
+        log.debug("Deleting course {}", id);
         if (!courseRepository.existsById(id)) {
             throw new IllegalArgumentException(
                 "No course with id: %d".formatted(id)
             );
         }
         courseRepository.deleteById(id);
+        log.info("Course {} deleted", id);
     }
 }

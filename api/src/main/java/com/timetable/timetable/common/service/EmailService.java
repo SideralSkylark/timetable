@@ -29,6 +29,7 @@ public class EmailService {
     private String defaultFromEmail;
 
     public void sendVerificationCode(String toEmail, String code) {
+        log.debug("Sending verification email to: {}", toEmail);
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(toEmail);
@@ -60,6 +61,7 @@ public class EmailService {
 
     public void sendEmailWithAttachment(String toEmail, String subject, String body, MultipartFile attachment) 
             throws MessagingException, IOException {
+        log.debug("Sending email with atachement to: {}", toEmail);
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
 

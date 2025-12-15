@@ -23,8 +23,10 @@ import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class TimeSlotService {
     private final TimeSlotRepository timeSlotRepository;
@@ -36,6 +38,7 @@ public class TimeSlotService {
 
     @Transactional
     public TimeSlot createTimeSlot(CreateTimeSlotRequest createRequest) {
+        log.debug("Creating timeslot");
         Subject subject = subjectService.getById(createRequest.subjectId());
 
         Timetable timetable = null;
@@ -46,6 +49,7 @@ public class TimeSlotService {
         ApplicationUser teacher = userService.getUserById(createRequest.teacherId());
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
+            log.warn("User {} is not a teacher", teacher.getId());
             throw new IllegalArgumentException(
                 "User with id %d is not a teacher".formatted(createRequest.teacherId())
             );
@@ -53,6 +57,7 @@ public class TimeSlotService {
 
         // Validate teacher teaches this subject
         if (!subject.getTeachers().contains(teacher)) {
+            log.warn("Teacher {} is not assigned to subject {}", teacher.getId(), subject.getId());
             throw new IllegalArgumentException(
                 "Teacher with id %d is not assigned to subject '%s'".formatted(
                     createRequest.teacherId(), subject.getName()
@@ -90,47 +95,61 @@ public class TimeSlotService {
             .build();
 
         TimeSlot saved = timeSlotRepository.save(timeSlot);
+
+        log.info("Timeslot {} created", saved.getId());
         return saved;
     }
 
     public Page<TimeSlot> getAll(Pageable pageable) {
+        log.debug("Fetching all timeslots");
         return timeSlotRepository.findAll(pageable);
     }
 
     public Page<TimeSlot> getByTimetable(Long timetableId, Pageable pageable) {
+        log.debug("Fetching timeslot by timetable {}", timetableId);
         Timetable timetable = timetableService.getById(timetableId);
         
+        log.info("timeslot, found for timetable {}", timetableId);
         return timeSlotRepository.findByTimetable(timetable, pageable);
     }
 
     public Page<TimeSlot> getByCohort(Long cohortId, Pageable pageable) {
+        log.debug("Fetching timeslot by cohort {}", cohortId);
         Cohort cohort = cohortService.getById(cohortId);
         
+        log.info("Found timeslot for cohort {}", cohortId);
         return timeSlotRepository.findByCohort(cohort, pageable);
     }
 
     public Page<TimeSlot> getByTeacher(Long teacherId, Pageable pageable) {
+        log.debug("Fetching timeslot by teacher {}", teacherId);
         ApplicationUser teacher = userService.getUserById(teacherId);
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
+            log.warn("User {} is not a teacher", teacherId);
             throw new IllegalArgumentException(
                 "User with id %d is not a teacher".formatted(teacherId)
             );
         }
         
+        log.info("Found timeslot by teacher {}", teacherId);
         return timeSlotRepository.findByTeacher(teacher, pageable);
     }
 
     public TimeSlot getById(Long id) {
+        log.debug("Fetching timeslot {}", id);
         TimeSlot timeSlot = timeSlotRepository.findById(id)
             .orElseThrow(() -> new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             ));
+
+        log.info("Timeslot {} found", timeSlot.getId());
         return timeSlot;
     }
 
     @Transactional
     public TimeSlot updateTimeSlot(Long id, UpdateTimeSlotRequest updateRequest) {
+        log.debug("Updating timeslot {}", id);
         TimeSlot timeSlot = timeSlotRepository.findById(id)
             .orElseThrow(() -> new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
@@ -142,6 +161,7 @@ public class TimeSlotService {
         ApplicationUser teacher = userService.getUserById(updateRequest.teacherId());
         
         if (!teacher.hasRole(UserRole.TEACHER)) {
+            log.warn("User {} is not a teacher", teacher.getId());
             throw new IllegalArgumentException(
                 "User with id %d is not a teacher".formatted(updateRequest.teacherId())
             );
@@ -149,6 +169,7 @@ public class TimeSlotService {
 
         // Validate teacher teaches this subject
         if (!subject.getTeachers().contains(teacher)) {
+            log.warn("Teacher {} does not teach this subject", teacher.getId());
             throw new IllegalArgumentException(
                 "Teacher with id %d is not assigned to subject '%s'".formatted(
                     updateRequest.teacherId(), subject.getName()
@@ -183,17 +204,23 @@ public class TimeSlotService {
         timeSlot.setEndTime(updateRequest.endTime());
 
         TimeSlot updated = timeSlotRepository.save(timeSlot);
+
+        log.info("Timeslot {} updated", updated.getId());
         return updated;
     }
 
     @Transactional
     public void deleteTimeSlot(Long id) {
+        log.debug("Deleting timeslot {}", id);
         if (!timeSlotRepository.existsById(id)) {
+            log.warn("Timeslot {} not found", id);
             throw new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             );
         }
+
         timeSlotRepository.deleteById(id);
+        log.info("Timeslot {} deleted", id);
     }
 
     private void validateTimeConstraints(LocalTime startTime, LocalTime endTime) {

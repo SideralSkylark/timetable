@@ -25,7 +25,6 @@ import com.timetable.timetable.domain.user.entity.UserRoleEntity;
 import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.repository.UserRepository;
 import com.timetable.timetable.domain.user.repository.UserRoleRepository;
-import com.timetable.timetable.domain.user.service.UserService;
 import com.timetable.timetable.security.JwtService;
 import com.timetable.timetable.security.SecurityUtil;
 
@@ -131,6 +130,7 @@ public class AuthenticationService {
      * @throws InvalidTokenException if the refresh token is missing, invalid, or expired
      */
     public void refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
+        log.debug("Refreshing access token");
         String token = cookieUtil.extractTokenFromCookie(request, REFRESH_COOKIE);
 
         if (token == null || !refreshTokenService.isTokenValid(token)) {
@@ -154,6 +154,7 @@ public class AuthenticationService {
      */
     @Transactional
     public void logout(HttpServletRequest request, HttpServletResponse response) {
+        log.debug("Attempting to log out");
         String refreshToken = cookieUtil.extractTokenFromCookie(request, REFRESH_COOKIE);
         if (refreshToken != null) {
             refreshTokenService.deleteByToken(refreshToken);
@@ -174,6 +175,7 @@ public class AuthenticationService {
      * @throws UserNotFoundException if the user is not found
      */
     public Page<SessionDTO> listSessions(String username, Pageable pageable) {
+        log.debug("Listing active sessions for user {}", username);
         ApplicationUser user = findUserByUsernameOrThrow(username);
         return refreshTokenService.findAllByUserId(user.getId(), pageable)
             .map(sessionMapper::toSessionDTO);
@@ -189,6 +191,7 @@ public class AuthenticationService {
      */
     @Transactional
     public void logoutWithToken(Long tokenId) {
+        log.debug("Attempting remote log-out for token-id: {}", tokenId);
         RefreshToken token = refreshTokenService.findByTokenId(tokenId)
             .orElseThrow(() -> new InvalidTokenException("Refresh token not found"));
 
@@ -238,6 +241,7 @@ public class AuthenticationService {
      * @param request the HTTP request used for IP and user agent info
      */
     private void issueTokens(ApplicationUser user, HttpServletResponse response, HttpServletRequest request) {
+        log.debug("Issueing tokens for user: {}", user.getId());
         String accessToken = jwtService.generateToken(user);
         String refreshToken = refreshTokenService.createRefreshToken(user, request).getToken();
 
@@ -278,6 +282,7 @@ public class AuthenticationService {
      * @throws UserNotFoundException if no user is found with the specified username
      */
     private ApplicationUser findUserByUsernameOrThrow(String username) {
+        log.debug("Querying user for username: {}", username);
         return userRepository.findByUsername(username)
             .orElseThrow(() -> {
                 log.warn("User not found for username: {}", username);

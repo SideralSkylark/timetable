@@ -20,8 +20,10 @@ import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class SubjectService {
     private final SubjectRepository subjectRepository;
@@ -30,9 +32,11 @@ public class SubjectService {
 
     @Transactional
     public Subject createSubject(CreateSubjectRequest createRequest) {
+        log.debug("Creating subject");
         Course course = courseService.getById(createRequest.courseId());
 
         if (subjectRepository.existsByNameAndCourse(createRequest.name(), course)) {
+            log.warn("Subject already exists with this name for this course");
             throw new IllegalStateException(
                 "Subject with name '%s' already exists in this course".formatted(createRequest.name())
             );
@@ -50,30 +54,39 @@ public class SubjectService {
             .build();
 
         Subject saved = subjectRepository.save(subject);
+
+        log.info("Subject {} created", saved.getId());
         return saved;
     }
 
     @Transactional
     public Page<Subject> getAll(Pageable pageable) {
+        log.debug("Fetching all subjects");
         return subjectRepository.findAll(pageable);
     }
 
     public Page<Subject> getAllByCourse(Long courseId, Pageable pageable) {
+        log.warn("Fetching all subjects by course {}", courseId);
         Course course = courseService.getById(courseId);
         
+        log.info("Returning subjects by course");
         return subjectRepository.findByCourse(course, pageable);
     }
 
     public Subject getById(Long id) {
+        log.debug("Fetching subject {}", id);
         Subject subject = subjectRepository.findById(id)
             .orElseThrow(() -> new SubjectNotFoundException(
                 "Subject with id %d not found".formatted(id)
             ));
+
+        log.info("Found subject {}", id);
         return subject;
     }
 
     @Transactional
     public Subject updateSubject(Long id, UpdateSubjectRequest updateRequest) {
+        log.debug("Updating subject {}", id);
         Subject subject = subjectRepository.findById(id)
             .orElseThrow(() -> new SubjectNotFoundException(
                 "Subject with id %d not found".formatted(id)
@@ -81,6 +94,7 @@ public class SubjectService {
 
         if (!subject.getName().equals(updateRequest.name()) && 
             subjectRepository.existsByNameAndCourse(updateRequest.name(), subject.getCourse())) {
+            log.debug("Another subject with this name already exists for this course");
             throw new IllegalArgumentException(
                 "Another subject with name '%s' already exists in this course".formatted(updateRequest.name())
             );
@@ -95,17 +109,22 @@ public class SubjectService {
         subject.setTeachers(teachers);
 
         Subject updated = subjectRepository.save(subject);
+
+        log.info("Updated subject {}", updated.getId());
         return updated;
     }
 
     @Transactional
     public void deleteSubject(Long id) {
+        log.debug("Deleting subject {}", id);
         if (!subjectRepository.existsById(id)) {
             throw new SubjectNotFoundException(
                 "Subject with id %d not found".formatted(id)
             );
         }
+
         subjectRepository.deleteById(id);
+        log.info("Subject {} deleted", id);
     }
 
     private Set<ApplicationUser> validateAndFetchTeachers(List<Long> teacherIds) {
