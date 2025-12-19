@@ -150,10 +150,7 @@ public class TimeSlotService {
     @Transactional
     public TimeSlot updateTimeSlot(Long id, UpdateTimeSlotRequest updateRequest) {
         log.debug("Updating timeslot {}", id);
-        TimeSlot timeSlot = timeSlotRepository.findById(id)
-            .orElseThrow(() -> new TimeSlotNotFoundException(
-                "Time slot with id %d not found".formatted(id)
-            ));
+        TimeSlot timeSlot = getById(id);
 
         // Validate all entities exist
         Subject subject = subjectService.getById(updateRequest.subjectId());

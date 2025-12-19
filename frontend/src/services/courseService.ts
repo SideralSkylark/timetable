@@ -6,6 +6,7 @@ import type {
   UpdateCourseRequest,
   CourseResponse,
 } from './dto/course'
+import type { SubjectListResponse, SubjectDetailResponse } from './dto/subject'
 
 const BASE_URL = '/v1/courses'
 
@@ -24,6 +25,11 @@ export const courseService = {
 
   async getById(id: number) {
     const res = await api.get<ApiResponse<CourseResponse>>(`${BASE_URL}/${id}`)
+    return res.data.data
+  },
+
+  async getSubjectsByCourse(id: number, page: number = 0, size: number = 0) {
+    const res = await api.get<ApiResponse<Page<SubjectListResponse>>>(`${BASE_URL}/${id}/subjects`)
     return res.data.data
   },
 

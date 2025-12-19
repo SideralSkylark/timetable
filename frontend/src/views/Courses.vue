@@ -239,10 +239,20 @@ onMounted(loadCourses)
 const toggleCourse = async (course: any) => {
   course.expanded = !course.expanded
 
-  if (course.expanded && course.disciplines.length === 0) {
-    course.loadingSubjects = true
-    const page = await subjectService.getAll(0, 100)
-    course.disciplines = page.content.filter(s => s.courseId === course.id)
+  if (course.expanded) {
+    await loadSubjects(course)
+  }
+}
+
+const loadSubjects = async (course: any, force = false) => {
+  if (course.loadingSubjects) return
+  if (!force && course.disciplines.length > 0) return
+
+  course.loadingSubjects = true
+  try {
+    const page = await courseService.getSubjectsByCourse(course.id, 0, 100)
+    course.disciplines = page.content
+  } finally {
     course.loadingSubjects = false
   }
 }
@@ -282,8 +292,9 @@ const createDiscipline = async (data: any) => {
     courseId: selectedCourse.value.id,
     teacherIds: data.teacherIds.split(',').map((x: string) => Number(x.trim())),
   })
+
   showDisciplineModal.value = false
-  toggleCourse(selectedCourse.value) // reload subjects
+  await loadSubjects(selectedCourse.value, true) 
 }
 
 const updateDiscipline = async (data: any) => {
@@ -294,7 +305,7 @@ const updateDiscipline = async (data: any) => {
   })
   showDisciplineModal.value = false
   editingDiscipline.value = null
-  toggleCourse(selectedCourse.value) // reload subjects
+  loadSubjects(selectedCourse.value, true) // reload subjects
 }
 
 const openEditDisciplineModal = (discipline: any) => {
@@ -318,7 +329,7 @@ const deleteCourse = async (id: number) => {
 // ========================
 const deleteDiscipline = async (disciplineId: number) => {
   await subjectService.delete(disciplineId)
-  loadCourses()
+  await loadSubjects(selectedCourse.value, true)
 }
 
 // ========================

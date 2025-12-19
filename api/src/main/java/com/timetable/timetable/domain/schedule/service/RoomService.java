@@ -52,8 +52,7 @@ public class RoomService {
 
     public Room updateRoom(Long id, UpdateRoomRequest updateRequest) {
         log.debug("Updating room {}", id);
-        Room room = roomRepository.findById(id)
-            .orElseThrow(() -> new RoomNotFoundException("Room not found."));
+        Room room = getById(id);
 
         if (!room.getName().equals(updateRequest.name()) && roomRepository.existsByName(updateRequest.name())) {
             log.warn("Another room with the same name already exists");

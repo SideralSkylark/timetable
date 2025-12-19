@@ -9,11 +9,17 @@ export interface UpdateSubjectRequest {
   teacherIds: number[]
 }
 
-export interface SubjectResponse {
+export interface SubjectDetailResponse {
   id: number,
   name: string,
   courseId: number,
   courseName: string,
+  teachers: TeacherInfo[]
+}
+
+export interface SubjectListResponse {
+  id: number,
+  name: string,
   teachers: TeacherInfo[]
 }
 

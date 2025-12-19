@@ -65,8 +65,7 @@ public class CourseService {
 
     public Course updateCourse(Long id, UpdateCourseRequest updateRequest) {
         log.debug("Updating course {}", id);
-        Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new CourseNotFoundException("No course found with id: %d".formatted(id)));
+        Course course = getById(id);
 
         if (!course.getName().equals(updateRequest.name()) && courseRepository.existsByName(updateRequest.name())) {
             log.warn("Another course with that name already exists");

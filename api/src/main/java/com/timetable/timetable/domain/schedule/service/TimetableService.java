@@ -78,10 +78,7 @@ public class TimetableService {
     @Transactional
     public Timetable updateTimetable(Long id, UpdateTimetableRequest updateRequest) {
         log.debug("updating timetable {}", id);
-        Timetable timetable = timetableRepository.findById(id)
-            .orElseThrow(() -> new TimetableNotFoundException(
-                "Timetable with id %d not found".formatted(id)
-            ));
+        Timetable timetable = getById(id);
 
         // Check if trying to change to a different academic period that already exists
         if (!timetable.getAcademicPeriod().equals(updateRequest.academicPeriod()) && 
