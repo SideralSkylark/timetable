@@ -4,8 +4,10 @@ import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.dto.CourseResponse;
 import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
+import com.timetable.timetable.domain.schedule.dto.SubjectListResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.service.CourseService;
+import com.timetable.timetable.domain.schedule.service.SubjectService;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
@@ -27,12 +29,13 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("api/v1/courses")
 public class CourseController {
     private final CourseService courseService;
+    private final SubjectService subjectService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<CourseResponse>> create(@Valid @RequestBody CreateCourseRequest request) {
         return ResponseFactory.ok(
             CourseResponse.from(courseService.createCourse(request)),
-            "Course created successfully."
+            "Course created"
         );
     }
 
@@ -40,7 +43,17 @@ public class CourseController {
     public ResponseEntity<ApiResponse<PagedModel<CourseResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
             new PagedModel<>(courseService.getAll(pageable).map(CourseResponse::from)),
-            "Courses fetched successfully."
+            "Courses fetched"
+        );
+    }
+
+    @GetMapping("/{courseId}/subjects")
+    public ResponseEntity<ApiResponse<PagedModel<SubjectListResponse>>> getSubjects(
+            @PathVariable Long courseId, 
+            Pageable pageable) {
+        return ResponseFactory.ok(
+            new PagedModel<>(subjectService.getAllByCourse(courseId, pageable).map(SubjectListResponse::from)),
+            "Subjects fetched"
         );
     }
 
@@ -48,7 +61,7 @@ public class CourseController {
     public ResponseEntity<ApiResponse<CourseResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
             CourseResponse.from(courseService.getById(id)),
-            "Course fetched successfully."
+            "Course fetched"
         );
     }
 
@@ -58,7 +71,7 @@ public class CourseController {
             @Valid @RequestBody UpdateCourseRequest request) {
         return ResponseFactory.ok(
             CourseResponse.from(courseService.updateCourse(id, request)),
-            "Course updated successfully."
+            "Course updated"
         );
     }
 

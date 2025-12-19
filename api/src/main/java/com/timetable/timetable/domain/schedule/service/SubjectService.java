@@ -31,26 +31,21 @@ public class SubjectService {
     private final UserService userService;
 
     @Transactional
-    public Subject createSubject(CreateSubjectRequest createRequest) {
+    public Subject createSubject(CreateSubjectRequest request) {
         log.debug("Creating subject");
-        Course course = courseService.getById(createRequest.courseId());
+        Course course = courseService.getById(request.courseId());
 
-        if (subjectRepository.existsByNameAndCourse(createRequest.name(), course)) {
+        if (subjectRepository.existsByNameAndCourse(request.name(), course)) {
             log.warn("Subject already exists with this name for this course");
             throw new IllegalStateException(
-                "Subject with name '%s' already exists in this course".formatted(createRequest.name())
+                "Subject with name '%s' already exists in this course".formatted(request.name())
             );
         }
 
-        Set<ApplicationUser> teachers = new HashSet<>();
-        if (createRequest.teacherIds() != null && !createRequest.teacherIds().isEmpty()) {
-            teachers = validateAndFetchTeachers(createRequest.teacherIds());
-        }
-
         Subject subject = Subject.builder()
-            .name(createRequest.name())
+            .name(request.name())
             .course(course)
-            .teachers(teachers)
+            .teachers(fetchTeachers(request.teacherIds()))
             .build();
 
         Subject saved = subjectRepository.save(subject);
@@ -59,19 +54,31 @@ public class SubjectService {
         return saved;
     }
 
-    @Transactional
-    public Page<Subject> getAll(Pageable pageable) {
-        log.debug("Fetching all subjects");
-        return subjectRepository.findAll(pageable);
+    @Transactional(readOnly = true)
+    public Page<Subject> getAllByCourse(Long courseId, Pageable pageable) {
+        log.debug("Fetching all subjects for course {}", courseId);
+
+        Course course = courseService.getById(courseId);
+
+        Page<Subject> page = subjectRepository.findByCourse(course, pageable);
+
+        if (!page.isEmpty()) {
+            subjectRepository.findByIdIn(
+                page.getContent().stream()
+                .map(Subject::getId)
+                .toList()
+            );
+        }
+
+        return page;
     }
 
-    public Page<Subject> getAllByCourse(Long courseId, Pageable pageable) {
-        log.warn("Fetching all subjects by course {}", courseId);
-        Course course = courseService.getById(courseId);
-        
-        log.info("Returning subjects by course");
-        return subjectRepository.findByCourse(course, pageable);
-    }
+    // @Transactional(readOnly = true)
+    // public Subject getById(Long id) {
+    //     log.debug("fetching subject {}", id);
+    //     return subjectRepository.findWithDetailsById(id);
+    // }
+
 
     public Subject getById(Long id) {
         log.debug("Fetching subject {}", id);
@@ -85,28 +92,21 @@ public class SubjectService {
     }
 
     @Transactional
-    public Subject updateSubject(Long id, UpdateSubjectRequest updateRequest) {
+    public Subject updateSubject(Long id, UpdateSubjectRequest request) {
         log.debug("Updating subject {}", id);
-        Subject subject = subjectRepository.findById(id)
-            .orElseThrow(() -> new SubjectNotFoundException(
-                "Subject with id %d not found".formatted(id)
-            ));
+        Subject subject = getById(id);
 
-        if (!subject.getName().equals(updateRequest.name()) && 
-            subjectRepository.existsByNameAndCourse(updateRequest.name(), subject.getCourse())) {
+        if (!subject.getName().equals(request.name()) && 
+            subjectRepository.existsByNameAndCourse(request.name(), subject.getCourse())) {
             log.debug("Another subject with this name already exists for this course");
             throw new IllegalArgumentException(
-                "Another subject with name '%s' already exists in this course".formatted(updateRequest.name())
+                "Another subject with name '%s' already exists in this course".formatted(request.name())
             );
         }
 
-        Set<ApplicationUser> teachers = new HashSet<>();
-        if (updateRequest.teacherIds() != null && !updateRequest.teacherIds().isEmpty()) {
-            teachers = validateAndFetchTeachers(updateRequest.teacherIds());
-        }
 
-        subject.setName(updateRequest.name());
-        subject.setTeachers(teachers);
+        subject.setName(request.name());
+        subject.setTeachers(fetchTeachers(request.teacherIds()));
 
         Subject updated = subjectRepository.save(subject);
 
@@ -127,16 +127,16 @@ public class SubjectService {
         log.info("Subject {} deleted", id);
     }
 
-    private Set<ApplicationUser> validateAndFetchTeachers(List<Long> teacherIds) {
+    private Set<ApplicationUser> fetchTeachers(List<Long> ids) {
         Set<ApplicationUser> teachers = new HashSet<>();
+
+        if (ids == null) return teachers;
         
-        for (Long teacherId : teacherIds) {
-            ApplicationUser user = userService.getUserById(teacherId);
+        for (Long id : ids) {
+            ApplicationUser user = userService.getUserById(id);
             
             if (!user.hasRole(UserRole.TEACHER)) {
-                throw new IllegalArgumentException(
-                    "User with id %d is not a teacher".formatted(teacherId)
-                );
+                throw new IllegalArgumentException("User with id %d is not a teacher".formatted(id));
             }
             
             teachers.add(user);

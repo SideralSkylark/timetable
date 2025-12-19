@@ -3,7 +3,7 @@ package com.timetable.timetable.domain.schedule.controller;
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.dto.CreateSubjectRequest;
-import com.timetable.timetable.domain.schedule.dto.SubjectResponse;
+import com.timetable.timetable.domain.schedule.dto.SubjectListResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateSubjectRequest;
 import com.timetable.timetable.domain.schedule.service.SubjectService;
 
@@ -29,35 +29,29 @@ public class SubjectController {
     private final SubjectService subjectService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<SubjectResponse>> create(@Valid @RequestBody CreateSubjectRequest request) {
+    public ResponseEntity<ApiResponse<SubjectListResponse>> create(
+            @Valid @RequestBody CreateSubjectRequest request) {
         return ResponseFactory.ok(
-            SubjectResponse.from(subjectService.createSubject(request)),
-            "subject created successfully."
+            SubjectListResponse.from(subjectService.createSubject(request)),
+            "subject created"
         );
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<PagedModel<SubjectResponse>>> getAll(Pageable pageable) {
-        return ResponseFactory.ok(
-            new PagedModel<>(subjectService.getAll(pageable).map(SubjectResponse::from)),
-            "Subjects fetched successfully."
-        );
-    }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SubjectResponse>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<SubjectListResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            SubjectResponse.from(subjectService.getById(id)),
+            SubjectListResponse.from(subjectService.getById(id)),
             "Subject fetched successfully."
         );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SubjectResponse>> update(
+    public ResponseEntity<ApiResponse<SubjectListResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateSubjectRequest request) {
         return ResponseFactory.ok(
-            SubjectResponse.from(subjectService.updateSubject(id, request)),
+            SubjectListResponse.from(subjectService.updateSubject(id, request)),
             "subject updated successfully."
         );
     }
