@@ -17,7 +17,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
     }
 
     // 1. Professor não pode dar 2 aulas no mesmo horário
-    private Constraint teacherConflict(ConstraintFactory factory) {
+    public Constraint teacherConflict(ConstraintFactory factory) {
         return factory.forEachUniquePair(LessonAssignment.class,
                 Joiners.equal(a -> a.getTeacher().getId()),
                 Joiners.equal(a -> a.getTimeSlot()))
