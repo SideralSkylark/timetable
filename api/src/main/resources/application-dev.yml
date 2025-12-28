@@ -20,6 +20,7 @@ spring:
       org.springframework: INFO
       com.zaxxer.hikari: WARN
       org.springframework.security: INFO
+      ai.timefold.solver: DEBUG
     file:
       name: logs/dev.log
     pattern:

@@ -1,29 +1,35 @@
 package com.timetable.timetable.scheduler_engine.solver;
 
+import java.util.UUID;
+
+import com.timetable.timetable.common.response.MessageResponse;
+import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.scheduler_engine.domain.TimetableSolution;
-import com.timetable.timetable.scheduler_engine.mapper.LessonMapper;
-import com.timetable.timetable.scheduler_engine.dto.LessonDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @RestController
+@Slf4j
 @RequestMapping("/api/v1/solver")
 @RequiredArgsConstructor
 public class TimetableSolverController {
 
     private final TimetableSolverService solverService;
-    private final LessonMapper lessonMapper;
 
-    // Endpoint mínimo: recebe JSON da timetable inicial e devolve solução
-    @PostMapping
-    public List<LessonDTO> solve(@RequestBody TimetableSolution problem) {
-        TimetableSolution solution = solverService.solve(problem);
-
-        return solution.getLessons().stream()
-                .map(lessonMapper::toDto)
-                .collect(Collectors.toList());
+    @PostMapping("/start")
+    public ResponseEntity<UUID> start(@RequestBody TimetableSolution problem) {
+        return ResponseEntity.ok(solverService.startSolverJob(problem));
     }
+
+    @GetMapping("/{jobId}")
+    public ResponseEntity<TimetableSolution> solution(@PathVariable UUID jobId) {
+        TimetableSolution solution = solverService.getSolution(jobId);
+        return solution == null
+        ? ResponseEntity.accepted().build()
+        : ResponseEntity.ok(solution);
+    }
+
 }
