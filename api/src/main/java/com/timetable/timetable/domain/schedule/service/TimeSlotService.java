@@ -14,7 +14,7 @@ import com.timetable.timetable.domain.schedule.dto.UpdateTimeSlotRequest;
 import com.timetable.timetable.domain.schedule.entity.Cohort;
 import com.timetable.timetable.domain.schedule.entity.Room;
 import com.timetable.timetable.domain.schedule.entity.Subject;
-import com.timetable.timetable.domain.schedule.entity.TimeSlot;
+import com.timetable.timetable.domain.schedule.entity.ScheduledClass;
 import com.timetable.timetable.domain.schedule.entity.Timetable;
 import com.timetable.timetable.domain.schedule.exception.TimeSlotNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.TimeSlotRepository;
@@ -37,7 +37,7 @@ public class TimeSlotService {
     private final CohortService cohortService;
 
     @Transactional
-    public TimeSlot createTimeSlot(CreateTimeSlotRequest createRequest) {
+    public ScheduledClass createTimeSlot(CreateTimeSlotRequest createRequest) {
         log.debug("Creating timeslot");
         Subject subject = subjectService.getById(createRequest.subjectId());
 
@@ -83,7 +83,7 @@ public class TimeSlotService {
             createRequest.endTime()
         );
 
-        TimeSlot timeSlot = TimeSlot.builder()
+        ScheduledClass timeSlot = ScheduledClass.builder()
             .subject(subject)
             .timetable(timetable)
             .teacher(teacher)
@@ -94,18 +94,18 @@ public class TimeSlotService {
             .endTime(createRequest.endTime())
             .build();
 
-        TimeSlot saved = timeSlotRepository.save(timeSlot);
+        ScheduledClass saved = timeSlotRepository.save(timeSlot);
 
         log.info("Timeslot {} created", saved.getId());
         return saved;
     }
 
-    public Page<TimeSlot> getAll(Pageable pageable) {
+    public Page<ScheduledClass> getAll(Pageable pageable) {
         log.debug("Fetching all timeslots");
         return timeSlotRepository.findAll(pageable);
     }
 
-    public Page<TimeSlot> getByTimetable(Long timetableId, Pageable pageable) {
+    public Page<ScheduledClass> getByTimetable(Long timetableId, Pageable pageable) {
         log.debug("Fetching timeslot by timetable {}", timetableId);
         Timetable timetable = timetableService.getById(timetableId);
         
@@ -113,7 +113,7 @@ public class TimeSlotService {
         return timeSlotRepository.findByTimetable(timetable, pageable);
     }
 
-    public Page<TimeSlot> getByCohort(Long cohortId, Pageable pageable) {
+    public Page<ScheduledClass> getByCohort(Long cohortId, Pageable pageable) {
         log.debug("Fetching timeslot by cohort {}", cohortId);
         Cohort cohort = cohortService.getById(cohortId);
         
@@ -121,7 +121,7 @@ public class TimeSlotService {
         return timeSlotRepository.findByCohort(cohort, pageable);
     }
 
-    public Page<TimeSlot> getByTeacher(Long teacherId, Pageable pageable) {
+    public Page<ScheduledClass> getByTeacher(Long teacherId, Pageable pageable) {
         log.debug("Fetching timeslot by teacher {}", teacherId);
         ApplicationUser teacher = userService.getUserById(teacherId);
         
@@ -136,9 +136,9 @@ public class TimeSlotService {
         return timeSlotRepository.findByTeacher(teacher, pageable);
     }
 
-    public TimeSlot getById(Long id) {
+    public ScheduledClass getById(Long id) {
         log.debug("Fetching timeslot {}", id);
-        TimeSlot timeSlot = timeSlotRepository.findById(id)
+        ScheduledClass timeSlot = timeSlotRepository.findById(id)
             .orElseThrow(() -> new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             ));
@@ -148,9 +148,9 @@ public class TimeSlotService {
     }
 
     @Transactional
-    public TimeSlot updateTimeSlot(Long id, UpdateTimeSlotRequest updateRequest) {
+    public ScheduledClass updateTimeSlot(Long id, UpdateTimeSlotRequest updateRequest) {
         log.debug("Updating timeslot {}", id);
-        TimeSlot timeSlot = getById(id);
+        ScheduledClass timeSlot = getById(id);
 
         // Validate all entities exist
         Subject subject = subjectService.getById(updateRequest.subjectId());
@@ -200,7 +200,7 @@ public class TimeSlotService {
         timeSlot.setStartTime(updateRequest.startTime());
         timeSlot.setEndTime(updateRequest.endTime());
 
-        TimeSlot updated = timeSlotRepository.save(timeSlot);
+        ScheduledClass updated = timeSlotRepository.save(timeSlot);
 
         log.info("Timeslot {} updated", updated.getId());
         return updated;
@@ -242,7 +242,7 @@ public class TimeSlotService {
         LocalTime endTime
     ) {
         // Check teacher availability
-        List<TimeSlot> teacherConflicts = timeSlotRepository
+        List<ScheduledClass> teacherConflicts = timeSlotRepository
             .findByTeacherAndDateAndTimeOverlap(teacher, date, startTime, endTime);
         
         if (excludeTimeSlotId != null) {
@@ -256,7 +256,7 @@ public class TimeSlotService {
         }
 
         // Check room availability
-        List<TimeSlot> roomConflicts = timeSlotRepository
+        List<ScheduledClass> roomConflicts = timeSlotRepository
             .findByRoomAndDateAndTimeOverlap(room, date, startTime, endTime);
         
         if (excludeTimeSlotId != null) {
@@ -270,7 +270,7 @@ public class TimeSlotService {
         }
 
         // Check cohort availability
-        List<TimeSlot> cohortConflicts = timeSlotRepository
+        List<ScheduledClass> cohortConflicts = timeSlotRepository
             .findByCohortAndDateAndTimeOverlap(cohort, date, startTime, endTime);
         
         if (excludeTimeSlotId != null) {

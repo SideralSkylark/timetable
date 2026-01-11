@@ -34,7 +34,7 @@ public class Timetable {
     private Long id;
 
     @OneToMany(mappedBy = "timetable", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TimeSlot> timeSlots;
+    private List<ScheduledClass> timeSlots;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

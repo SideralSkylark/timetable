@@ -7,7 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class LessonDTO {
     private String time;    // ex: "08:00-09:00"
-    private String room;    // ex: "A101"
-    private String cohort;  // ex: "A"
-    private String teacher; // ex: "Alice"
+    private String room;    
+    private String cohort;  
+    private String teacher; 
 }

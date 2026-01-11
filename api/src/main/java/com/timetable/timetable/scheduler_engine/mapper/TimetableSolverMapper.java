@@ -25,7 +25,7 @@ public class TimetableSolverMapper {
         );
     }
 
-    private LessonAssignment mapLesson(TimeSlot ts) {
+    private LessonAssignment mapLesson(ScheduledClass ts) {
         return new LessonAssignment(
             ts.getId(),
             new TfSubject(ts.getSubject().getId(), ts.getSubject().getName()),

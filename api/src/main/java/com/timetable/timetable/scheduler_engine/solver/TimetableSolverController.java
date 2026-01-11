@@ -2,8 +2,6 @@ package com.timetable.timetable.scheduler_engine.solver;
 
 import java.util.UUID;
 
-import com.timetable.timetable.common.response.MessageResponse;
-import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.scheduler_engine.domain.TimetableSolution;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

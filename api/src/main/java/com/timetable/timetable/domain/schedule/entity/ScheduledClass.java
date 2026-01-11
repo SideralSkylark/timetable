@@ -29,7 +29,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TimeSlot {
+public class ScheduledClass {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

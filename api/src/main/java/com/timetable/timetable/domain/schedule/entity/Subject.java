@@ -32,9 +32,10 @@ public class Subject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(nullable = false)
     private String name;
+
+    private int credits;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
@@ -47,4 +48,10 @@ public class Subject {
         inverseJoinColumns = @JoinColumn(name = "teacher_id")
     )
     private Set<ApplicationUser> teachers;
+
+    public int getWeeklyHours() {
+        final int creditToHour = 25;
+
+        return creditToHour * credits;
+    }
 }

@@ -16,12 +16,10 @@ public class LessonAssignment {
     @PlanningId
     private Long id;
 
-    // Dados fixos
     private TfSubject subject;
     private TfTeacher teacher;
     private TfCohort cohort;
 
-    // Variáveis a serem calculadas pelo solver
     @PlanningVariable(valueRangeProviderRefs = "rooms")
     private TfRoom room;
 

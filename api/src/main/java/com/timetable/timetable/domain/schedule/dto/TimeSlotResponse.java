@@ -3,7 +3,7 @@ package com.timetable.timetable.domain.schedule.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import com.timetable.timetable.domain.schedule.entity.TimeSlot;
+import com.timetable.timetable.domain.schedule.entity.ScheduledClass;
 
 public record TimeSlotResponse(
     Long id,
@@ -16,7 +16,7 @@ public record TimeSlotResponse(
     LocalTime startTime,
     LocalTime endTime
 ) {
-    public static TimeSlotResponse from(TimeSlot timeSlot) {
+    public static TimeSlotResponse from(ScheduledClass timeSlot) {
         return new TimeSlotResponse(
             timeSlot.getId(),
             new SubjectInfo(
