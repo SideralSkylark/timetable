@@ -7,7 +7,6 @@ import com.timetable.timetable.domain.schedule.dto.RoomResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateRoomRequest;
 import com.timetable.timetable.domain.schedule.service.RoomService;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -69,3 +68,4 @@ public class RoomController {
         return ResponseEntity.noContent().build();
     }
 }
+

@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CohortRepository extends JpaRepository<Cohort, Long> {
     boolean existsByName(String name);
+    boolean existsByYearAndSectionAndAcademicYear(int year, String section, int academicYear);
 }

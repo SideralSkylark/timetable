@@ -15,7 +15,7 @@ public record CohortResponse(
     public static CohortResponse from(Cohort cohort) {
         return new CohortResponse(
             cohort.getId(),
-            cohort.getName(),
+            cohort.getDisplayName(),
             cohort.getCourse().getId(),
             cohort.getCourse().getName(),
             cohort.getStudents().stream()

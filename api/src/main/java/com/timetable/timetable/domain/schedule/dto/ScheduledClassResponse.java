@@ -5,7 +5,7 @@ import java.time.LocalTime;
 
 import com.timetable.timetable.domain.schedule.entity.ScheduledClass;
 
-public record TimeSlotResponse(
+public record ScheduledClassResponse(
     Long id,
     SubjectInfo subject,
     Long timetableId,
@@ -16,8 +16,8 @@ public record TimeSlotResponse(
     LocalTime startTime,
     LocalTime endTime
 ) {
-    public static TimeSlotResponse from(ScheduledClass timeSlot) {
-        return new TimeSlotResponse(
+    public static ScheduledClassResponse from(ScheduledClass timeSlot) {
+        return new ScheduledClassResponse(
             timeSlot.getId(),
             new SubjectInfo(
                 timeSlot.getSubject().getId(),
@@ -35,7 +35,7 @@ public record TimeSlotResponse(
             ),
             new CohortInfo(
                 timeSlot.getCohort().getId(),
-                timeSlot.getCohort().getName()
+                timeSlot.getCohort().getDisplayName()
             ),
             timeSlot.getDate(),
             timeSlot.getStartTime(),

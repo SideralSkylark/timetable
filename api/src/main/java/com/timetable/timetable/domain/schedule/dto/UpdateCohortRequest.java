@@ -4,12 +4,20 @@ import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public record UpdateCohortRequest(
-    @NotBlank(message = "Cohort name is required and cannot be empty")
-    @Size(min = 2, max = 100, message = "Cohort name must be between 2 and 100 characters")
-    String name,
+    @NotNull(message = "students year must be specified")
+    @Positive(message = "students year must be positive")
+    int year,
+
+    @NotBlank(message = "section must not be empty")
+    String section,
+
+    @NotNull(message = "academic year must be specified")
+    @Positive(message = "academic year must be positive")
+    int academicYear,
     
     @NotEmpty(message = "At least one student must be assigned to the cohort")
     List<Long> studentIds

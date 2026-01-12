@@ -9,8 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.timetable.timetable.domain.schedule.dto.CreateTimeSlotRequest;
-import com.timetable.timetable.domain.schedule.dto.UpdateTimeSlotRequest;
+import com.timetable.timetable.domain.schedule.dto.CreateScheduledClassRequest;
+import com.timetable.timetable.domain.schedule.dto.UpdateScheduledClassRequest;
 import com.timetable.timetable.domain.schedule.entity.Cohort;
 import com.timetable.timetable.domain.schedule.entity.Room;
 import com.timetable.timetable.domain.schedule.entity.Subject;
@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class TimeSlotService {
+public class ScheduledClassService {
     private final TimeSlotRepository timeSlotRepository;
     private final SubjectService subjectService;
     private final TimetableService timetableService;
@@ -37,7 +37,7 @@ public class TimeSlotService {
     private final CohortService cohortService;
 
     @Transactional
-    public ScheduledClass createTimeSlot(CreateTimeSlotRequest createRequest) {
+    public ScheduledClass createTimeSlot(CreateScheduledClassRequest createRequest) {
         log.debug("Creating timeslot");
         Subject subject = subjectService.getById(createRequest.subjectId());
 
@@ -148,7 +148,7 @@ public class TimeSlotService {
     }
 
     @Transactional
-    public ScheduledClass updateTimeSlot(Long id, UpdateTimeSlotRequest updateRequest) {
+    public ScheduledClass updateTimeSlot(Long id, UpdateScheduledClassRequest updateRequest) {
         log.debug("Updating timeslot {}", id);
         ScheduledClass timeSlot = getById(id);
 

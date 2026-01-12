@@ -17,6 +17,6 @@ public interface TimetableRepository extends JpaRepository<Timetable, Long> {
     Optional<Timetable> findByAcademicPeriod(String academicPeriod);
     Optional<Timetable> findTopByOrderByCreatedAtDesc();
     List<Timetable> findByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
-    boolean existsByAcademicPeriod(String academicPeriod);
+    boolean existsByAcademicYearAndSemester(int academicYear, int semester);
     Page<Timetable> findByStatus(TimetableStatus status, Pageable pageable);
 }

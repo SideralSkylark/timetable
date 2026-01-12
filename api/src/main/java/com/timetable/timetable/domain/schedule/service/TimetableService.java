@@ -25,15 +25,16 @@ public class TimetableService {
     public Timetable createTimetable(CreateTimetableRequest createRequest) {
         log.debug("Creating timetable");
         // Check if timetable for this academic period already exists
-        if (timetableRepository.existsByAcademicPeriod(createRequest.academicPeriod())) {
-            log.warn("Timetable for period {} already exists", createRequest.academicPeriod());
+        if (timetableRepository.existsByAcademicYearAndSemester(createRequest.academicYear(), createRequest.semester())) {
+            log.warn("Timetable for period {} already exists", createRequest.academicYear());
             throw new IllegalStateException(
-                "Timetable for academic period '%s' already exists".formatted(createRequest.academicPeriod())
+                "Timetable for academic period '%s' already exists".formatted(createRequest.academicYear())
             );
         }
 
         Timetable timetable = Timetable.builder()
-            .academicPeriod(createRequest.academicPeriod())
+            .academicYear(createRequest.academicYear())
+            .semester(createRequest.semester())
             .status(TimetableStatus.DRAFT)
             .build();
 
@@ -81,15 +82,16 @@ public class TimetableService {
         Timetable timetable = getById(id);
 
         // Check if trying to change to a different academic period that already exists
-        if (!timetable.getAcademicPeriod().equals(updateRequest.academicPeriod()) && 
-            timetableRepository.existsByAcademicPeriod(updateRequest.academicPeriod())) {
-            log.warn("another timetable for {} period already exists", updateRequest.academicPeriod());
+        if (!timetable.getAcademicPeriod().equals(updateRequest.academicYear() + "." + updateRequest.semester()) && 
+            timetableRepository.existsByAcademicYearAndSemester(updateRequest.academicYear(), updateRequest.semester())) {
+            log.warn("another timetable for {} period already exists", updateRequest.academicYear());
             throw new IllegalArgumentException(
-                "Another timetable for academic period '%s' already exists".formatted(updateRequest.academicPeriod())
+                "Another timetable for academic period '%s' already exists".formatted(updateRequest.academicYear())
             );
         }
 
-        timetable.setAcademicPeriod(updateRequest.academicPeriod());
+        timetable.setAcademicYear(updateRequest.academicYear());
+        timetable.setSemester(updateRequest.semester());
         timetable.setStatus(updateRequest.status());
 
         Timetable updated = timetableRepository.save(timetable);
@@ -113,7 +115,7 @@ public class TimetableService {
             );
         }
 
-        if (timetable.getTimeSlots() == null || timetable.getTimeSlots().isEmpty()) {
+        if (timetable.getScheduledClasses() == null || timetable.getScheduledClasses().isEmpty()) {
             log.warn("cannot publish an empty timetable");
             throw new IllegalStateException(
                 "Cannot publish an empty timetable. Please add time slots first"

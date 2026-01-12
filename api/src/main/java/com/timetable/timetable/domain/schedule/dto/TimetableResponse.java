@@ -16,8 +16,8 @@ public record TimetableResponse(
     List<Long> timeSlotIds
 ) {
     public static TimetableResponse from(Timetable timetable) {
-        List<Long> timeSlotIds = timetable.getTimeSlots() != null 
-            ? timetable.getTimeSlots().stream()
+        List<Long> timeSlotIds = timetable.getScheduledClasses() != null 
+            ? timetable.getScheduledClasses().stream()
                 .map(slot -> slot.getId())
                 .collect(Collectors.toList())
             : List.of();

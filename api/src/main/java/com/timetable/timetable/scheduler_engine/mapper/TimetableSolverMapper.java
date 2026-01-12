@@ -13,7 +13,7 @@ public class TimetableSolverMapper {
                                        List<TfRoom> rooms,
                                        List<LocalTimeSlot> possibleTimeSlots) {
 
-        List<LessonAssignment> lessons = timetable.getTimeSlots().stream()
+        List<LessonAssignment> lessons = timetable.getScheduledClasses().stream()
             .map(this::mapLesson)
             .toList();
 
@@ -30,7 +30,7 @@ public class TimetableSolverMapper {
             ts.getId(),
             new TfSubject(ts.getSubject().getId(), ts.getSubject().getName()),
             new TfTeacher(ts.getTeacher().getId(), ts.getTeacher().getUsername()),
-            new TfCohort(ts.getCohort().getId(), ts.getCohort().getName()),
+            new TfCohort(ts.getCohort().getId(), ts.getCohort().getDisplayName()),
             null,
             null
         );

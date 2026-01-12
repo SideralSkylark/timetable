@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "time_slots")
+@Table(name = "scheduled_classes")
 @Getter
 @Setter
 @AllArgsConstructor

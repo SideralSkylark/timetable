@@ -1,7 +1,6 @@
 package com.timetable.timetable.domain.schedule.dto;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.timetable.timetable.domain.schedule.entity.Subject;
 

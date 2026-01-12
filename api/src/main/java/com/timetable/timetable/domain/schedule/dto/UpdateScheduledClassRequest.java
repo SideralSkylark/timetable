@@ -6,7 +6,7 @@ import java.time.LocalTime;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 
-public record UpdateTimeSlotRequest(
+public record UpdateScheduledClassRequest(
     @NotNull(message = "Subject ID is required")
     Long subjectId,
     

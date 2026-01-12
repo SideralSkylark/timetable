@@ -33,9 +33,9 @@ public class CohortService {
     @Transactional
     public Cohort createCohort(CreateCohortRequest createRequest) {
         log.debug("Creating cohort");
-        if (cohortRepository.existsByName(createRequest.name())) {
+        if (cohortRepository.existsByYearAndSectionAndAcademicYear(createRequest.year(), createRequest.section(), createRequest.academicYear())) {
             log.warn("Another cohort already exists with that name");
-            throw new IllegalStateException("Cohort with name '%s' already exists".formatted(createRequest.name()));
+            throw new IllegalStateException("Cohort with name '%s' already exists".formatted(createRequest.year() + "-" + createRequest.section() + "-" + createRequest.academicYear()));
         }
 
         Course course = courseService.getById(createRequest.courseId());
@@ -46,7 +46,9 @@ public class CohortService {
         }
 
         Cohort cohort = Cohort.builder()
-            .name(createRequest.name())
+            .year(createRequest.year())
+            .section(createRequest.section())
+            .academicYear(createRequest.academicYear()) 
             .course(course)
             .students(students)
             .build();
@@ -81,17 +83,19 @@ public class CohortService {
                 "Cohort with id %d not found".formatted(id)
             ));
 
-        if (!cohort.getName().equals(updateRequest.name()) && 
-            cohortRepository.existsByName(updateRequest.name())) {
+        if (!cohort.getId().equals(id) && 
+            cohortRepository.existsByYearAndSectionAndAcademicYear(updateRequest.year(), updateRequest.section(), updateRequest.academicYear())) {
             log.warn("Another cohort with that name already exists");
             throw new IllegalArgumentException(
-                "Another cohort with name '%s' already exists".formatted(updateRequest.name())
+                "Another cohort with name '%s' already exists".formatted(id)
             );
         }
 
         Set<ApplicationUser> students = validateAndFetchStudents(updateRequest.studentIds());
 
-        cohort.setName(updateRequest.name());
+        cohort.setYear(updateRequest.year());
+        cohort.setSection(updateRequest.section());
+        cohort.setAcademicYear(updateRequest.academicYear());
         cohort.setStudents(students);
 
         Cohort updated = cohortRepository.save(cohort);

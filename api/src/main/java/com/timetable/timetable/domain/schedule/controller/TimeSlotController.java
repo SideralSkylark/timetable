@@ -2,12 +2,11 @@ package com.timetable.timetable.domain.schedule.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
-import com.timetable.timetable.domain.schedule.dto.CreateTimeSlotRequest;
-import com.timetable.timetable.domain.schedule.dto.TimeSlotResponse;
-import com.timetable.timetable.domain.schedule.dto.UpdateTimeSlotRequest;
-import com.timetable.timetable.domain.schedule.service.TimeSlotService;
+import com.timetable.timetable.domain.schedule.dto.CreateScheduledClassRequest;
+import com.timetable.timetable.domain.schedule.dto.ScheduledClassResponse;
+import com.timetable.timetable.domain.schedule.dto.UpdateScheduledClassRequest;
+import com.timetable.timetable.domain.schedule.service.ScheduledClassService;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -27,49 +26,47 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("api/v1/timeslots")
 public class TimeSlotController {
-    private final TimeSlotService timeSlotService;
+    private final ScheduledClassService scheduledClassService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<TimeSlotResponse>> create(@Valid @RequestBody CreateTimeSlotRequest request) {
+    public ResponseEntity<ApiResponse<ScheduledClassResponse>> create(@Valid @RequestBody CreateScheduledClassRequest request) {
         return ResponseFactory.ok(
-            TimeSlotResponse.from(timeSlotService.createTimeSlot(request)),
+            ScheduledClassResponse.from(scheduledClassService.createTimeSlot(request)),
             "Time slot created successfully."
         );
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedModel<TimeSlotResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<ScheduledClassResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(timeSlotService.getAll(pageable).map(TimeSlotResponse::from)),
+            new PagedModel<>(scheduledClassService.getAll(pageable).map(ScheduledClassResponse::from)),
             "Time slots fetched successfully."
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<TimeSlotResponse>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ScheduledClassResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            TimeSlotResponse.from(timeSlotService.getById(id)),
+            ScheduledClassResponse.from(scheduledClassService.getById(id)),
             "Time slot fetched successfully."
         );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<TimeSlotResponse>> update(
+    public ResponseEntity<ApiResponse<ScheduledClassResponse>> update(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateTimeSlotRequest request) {
+            @Valid @RequestBody UpdateScheduledClassRequest request) {
         return ResponseFactory.ok(
             
-            TimeSlotResponse.from(timeSlotService.updateTimeSlot(id, request)),
+            ScheduledClassResponse.from(scheduledClassService.updateTimeSlot(id, request)),
             "Time slot updated successfully."
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        timeSlotService.deleteTimeSlot(id);
+        scheduledClassService.deleteTimeSlot(id);
         return ResponseEntity.noContent().build();
     }
 }
-
-
 
