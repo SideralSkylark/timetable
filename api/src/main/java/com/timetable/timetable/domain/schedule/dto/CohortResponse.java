@@ -7,7 +7,9 @@ import com.timetable.timetable.domain.schedule.entity.Cohort;
 
 public record CohortResponse(
     Long id,
-    String name,
+    int year,
+    String section,
+    int academicYear,
     Long courseId,
     String courseName,
     List<Long> studentIds
@@ -15,7 +17,9 @@ public record CohortResponse(
     public static CohortResponse from(Cohort cohort) {
         return new CohortResponse(
             cohort.getId(),
-            cohort.getDisplayName(),
+            cohort.getYear(),
+            cohort.getSection(),
+            cohort.getAcademicYear(),
             cohort.getCourse().getId(),
             cohort.getCourse().getName(),
             cohort.getStudents().stream()

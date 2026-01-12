@@ -33,9 +33,14 @@ public class CohortService {
     @Transactional
     public Cohort createCohort(CreateCohortRequest createRequest) {
         log.debug("Creating cohort");
-        if (cohortRepository.existsByYearAndSectionAndAcademicYear(createRequest.year(), createRequest.section(), createRequest.academicYear())) {
-            log.warn("Another cohort already exists with that name");
-            throw new IllegalStateException("Cohort with name '%s' already exists".formatted(createRequest.year() + "-" + createRequest.section() + "-" + createRequest.academicYear()));
+        if (cohortRepository.existsByYearAndSectionAndAcademicYearAndCourseId(
+            createRequest.year(), 
+            createRequest.section(), 
+            createRequest.academicYear(), 
+            createRequest.courseId())
+        ) {
+            log.warn("Another cohort already exists with thats specification");
+            throw new IllegalStateException("Cohort with name '%s' already exists for the designated course".formatted(createRequest.year() + "-" + createRequest.section() + "-" + createRequest.academicYear()));
         }
 
         Course course = courseService.getById(createRequest.courseId());
@@ -83,11 +88,16 @@ public class CohortService {
                 "Cohort with id %d not found".formatted(id)
             ));
 
-        if (!cohort.getId().equals(id) && 
-            cohortRepository.existsByYearAndSectionAndAcademicYear(updateRequest.year(), updateRequest.section(), updateRequest.academicYear())) {
-            log.warn("Another cohort with that name already exists");
+        if (cohortRepository.existsAnotherWithSameAttributes(
+            updateRequest.year(), 
+            updateRequest.section(), 
+            updateRequest.academicYear(), 
+            cohort.getCourse().getId(), 
+            cohort.getId())
+        ) {
+            log.warn("Another cohort with the same data already exists");
             throw new IllegalArgumentException(
-                "Another cohort with name '%s' already exists".formatted(id)
+                "Another cohort with data already exists"
             );
         }
 
