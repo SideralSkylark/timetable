@@ -17,7 +17,7 @@ import com.timetable.timetable.domain.schedule.entity.Subject;
 import com.timetable.timetable.domain.schedule.entity.ScheduledClass;
 import com.timetable.timetable.domain.schedule.entity.Timetable;
 import com.timetable.timetable.domain.schedule.exception.TimeSlotNotFoundException;
-import com.timetable.timetable.domain.schedule.repository.TimeSlotRepository;
+import com.timetable.timetable.domain.schedule.repository.ScheduledClassRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.service.UserService;
@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class ScheduledClassService {
-    private final TimeSlotRepository timeSlotRepository;
+    private final ScheduledClassRepository scheduledClassRepository;
     private final SubjectService subjectService;
     private final TimetableService timetableService;
     private final UserService userService;
@@ -94,7 +94,7 @@ public class ScheduledClassService {
             .endTime(createRequest.endTime())
             .build();
 
-        ScheduledClass saved = timeSlotRepository.save(timeSlot);
+        ScheduledClass saved = scheduledClassRepository.save(timeSlot);
 
         log.info("Timeslot {} created", saved.getId());
         return saved;
@@ -102,7 +102,7 @@ public class ScheduledClassService {
 
     public Page<ScheduledClass> getAll(Pageable pageable) {
         log.debug("Fetching all timeslots");
-        return timeSlotRepository.findAll(pageable);
+        return scheduledClassRepository.findAll(pageable);
     }
 
     public Page<ScheduledClass> getByTimetable(Long timetableId, Pageable pageable) {
@@ -110,7 +110,7 @@ public class ScheduledClassService {
         Timetable timetable = timetableService.getById(timetableId);
         
         log.info("timeslot, found for timetable {}", timetableId);
-        return timeSlotRepository.findByTimetable(timetable, pageable);
+        return scheduledClassRepository.findByTimetable(timetable, pageable);
     }
 
     public Page<ScheduledClass> getByCohort(Long cohortId, Pageable pageable) {
@@ -118,7 +118,7 @@ public class ScheduledClassService {
         Cohort cohort = cohortService.getById(cohortId);
         
         log.info("Found timeslot for cohort {}", cohortId);
-        return timeSlotRepository.findByCohort(cohort, pageable);
+        return scheduledClassRepository.findByCohort(cohort, pageable);
     }
 
     public Page<ScheduledClass> getByTeacher(Long teacherId, Pageable pageable) {
@@ -133,12 +133,12 @@ public class ScheduledClassService {
         }
         
         log.info("Found timeslot by teacher {}", teacherId);
-        return timeSlotRepository.findByTeacher(teacher, pageable);
+        return scheduledClassRepository.findByTeacher(teacher, pageable);
     }
 
     public ScheduledClass getById(Long id) {
         log.debug("Fetching timeslot {}", id);
-        ScheduledClass timeSlot = timeSlotRepository.findById(id)
+        ScheduledClass timeSlot = scheduledClassRepository.findById(id)
             .orElseThrow(() -> new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             ));
@@ -200,7 +200,7 @@ public class ScheduledClassService {
         timeSlot.setStartTime(updateRequest.startTime());
         timeSlot.setEndTime(updateRequest.endTime());
 
-        ScheduledClass updated = timeSlotRepository.save(timeSlot);
+        ScheduledClass updated = scheduledClassRepository.save(timeSlot);
 
         log.info("Timeslot {} updated", updated.getId());
         return updated;
@@ -209,14 +209,14 @@ public class ScheduledClassService {
     @Transactional
     public void deleteTimeSlot(Long id) {
         log.debug("Deleting timeslot {}", id);
-        if (!timeSlotRepository.existsById(id)) {
+        if (!scheduledClassRepository.existsById(id)) {
             log.warn("Timeslot {} not found", id);
             throw new TimeSlotNotFoundException(
                 "Time slot with id %d not found".formatted(id)
             );
         }
 
-        timeSlotRepository.deleteById(id);
+        scheduledClassRepository.deleteById(id);
         log.info("Timeslot {} deleted", id);
     }
 
@@ -242,7 +242,7 @@ public class ScheduledClassService {
         LocalTime endTime
     ) {
         // Check teacher availability
-        List<ScheduledClass> teacherConflicts = timeSlotRepository
+        List<ScheduledClass> teacherConflicts = scheduledClassRepository
             .findByTeacherAndDateAndTimeOverlap(teacher, date, startTime, endTime);
         
         if (excludeTimeSlotId != null) {
@@ -256,7 +256,7 @@ public class ScheduledClassService {
         }
 
         // Check room availability
-        List<ScheduledClass> roomConflicts = timeSlotRepository
+        List<ScheduledClass> roomConflicts = scheduledClassRepository
             .findByRoomAndDateAndTimeOverlap(room, date, startTime, endTime);
         
         if (excludeTimeSlotId != null) {
@@ -270,7 +270,7 @@ public class ScheduledClassService {
         }
 
         // Check cohort availability
-        List<ScheduledClass> cohortConflicts = timeSlotRepository
+        List<ScheduledClass> cohortConflicts = scheduledClassRepository
             .findByCohortAndDateAndTimeOverlap(cohort, date, startTime, endTime);
         
         if (excludeTimeSlotId != null) {

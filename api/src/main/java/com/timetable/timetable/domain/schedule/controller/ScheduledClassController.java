@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/timeslots")
-public class TimeSlotController {
+public class ScheduledClassController {
     private final ScheduledClassService scheduledClassService;
 
     @PostMapping

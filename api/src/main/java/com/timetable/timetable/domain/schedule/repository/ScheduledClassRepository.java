@@ -18,13 +18,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TimeSlotRepository extends JpaRepository<ScheduledClass, Long> {
+public interface ScheduledClassRepository extends JpaRepository<ScheduledClass, Long> {
 Page<ScheduledClass> findByTimetable(Timetable timetable, Pageable pageable);
 Page<ScheduledClass> findByCohort(Cohort cohort, Pageable pageable);
 Page<ScheduledClass> findByTeacher(ApplicationUser teacher, Pageable pageable);
 
 // For conflict detection
-@Query("SELECT ts FROM TimeSlot ts WHERE ts.teacher = :teacher AND ts.date = :date " +
+@Query("SELECT ts FROM ScheduledClass ts WHERE ts.teacher = :teacher AND ts.date = :date " +
            "AND ts.startTime < :endTime AND ts.endTime > :startTime")
     List<ScheduledClass> findByTeacherAndDateAndTimeOverlap(
         @Param("teacher") ApplicationUser teacher, 
@@ -32,7 +32,7 @@ Page<ScheduledClass> findByTeacher(ApplicationUser teacher, Pageable pageable);
         @Param("startTime") LocalTime startTime, 
         @Param("endTime") LocalTime endTime);
     
-    @Query("SELECT ts FROM TimeSlot ts WHERE ts.room = :room AND ts.date = :date " +
+    @Query("SELECT ts FROM ScheduledClass ts WHERE ts.room = :room AND ts.date = :date " +
            "AND ts.startTime < :endTime AND ts.endTime > :startTime")
     List<ScheduledClass> findByRoomAndDateAndTimeOverlap(
         @Param("room") Room room, 
@@ -40,7 +40,7 @@ Page<ScheduledClass> findByTeacher(ApplicationUser teacher, Pageable pageable);
         @Param("startTime") LocalTime startTime, 
         @Param("endTime") LocalTime endTime);
     
-    @Query("SELECT ts FROM TimeSlot ts WHERE ts.cohort = :cohort AND ts.date = :date " +
+    @Query("SELECT ts FROM ScheduledClass ts WHERE ts.cohort = :cohort AND ts.date = :date " +
            "AND ts.startTime < :endTime AND ts.endTime > :startTime")
     List<ScheduledClass> findByCohortAndDateAndTimeOverlap(
         @Param("cohort") Cohort cohort, 
