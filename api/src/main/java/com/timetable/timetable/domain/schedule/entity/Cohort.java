@@ -34,14 +34,19 @@ public class Cohort {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
-    private String name; // ex: "Turma A-2024"
+    private int year; //1st, 2nd, 3rd, ...
+
+    private String section; // A, B, C, ...
+
+    private int academicYear; // 2026
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
+
+    @Column(nullable = false)
+    private String courseNameSnapshot;
     
-    // Estudantes nesta turma
     @ManyToMany
     @JoinTable(
         name = "cohort_students",
@@ -49,4 +54,13 @@ public class Cohort {
         inverseJoinColumns = @JoinColumn(name = "student_id")
     )
     private Set<ApplicationUser> students = new HashSet<>();
+
+    public String getDisplayName() {
+        return year + "ano" + "-" + courseNameSnapshot + "-" + section + "-" + academicYear;
+    }
+
+    public int getStudentNumber() {
+        return students.size();
+    }
 }
+

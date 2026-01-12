@@ -43,4 +43,3 @@ public class Course {
     @CreationTimestamp
     private LocalDateTime createdAt;
 }
-

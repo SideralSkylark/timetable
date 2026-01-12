@@ -32,6 +32,7 @@ public class Subject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false)
     private String name;
 
@@ -49,9 +50,11 @@ public class Subject {
     )
     private Set<ApplicationUser> teachers;
 
-    public int getWeeklyHours() {
-        final int creditToHour = 25;
-
-        return creditToHour * credits;
+    public int getTotalHours() {
+        return AcademicPolicy.HOURS_PER_CREDIT * credits;
     }
+
+    // public int getWeeklyHours() {
+    //  return getTotalHours() / num_weeks;
+    // }
 }

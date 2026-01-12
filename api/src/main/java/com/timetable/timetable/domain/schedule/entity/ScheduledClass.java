@@ -1,5 +1,6 @@
 package com.timetable.timetable.domain.schedule.entity;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -39,7 +40,7 @@ public class ScheduledClass {
     private Subject subject;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "timetable_id") // ADICIONAR esta relação
+    @JoinColumn(name = "timetable_id") 
     private Timetable timetable;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -74,5 +75,8 @@ public class ScheduledClass {
         }
     }
 
+    public int getDurationInMinutes() {
+        return (int) Duration.between(startTime, endTime).toMinutes();
+    }
 }
 

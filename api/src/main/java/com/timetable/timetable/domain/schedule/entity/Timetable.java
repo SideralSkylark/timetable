@@ -34,16 +34,22 @@ public class Timetable {
     private Long id;
 
     @OneToMany(mappedBy = "timetable", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ScheduledClass> timeSlots;
+    private List<ScheduledClass> scheduledClasses;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
     @Column(nullable = false)
     private TimetableStatus status = TimetableStatus.DRAFT;
 
-    private String academicPeriod; // ex: "2024.1", "Fall 2024"
+    private int academicYear; // 2026
+
+    private int semester; // 1 or 2
     
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    public String getAcademicPeriod() {
+        return academicYear + "." + semester;
+    }
 }
 
