@@ -51,11 +51,11 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         // Setup test data
-        UserRoleEntity adminRole = new UserRoleEntity();
+        adminRole = new UserRoleEntity();
         adminRole.setId(1L);
         adminRole.setRole(UserRole.ADMIN);
             
-        UserRoleEntity teacherRole = new UserRoleEntity();
+        teacherRole = new UserRoleEntity();
         teacherRole.setId(2L);
         teacherRole.setRole(UserRole.TEACHER);
             
@@ -80,20 +80,22 @@ class UserServiceTest {
             "password123", 
             List.of("ADMIN", "TEACHER")
         );
-        
+
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(roleRepository.findByRole(UserRole.ADMIN)).thenReturn(Optional.of(adminRole));
         when(roleRepository.findByRole(UserRole.TEACHER)).thenReturn(Optional.of(teacherRole));
-        when(userRepository.save(any(ApplicationUser.class))).thenReturn(testUser);
-        
+        when(userRepository.save(any(ApplicationUser.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));  
+
         // When
         ApplicationUser result = userService.createUser(request);
-        
+
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getUsername()).isEqualTo("john.doe");
+        assertThat(result.getUsername()).isEqualTo("jane.smith");  
+        assertThat(result.getEmail()).isEqualTo("jane.smith@school.edu");
         verify(userRepository, times(1)).save(any(ApplicationUser.class));
         verify(passwordEncoder, times(1)).encode("password123");
     }

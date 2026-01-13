@@ -12,3 +12,13 @@
 ## Solver
 ### entidades
 - TfRoom: recurso a ser usado pela planning sollution
+
+
+## testing
+There are unit test for all services avaliable, to run them *cd* into api and then run:
+
+``` bash
+mvn test -Dtest="*ServiceTest"
+```
+**make sure you have maven installed for it**
+
