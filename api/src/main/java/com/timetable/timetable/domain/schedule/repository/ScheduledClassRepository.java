@@ -24,24 +24,24 @@ Page<ScheduledClass> findByCohort(Cohort cohort, Pageable pageable);
 Page<ScheduledClass> findByTeacher(ApplicationUser teacher, Pageable pageable);
 
 // For conflict detection
-@Query("SELECT ts FROM ScheduledClass ts WHERE ts.teacher = :teacher AND ts.date = :date " +
-           "AND ts.startTime < :endTime AND ts.endTime > :startTime")
+@Query("SELECT sc FROM ScheduledClass sc WHERE sc.teacher = :teacher AND sc.date = :date " +
+           "AND sc.startTime < :endTime AND sc.endTime > :startTime")
     List<ScheduledClass> findByTeacherAndDateAndTimeOverlap(
         @Param("teacher") ApplicationUser teacher, 
         @Param("date") LocalDate date, 
         @Param("startTime") LocalTime startTime, 
         @Param("endTime") LocalTime endTime);
     
-    @Query("SELECT ts FROM ScheduledClass ts WHERE ts.room = :room AND ts.date = :date " +
-           "AND ts.startTime < :endTime AND ts.endTime > :startTime")
+    @Query("SELECT sc FROM ScheduledClass sc WHERE sc.room = :room AND sc.date = :date " +
+           "AND sc.startTime < :endTime AND sc.endTime > :startTime")
     List<ScheduledClass> findByRoomAndDateAndTimeOverlap(
         @Param("room") Room room, 
         @Param("date") LocalDate date, 
         @Param("startTime") LocalTime startTime, 
         @Param("endTime") LocalTime endTime);
     
-    @Query("SELECT ts FROM ScheduledClass ts WHERE ts.cohort = :cohort AND ts.date = :date " +
-           "AND ts.startTime < :endTime AND ts.endTime > :startTime")
+    @Query("SELECT sc FROM ScheduledClass sc WHERE sc.cohort = :cohort AND sc.date = :date " +
+           "AND sc.startTime < :endTime AND sc.endTime > :startTime")
     List<ScheduledClass> findByCohortAndDateAndTimeOverlap(
         @Param("cohort") Cohort cohort, 
         @Param("date") LocalDate date, 

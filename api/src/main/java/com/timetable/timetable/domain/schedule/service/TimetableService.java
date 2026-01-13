@@ -65,11 +65,11 @@ public class TimetableService {
         return timetable;
     }
 
-    public Timetable getByAcademicPeriod(String academicPeriod) {
-        log.debug("fetching timetable by {} period", academicPeriod);
-        Timetable timetable = timetableRepository.findByAcademicPeriod(academicPeriod)
+    public Timetable getByAcademicPeriod(int academicYear, int semester) {
+        log.debug("fetching timetable by {} year and {} semester", academicYear, semester);
+        Timetable timetable = timetableRepository.findByAcademicYearAndSemester(academicYear, semester)
             .orElseThrow(() -> new TimetableNotFoundException(
-                "Timetable for academic period '%s' not found".formatted(academicPeriod)
+                "Timetable for academic period '%s' not found".formatted(academicYear + "." + semester)
             ));
 
         log.info("timetable {} found", timetable.getId());
