@@ -18,6 +18,10 @@ public record CreateCohortRequest(
     @Positive(message = "academic year must be positive")
     int academicYear,
 
+    @NotNull(message = "semester must be specified")
+    @Positive(message = "semester must be positive")
+    int semester,
+
     @NotNull(message = "Course ID is required")
     Long courseId,
     

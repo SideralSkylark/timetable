@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -41,14 +42,21 @@ public class Timetable {
     @Column(nullable = false)
     private TimetableStatus status = TimetableStatus.DRAFT;
 
+    /**
+     * The timetables respective year,
+     * ie: 2026
+    */
     @Column(nullable = false)
-    private int academicYear; // 2026
+    private int academicYear; 
 
     @Column(nullable = false)
-    private int semester; // 1 or 2
+    private int semester; 
     
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
     public String getAcademicPeriod() {
         return academicYear + "." + semester;

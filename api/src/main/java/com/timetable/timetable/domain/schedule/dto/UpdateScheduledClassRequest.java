@@ -7,17 +7,11 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateScheduledClassRequest(
-    @NotNull(message = "Subject ID is required")
-    Long subjectId,
+    @NotNull(message = "cohort subject id is required")
+    Long cohortSubjectId,
     
-    @NotNull(message = "Teacher ID is required")
-    Long teacherId,
-    
-    @NotNull(message = "Room ID is required")
+    @NotNull(message = "room ID is required")
     Long roomId,
-    
-    @NotNull(message = "Cohort ID is required")
-    Long cohortId,
     
     @NotNull(message = "Date is required")
     @FutureOrPresent(message = "Date cannot be in the past")

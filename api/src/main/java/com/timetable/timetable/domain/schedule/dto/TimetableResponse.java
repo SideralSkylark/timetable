@@ -9,14 +9,16 @@ import com.timetable.timetable.domain.schedule.entity.TimetableStatus;
 
 public record TimetableResponse(
     Long id,
-    String academicPeriod,
+    List<Long> scheduledClassesIds,
+    Integer scheduledClassesCount,
     TimetableStatus status,
+    int academicYear,
+    int semester, 
     LocalDateTime createdAt,
-    Integer timeSlotCount,
-    List<Long> timeSlotIds
+    LocalDateTime updatedAt
 ) {
     public static TimetableResponse from(Timetable timetable) {
-        List<Long> timeSlotIds = timetable.getScheduledClasses() != null 
+        List<Long> scheduledClassesIds = timetable.getScheduledClasses() != null 
             ? timetable.getScheduledClasses().stream()
                 .map(slot -> slot.getId())
                 .collect(Collectors.toList())
@@ -24,11 +26,13 @@ public record TimetableResponse(
             
         return new TimetableResponse(
             timetable.getId(),
-            timetable.getAcademicPeriod(),
+            scheduledClassesIds,
+            scheduledClassesIds.size(),
             timetable.getStatus(),
+            timetable.getAcademicYear(),
+            timetable.getSemester(),
             timetable.getCreatedAt(),
-            timeSlotIds.size(),
-            timeSlotIds
+            timetable.getUpdatedAt()
         );
     }
 }

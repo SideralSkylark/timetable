@@ -19,6 +19,10 @@ public record UpdateCohortRequest(
     @Positive(message = "academic year must be positive")
     int academicYear,
     
+    @NotNull(message = "semester must be specified")
+    @Positive(message = "semester must be positive")
+    int semester,
+
     @NotEmpty(message = "At least one student must be assigned to the cohort")
     List<Long> studentIds
 ) {}

@@ -10,6 +10,7 @@ public record CohortResponse(
     int year,
     String section,
     int academicYear,
+    int semester,
     Long courseId,
     String courseName,
     List<Long> studentIds
@@ -20,6 +21,7 @@ public record CohortResponse(
             cohort.getYear(),
             cohort.getSection(),
             cohort.getAcademicYear(),
+            cohort.getSemester(),
             cohort.getCourse().getId(),
             cohort.getCourse().getName(),
             cohort.getStudents().stream()

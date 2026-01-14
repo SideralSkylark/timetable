@@ -10,5 +10,8 @@ public record CreateRoomRequest(
 
     @NotNull(message = "Capacity must not be empty.")
     @Min(value = 1, message = "Capacity must be at leat 1.")
-    int capacity
+    int capacity,
+
+    @NotNull(message = "course restriction must be specified")
+    Long courseId
 ) { }
