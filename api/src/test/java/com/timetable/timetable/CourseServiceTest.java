@@ -29,7 +29,6 @@ import com.timetable.timetable.domain.user.service.UserService;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @ExtendWith(MockitoExtension.class)
 class CourseServiceTest {
