@@ -41,8 +41,10 @@ public class Timetable {
     @Column(nullable = false)
     private TimetableStatus status = TimetableStatus.DRAFT;
 
+    @Column(nullable = false)
     private int academicYear; // 2026
 
+    @Column(nullable = false)
     private int semester; // 1 or 2
     
     @CreationTimestamp

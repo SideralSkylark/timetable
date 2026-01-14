@@ -36,24 +36,16 @@ public class ScheduledClass {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subject_id", nullable = false)
-    private Subject subject;
+    @JoinColumn(name = "cohort_subject_id", nullable = false)
+    private CohortSubject cohortSubject;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "timetable_id") 
     private Timetable timetable;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_id", nullable = false)
-    private ApplicationUser teacher;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cohort_id", nullable = false)
-    private Cohort cohort;
     
     @Column(nullable = false)
     private LocalDate date;
@@ -63,6 +55,18 @@ public class ScheduledClass {
     
     @Column(nullable = false)
     private LocalTime endTime;
+
+    public Subject getSubject() {
+        return cohortSubject.getSubject();
+    }
+    
+    public ApplicationUser getTeacher() {
+        return cohortSubject.getAssignedTeacher();
+    }
+    
+    public Cohort getCohort() {
+        return cohortSubject.getCohort();
+    }
 
     @PrePersist
     @PreUpdate

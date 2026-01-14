@@ -55,6 +55,7 @@ public class CohortService {
             .section(createRequest.section())
             .academicYear(createRequest.academicYear()) 
             .course(course)
+            .courseNameSnapshot(course.getName())
             .students(students)
             .build();
         

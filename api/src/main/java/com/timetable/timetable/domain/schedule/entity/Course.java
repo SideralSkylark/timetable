@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,4 +43,7 @@ public class Course {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime UpdatedAt;
 }

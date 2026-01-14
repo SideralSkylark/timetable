@@ -34,11 +34,28 @@ public class Cohort {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    private int year; // ex: 1st, 2nd, 3rd, ...
+    /**  
+     * Field for the students current year
+     * ie: 1, 2, 3 (for 1st, 2nd, 3rd)
+    */
+    @Column(nullable = false)
+    private int year; 
 
-    private String section; // ex: A, B, C, ...
+    /**
+     * ie: A, B, C, ..
+    */
+    @Column(nullable = false)
+    private String section;
 
-    private int academicYear; // ex: 2026
+    /**
+     * Field for the cohorts current academic year.
+     * ie: 2026
+    */
+    @Column(nullable = false)
+    private int academicYear;
+
+    @Column(nullable = false)
+    private int semester;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)

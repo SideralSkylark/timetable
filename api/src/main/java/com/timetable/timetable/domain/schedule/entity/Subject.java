@@ -36,7 +36,14 @@ public class Subject {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private int credits;
+
+    @Column(nullable = false)
+    private int targetYear;
+
+    @Column(nullable = false)
+    private int targetSemester;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
@@ -48,13 +55,17 @@ public class Subject {
         joinColumns = @JoinColumn(name = "subject_id"),
         inverseJoinColumns = @JoinColumn(name = "teacher_id")
     )
-    private Set<ApplicationUser> teachers;
+    private Set<ApplicationUser> eligibleTeachers;
 
     public int getTotalHours() {
         return AcademicPolicy.HOURS_PER_CREDIT * credits;
     }
 
     // public int getWeeklyHours() {
-    //  return getTotalHours() / num_weeks;
+    //  return (int) getTotalHours() / num_weeks;
+    // }
+    //
+    // public int lessonsPerWeek() {
+    //     return (int) getWeeklyHours() / AcademicPolicy.LESSON_DURATION;
     // }
 }
