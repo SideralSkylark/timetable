@@ -2,6 +2,8 @@ package com.timetable.timetable.domain.schedule.dto;
 
 import java.util.List;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -19,6 +21,8 @@ public record CreateSubjectRequest(
     int targetYear,
 
     @NotNull(message = "target semester is required")
+    @Min(value = 1, message = "Semester must be 1 or 2")
+    @Max(value = 2, message = "Semester must be 1 or 2")
     int targetSemester,
 
     @NotNull(message = "Course ID is required")
