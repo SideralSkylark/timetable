@@ -13,5 +13,5 @@ public record CreateRoomRequest(
     int capacity,
 
     @NotNull(message = "course restriction must be specified")
-    Long courseId
+    Long restrictedToCourseId
 ) { }
