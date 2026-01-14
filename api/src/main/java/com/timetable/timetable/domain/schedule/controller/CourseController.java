@@ -4,7 +4,6 @@ import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.dto.CourseResponse;
 import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
-import com.timetable.timetable.domain.schedule.dto.SubjectListResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.service.CourseService;
 import com.timetable.timetable.domain.schedule.service.SubjectService;
@@ -44,16 +43,6 @@ public class CourseController {
         return ResponseFactory.ok(
             new PagedModel<>(courseService.getAll(pageable).map(CourseResponse::from)),
             "Courses fetched"
-        );
-    }
-
-    @GetMapping("/{courseId}/subjects")
-    public ResponseEntity<ApiResponse<PagedModel<SubjectListResponse>>> getSubjects(
-            @PathVariable Long courseId, 
-            Pageable pageable) {
-        return ResponseFactory.ok(
-            new PagedModel<>(subjectService.getAllByCourse(courseId, pageable).map(SubjectListResponse::from)),
-            "Subjects fetched"
         );
     }
 

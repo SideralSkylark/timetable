@@ -3,7 +3,7 @@ package com.timetable.timetable.domain.schedule.controller;
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.dto.CreateSubjectRequest;
-import com.timetable.timetable.domain.schedule.dto.SubjectListResponse;
+import com.timetable.timetable.domain.schedule.dto.SubjectDetailResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateSubjectRequest;
 import com.timetable.timetable.domain.schedule.service.SubjectService;
 
@@ -27,29 +27,29 @@ public class SubjectController {
     private final SubjectService subjectService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<SubjectListResponse>> create(
+    public ResponseEntity<ApiResponse<SubjectDetailResponse>> create(
             @Valid @RequestBody CreateSubjectRequest request) {
         return ResponseFactory.ok(
-            SubjectListResponse.from(subjectService.createSubject(request)),
+            SubjectDetailResponse.from(subjectService.createSubject(request)),
             "subject created"
         );
     }
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SubjectListResponse>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<SubjectDetailResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            SubjectListResponse.from(subjectService.getById(id)),
+            SubjectDetailResponse.from(subjectService.getById(id)),
             "Subject fetched successfully."
         );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SubjectListResponse>> update(
+    public ResponseEntity<ApiResponse<SubjectDetailResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateSubjectRequest request) {
         return ResponseFactory.ok(
-            SubjectListResponse.from(subjectService.updateSubject(id, request)),
+            SubjectDetailResponse.from(subjectService.updateSubject(id, request)),
             "subject updated successfully."
         );
     }

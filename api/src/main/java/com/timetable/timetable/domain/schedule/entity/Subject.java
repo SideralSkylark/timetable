@@ -57,15 +57,4 @@ public class Subject {
     )
     private Set<ApplicationUser> eligibleTeachers;
 
-    public int getTotalHours() {
-        return AcademicPolicy.HOURS_PER_CREDIT * credits;
-    }
-
-    // public int getWeeklyHours() {
-    //  return (int) getTotalHours() / num_weeks;
-    // }
-    //
-    // public int lessonsPerWeek() {
-    //     return (int) getWeeklyHours() / AcademicPolicy.LESSON_DURATION;
-    // }
 }

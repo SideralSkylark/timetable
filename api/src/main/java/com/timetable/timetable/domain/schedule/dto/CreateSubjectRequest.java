@@ -13,9 +13,8 @@ public record CreateSubjectRequest(
     @Size(min = 2, max = 150, message = "Subject name must be between 2 and 150 characters")
     String name,
     
-
     @NotNull(message = "credits are required")
-    Long credits,
+    int credits,
 
     @NotNull(message = "target year is required")
     int targetYear,

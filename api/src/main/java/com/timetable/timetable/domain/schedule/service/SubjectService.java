@@ -32,25 +32,41 @@ public class SubjectService {
 
     @Transactional
     public Subject createSubject(CreateSubjectRequest request) {
-        log.debug("Creating subject");
+        log.debug("Creating subject: {}", request.name());
+        
         Course course = courseService.getById(request.courseId());
 
-        if (subjectRepository.existsByNameAndCourse(request.name(), course)) {
-            log.warn("Subject already exists with this name for this course");
+        if (subjectRepository.existsByNameAndTargetYearAndTargetSemesterAndCourse(
+            request.name(), 
+            request.targetYear(),
+            request.targetSemester(),
+            course)) {
+            log.warn("Subject '{}' already exists for year {} semester {} in course {}", 
+                request.name(), request.targetYear(), request.targetSemester(), course.getName());
             throw new IllegalStateException(
-                "Subject with name '%s' already exists in this course".formatted(request.name())
+                String.format("Subject '%s' already exists for year %d semester %d in this course", 
+                    request.name(), request.targetYear(), request.targetSemester())
             );
         }
 
+        validateCredits(request.credits());
+        
+        validateTargetYearAndSemester(request.targetYear(), request.targetSemester());
+
         Subject subject = Subject.builder()
             .name(request.name())
+            .credits(request.credits())
+            .targetYear(request.targetYear())
+            .targetSemester(request.targetSemester())
             .course(course)
-            .teachers(fetchTeachers(request.teacherIds()))
+            .eligibleTeachers(fetchEligibleTeachers(request.eligibleTeacherIds()))
             .build();
 
         Subject saved = subjectRepository.save(subject);
 
-        log.info("Subject {} created", saved.getId());
+        log.info("Subject {} created: {} ({} credits, Year {}, Semester {})", 
+            saved.getId(), saved.getName(), saved.getCredits(), 
+            saved.getTargetYear(), saved.getTargetSemester());
         return saved;
     }
 
@@ -59,35 +75,33 @@ public class SubjectService {
         log.debug("Fetching all subjects for course {}", courseId);
 
         Course course = courseService.getById(courseId);
-
         Page<Subject> page = subjectRepository.findByCourse(course, pageable);
 
-        if (!page.isEmpty()) {
-            subjectRepository.findByIdIn(
-                page.getContent().stream()
-                .map(Subject::getId)
-                .toList()
-            );
-        }
-
+        log.debug("Found {} subjects for course {}", page.getTotalElements(), courseId);
         return page;
     }
 
-    // @Transactional(readOnly = true)
-    // public Subject getById(Long id) {
-    //     log.debug("fetching subject {}", id);
-    //     return subjectRepository.findWithDetailsById(id);
-    // }
+    @Transactional(readOnly = true)
+    public Page<Subject> getByTargetYearAndSemester(int targetYear, int targetSemester, Pageable pageable) {
+        log.debug("Fetching subjects for year {} semester {}", targetYear, targetSemester);
+        return subjectRepository.findByTargetYearAndTargetSemester(targetYear, targetSemester, pageable);
+    }
 
+    @Transactional(readOnly = true)
+    public List<Subject> getSubjectsForCohort(int year, int semester, Long courseId) {
+        log.debug("Fetching subjects for cohort (year {}, semester {}, course {})", 
+            year, semester, courseId);
+        return subjectRepository.findByTargetYearAndTargetSemesterAndCourseId(year, semester, courseId);
+    }
 
     public Subject getById(Long id) {
         log.debug("Fetching subject {}", id);
-        Subject subject = subjectRepository.findById(id)
+        Subject subject = subjectRepository.findWithDetailsById(id)
             .orElseThrow(() -> new SubjectNotFoundException(
-                "Subject with id %d not found".formatted(id)
+                String.format("Subject with id %d not found", id)
             ));
 
-        log.info("Found subject {}", id);
+        log.info("Found subject {}: {}", id, subject.getName());
         return subject;
     }
 
@@ -96,21 +110,40 @@ public class SubjectService {
         log.debug("Updating subject {}", id);
         Subject subject = getById(id);
 
-        if (!subject.getName().equals(request.name()) && 
-            subjectRepository.existsByNameAndCourse(request.name(), subject.getCourse())) {
-            log.debug("Another subject with this name already exists for this course");
-            throw new IllegalArgumentException(
-                "Another subject with name '%s' already exists in this course".formatted(request.name())
-            );
+        if (!subject.getName().equals(request.name()) || 
+            subject.getTargetYear() != request.targetYear() ||
+            subject.getTargetSemester() != request.targetSemester()) {
+            
+            if (subjectRepository.existsAnotherWithSameAttributes(
+                request.name(), 
+                request.targetYear(),
+                request.targetSemester(),
+                subject.getCourse(), 
+                id)) {
+                log.warn("Another subject with name '{}' already exists for year {} semester {} in this course", 
+                    request.name(), request.targetYear(), request.targetSemester());
+                throw new IllegalArgumentException(
+                    String.format("Another subject with name '%s' already exists for year %d semester %d in this course", 
+                        request.name(), request.targetYear(), request.targetSemester())
+                );
+            }
         }
 
+        // Validações
+        validateCredits(request.credits());
+        validateTargetYearAndSemester(request.targetYear(), request.targetSemester());
 
         subject.setName(request.name());
-        subject.setTeachers(fetchTeachers(request.teacherIds()));
+        subject.setCredits(request.credits());
+        subject.setTargetYear(request.targetYear());
+        subject.setTargetSemester(request.targetSemester());
+        subject.setEligibleTeachers(fetchEligibleTeachers(request.eligibleTeacherIds()));
 
         Subject updated = subjectRepository.save(subject);
 
-        log.info("Updated subject {}", updated.getId());
+        log.info("Updated subject {}: {} ({} credits, Year {}, Semester {})", 
+            updated.getId(), updated.getName(), updated.getCredits(), 
+            updated.getTargetYear(), updated.getTargetSemester());
         return updated;
     }
 
@@ -119,7 +152,7 @@ public class SubjectService {
         log.debug("Deleting subject {}", id);
         if (!subjectRepository.existsById(id)) {
             throw new SubjectNotFoundException(
-                "Subject with id %d not found".formatted(id)
+                String.format("Subject with id %d not found", id)
             );
         }
 
@@ -127,21 +160,65 @@ public class SubjectService {
         log.info("Subject {} deleted", id);
     }
 
-    private Set<ApplicationUser> fetchTeachers(List<Long> ids) {
+    private Set<ApplicationUser> fetchEligibleTeachers(List<Long> ids) {
         Set<ApplicationUser> teachers = new HashSet<>();
 
-        if (ids == null) return teachers;
+        if (ids == null || ids.isEmpty()) {
+            return teachers;
+        }
         
         for (Long id : ids) {
             ApplicationUser user = userService.getUserById(id);
             
             if (!user.hasRole(UserRole.TEACHER)) {
-                throw new IllegalArgumentException("User with id %d is not a teacher".formatted(id));
+                throw new IllegalArgumentException(
+                    String.format("User with id %d is not a teacher", id)
+                );
             }
             
             teachers.add(user);
         }
         
         return teachers;
+    }
+
+    private void validateCredits(int credits) {
+        if (credits <= 0) {
+            throw new IllegalArgumentException("Credits must be greater than 0");
+        }
+        if (credits > 30) { 
+            throw new IllegalArgumentException("Credits cannot exceed 30");
+        }
+    }
+
+    private void validateTargetYearAndSemester(int targetYear, int targetSemester) {
+        if (targetYear <= 0) {
+            throw new IllegalArgumentException("Target year must be greater than 0");
+        }
+        if (targetSemester < 1 || targetSemester > 2) {
+            throw new IllegalArgumentException("Target semester must be 1 or 2");
+        }
+    }
+
+    // Métodos adicionais úteis
+    
+    @Transactional(readOnly = true)
+    public List<Subject> getSubjectsByTeacher(Long teacherId) {
+        log.debug("Fetching subjects for teacher {}", teacherId);
+        return subjectRepository.findByEligibleTeachersId(teacherId);
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Subject> getSubjectsByCourseAndYear(Long courseId, int targetYear) {
+        log.debug("Fetching subjects for course {} and year {}", courseId, targetYear);
+        return subjectRepository.findByCourseIdAndTargetYear(courseId, targetYear);
+    }
+    
+    @Transactional(readOnly = true)
+    public Page<Subject> searchSubjects(String name, Integer targetYear, Integer targetSemester, 
+                                        Long courseId, Pageable pageable) {
+        log.debug("Searching subjects with filters: name={}, year={}, semester={}, courseId={}", 
+            name, targetYear, targetSemester, courseId);
+        return subjectRepository.search(name, targetYear, targetSemester, courseId, pageable);
     }
 }
