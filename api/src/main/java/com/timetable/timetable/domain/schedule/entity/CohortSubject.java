@@ -42,69 +42,62 @@ public class CohortSubject {
     private Long id;
     
     /**
-     * A turma que vai ter esta disciplina
+     * The cohort(class) to have this subject
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cohort_id", nullable = false)
     private Cohort cohort;
     
     /**
-     * A disciplina que será lecionada
+     * The subject to be lectured
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
     
     /**
-     * O professor atribuído para lecionar esta disciplina a esta turma específica.
-     * Escolhido da lista subject.eligibleTeachers
+     * The teacher assigned to this subject in this specific class. Idealy from the eligible teachers list
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_teacher_id", nullable = false)
     private ApplicationUser assignedTeacher;
     
     /**
-     * Ano académico desta atribuição (ex: 2026)
-     * Deve coincidir com cohort.academicYear
+     * The academic year (ie: 2026) must coincide with it's associated entities
      */
     @Column(nullable = false)
     private int academicYear;
     
     /**
-     * Semestre desta atribuição (1 ou 2)
-     * Deve coincidir com cohort.semester e subject.targetSemester
+     * The semester (1 or 2) must coincide with its associated entities
      */
     @Column(nullable = false)
     private int semester;
     
     /**
-     * Permite desativar temporariamente esta atribuição
-     * (ex: professor de baixa médica, disciplina suspensa)
+     * Allows temporary disabling of this atribution (when a teacher is sick, or a subject is suspended)
      */
     @Column(nullable = false)
     @Builder.Default
     private boolean isActive = true;
     
     /**
-     * Número de horas semanais que esta disciplina terá para esta turma
-     * (pode ser diferente de outras turmas da mesma disciplina)
+     * Number of weekly hours this class has per week
      */
     @Column(nullable = false)
     @Builder.Default
     private int weeklyHours = 4;
     
     /**
-     * Número de aulas por semana
-     * (usado pelo solver para saber quantas ScheduledClass criar)
+     * Number of lessons per week (so the solver knows how many scheduled classes to create)
      */
     @Column(nullable = false)
     @Builder.Default
     private int lessonsPerWeek = 2;
     
-    // ====== MÉTODOS HELPER ======
-    
     /**
-     * Retorna a duração de cada aula em minutos
+     * Lesson duration in minutes
+     * @return int
      */
     public int getMinutesPerLesson() {
         int totalWeeklyMinutes = weeklyHours * 60;
@@ -112,15 +105,16 @@ public class CohortSubject {
     }
     
     /**
-     * Retorna o número total de aulas no semestre
-     * (assumindo 16 semanas por semestre)
+     * Total number of lessons per semester(assuming 16 weeks per semester)
+     * @return int
      */
     public int getTotalLessonsInSemester() {
         return lessonsPerWeek * 16; // 16 semanas padrão
     }
     
     /**
-     * Identificador único para display
+     * To String like method for display purposes
+     * @return String
      */
     public String getDisplayName() {
         return cohort.getDisplayName() + " - " + subject.getName() + 
@@ -128,14 +122,16 @@ public class CohortSubject {
     }
     
     /**
-     * Valida se o professor atribuído é elegível para lecionar esta disciplina
+     * Check if the assigned teacher is eligible to teach this lesson
+     * @return boolean
      */
     public boolean isTeacherEligible() {
         return subject.getEligibleTeachers().contains(assignedTeacher);
     }
     
     /**
-     * Valida consistência de dados
+     * check data consistency against it's cohort
+     * @return boolean
      */
     public boolean isValid() {
         return cohort.getAcademicYear() == academicYear &&

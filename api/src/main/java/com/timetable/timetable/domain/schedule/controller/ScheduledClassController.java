@@ -31,7 +31,7 @@ public class ScheduledClassController {
     @PostMapping
     public ResponseEntity<ApiResponse<ScheduledClassResponse>> create(@Valid @RequestBody CreateScheduledClassRequest request) {
         return ResponseFactory.ok(
-            ScheduledClassResponse.from(scheduledClassService.createTimeSlot(request)),
+            ScheduledClassResponse.from(scheduledClassService.createScheduledClass(request)),
             "Time slot created successfully."
         );
     }
@@ -58,14 +58,14 @@ public class ScheduledClassController {
             @Valid @RequestBody UpdateScheduledClassRequest request) {
         return ResponseFactory.ok(
             
-            ScheduledClassResponse.from(scheduledClassService.updateTimeSlot(id, request)),
+            ScheduledClassResponse.from(scheduledClassService.updateScheduledClass(id, request)),
             "Time slot updated successfully."
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        scheduledClassService.deleteTimeSlot(id);
+        scheduledClassService.deleteScheduledClass(id);
         return ResponseEntity.noContent().build();
     }
 }
