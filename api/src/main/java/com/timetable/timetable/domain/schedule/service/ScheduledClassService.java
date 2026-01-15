@@ -11,16 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.timetable.timetable.domain.schedule.dto.CreateScheduledClassRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateScheduledClassRequest;
-import com.timetable.timetable.domain.schedule.entity.Cohort;
+import com.timetable.timetable.domain.schedule.entity.CohortSubject;
 import com.timetable.timetable.domain.schedule.entity.Room;
-import com.timetable.timetable.domain.schedule.entity.Subject;
 import com.timetable.timetable.domain.schedule.entity.ScheduledClass;
 import com.timetable.timetable.domain.schedule.entity.Timetable;
-import com.timetable.timetable.domain.schedule.exception.TimeSlotNotFoundException;
+import com.timetable.timetable.domain.schedule.exception.ScheduledClassNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.ScheduledClassRepository;
-import com.timetable.timetable.domain.user.entity.ApplicationUser;
-import com.timetable.timetable.domain.user.entity.UserRole;
-import com.timetable.timetable.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,223 +26,237 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ScheduledClassService {
     private final ScheduledClassRepository scheduledClassRepository;
-    private final SubjectService subjectService;
+    private final CohortSubjectService cohortSubjectService;
     private final TimetableService timetableService;
-    private final UserService userService;
     private final RoomService roomService;
-    private final CohortService cohortService;
 
     @Transactional
-    public ScheduledClass createTimeSlot(CreateScheduledClassRequest createRequest) {
-        log.debug("Creating timeslot");
-        Subject subject = subjectService.getById(createRequest.subjectId());
-
-        Timetable timetable = null;
-        if (createRequest.timetableId() != null) {
-            timetable = timetableService.getById(createRequest.timetableId());
-        }
-
-        ApplicationUser teacher = userService.getUserById(createRequest.teacherId());
+    public ScheduledClass createScheduledClass(CreateScheduledClassRequest request) {
+        log.debug("Creating scheduled class");
         
-        if (!teacher.hasRole(UserRole.TEACHER)) {
-            log.warn("User {} is not a teacher", teacher.getId());
-            throw new IllegalArgumentException(
-                "User with id %d is not a teacher".formatted(createRequest.teacherId())
+        // Buscar entidades relacionadas
+        CohortSubject cohortSubject = cohortSubjectService.getById(request.cohortSubjectId());
+        Room room = roomService.getById(request.roomId());
+        Timetable timetable = null;
+        
+        if (request.timetableId() != null) {
+            timetable = timetableService.getById(request.timetableId());
+        }
+        
+        // Validar que o CohortSubject está ativo
+        if (!cohortSubject.isActive()) {
+            throw new IllegalStateException(
+                "Cannot schedule a class for an inactive cohort subject assignment"
             );
         }
-
-        // Validate teacher teaches this subject
-        if (!subject.getTeachers().contains(teacher)) {
-            log.warn("Teacher {} is not assigned to subject {}", teacher.getId(), subject.getId());
-            throw new IllegalArgumentException(
-                "Teacher with id %d is not assigned to subject '%s'".formatted(
-                    createRequest.teacherId(), subject.getName()
-                )
-            );
-        }
-
-        Room room = roomService.getById(createRequest.roomId());
-
-        Cohort cohort = cohortService.getById(createRequest.cohortId());
-
-        // Validate time constraints
-        validateTimeConstraints(createRequest.startTime(), createRequest.endTime());
-
-        // Check for conflicts
+        
+        // Validar datas e horários
+        validateScheduleConstraints(
+            cohortSubject, 
+            request.date(), 
+            request.startTime(), 
+            request.endTime()
+        );
+        
+        // Verificar conflitos
         checkForConflicts(
             null,
-            teacher,
+            cohortSubject,
             room,
-            cohort,
-            createRequest.date(),
-            createRequest.startTime(),
-            createRequest.endTime()
+            request.date(),
+            request.startTime(),
+            request.endTime()
         );
-
-        ScheduledClass timeSlot = ScheduledClass.builder()
-            .subject(subject)
+        
+        // Criar a aula agendada
+        ScheduledClass scheduledClass = ScheduledClass.builder()
+            .cohortSubject(cohortSubject)
             .timetable(timetable)
-            .teacher(teacher)
             .room(room)
-            .cohort(cohort)
-            .date(createRequest.date())
-            .startTime(createRequest.startTime())
-            .endTime(createRequest.endTime())
+            .date(request.date())
+            .startTime(request.startTime())
+            .endTime(request.endTime())
             .build();
-
-        ScheduledClass saved = scheduledClassRepository.save(timeSlot);
-
-        log.info("Timeslot {} created", saved.getId());
+        
+        ScheduledClass saved = scheduledClassRepository.save(scheduledClass);
+        
+        log.info("Scheduled class {} created for {}", 
+            saved.getId(), cohortSubject.getDisplayName());
         return saved;
     }
 
+    @Transactional(readOnly = true)
     public Page<ScheduledClass> getAll(Pageable pageable) {
-        log.debug("Fetching all timeslots");
-        return scheduledClassRepository.findAll(pageable);
+        log.debug("Fetching all scheduled classes");
+        return scheduledClassRepository.findAllWithDetails(pageable);
     }
 
+    @Transactional(readOnly = true)
     public Page<ScheduledClass> getByTimetable(Long timetableId, Pageable pageable) {
-        log.debug("Fetching timeslot by timetable {}", timetableId);
+        log.debug("Fetching scheduled classes for timetable {}", timetableId);
         Timetable timetable = timetableService.getById(timetableId);
-        
-        log.info("timeslot, found for timetable {}", timetableId);
-        return scheduledClassRepository.findByTimetable(timetable, pageable);
+        return scheduledClassRepository.findByTimetableWithDetails(timetable, pageable);
     }
 
+    @Transactional(readOnly = true)
     public Page<ScheduledClass> getByCohort(Long cohortId, Pageable pageable) {
-        log.debug("Fetching timeslot by cohort {}", cohortId);
-        Cohort cohort = cohortService.getById(cohortId);
-        
-        log.info("Found timeslot for cohort {}", cohortId);
-        return scheduledClassRepository.findByCohort(cohort, pageable);
+        log.debug("Fetching scheduled classes for cohort {}", cohortId);
+        return scheduledClassRepository.findByCohortIdWithDetails(cohortId, pageable);
     }
 
+    @Transactional(readOnly = true)
     public Page<ScheduledClass> getByTeacher(Long teacherId, Pageable pageable) {
-        log.debug("Fetching timeslot by teacher {}", teacherId);
-        ApplicationUser teacher = userService.getUserById(teacherId);
-        
-        if (!teacher.hasRole(UserRole.TEACHER)) {
-            log.warn("User {} is not a teacher", teacherId);
-            throw new IllegalArgumentException(
-                "User with id %d is not a teacher".formatted(teacherId)
-            );
-        }
-        
-        log.info("Found timeslot by teacher {}", teacherId);
-        return scheduledClassRepository.findByTeacher(teacher, pageable);
+        log.debug("Fetching scheduled classes for teacher {}", teacherId);
+        return scheduledClassRepository.findByTeacherIdWithDetails(teacherId, pageable);
     }
 
-    public ScheduledClass getById(Long id) {
-        log.debug("Fetching timeslot {}", id);
-        ScheduledClass timeSlot = scheduledClassRepository.findById(id)
-            .orElseThrow(() -> new TimeSlotNotFoundException(
-                "Time slot with id %d not found".formatted(id)
-            ));
+    @Transactional(readOnly = true)
+    public Page<ScheduledClass> getByCohortSubject(Long cohortSubjectId, Pageable pageable) {
+        log.debug("Fetching scheduled classes for cohort subject {}", cohortSubjectId);
+        return scheduledClassRepository.findByCohortSubjectIdWithDetails(cohortSubjectId, pageable);
+    }
 
-        log.info("Timeslot {} found", timeSlot.getId());
-        return timeSlot;
+    @Transactional(readOnly = true)
+    public Page<ScheduledClass> getByDateRange(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        log.debug("Fetching scheduled classes between {} and {}", startDate, endDate);
+        return scheduledClassRepository.findByDateBetweenWithDetails(startDate, endDate, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public ScheduledClass getById(Long id) {
+        log.debug("Fetching scheduled class {}", id);
+        return scheduledClassRepository.findWithDetailsById(id)
+            .orElseThrow(() -> new ScheduledClassNotFoundException(
+                String.format("Scheduled class with id %d not found", id)
+            ));
     }
 
     @Transactional
-    public ScheduledClass updateTimeSlot(Long id, UpdateScheduledClassRequest updateRequest) {
-        log.debug("Updating timeslot {}", id);
-        ScheduledClass timeSlot = getById(id);
-
-        // Validate all entities exist
-        Subject subject = subjectService.getById(updateRequest.subjectId());
-
-        ApplicationUser teacher = userService.getUserById(updateRequest.teacherId());
+    public ScheduledClass updateScheduledClass(Long id, UpdateScheduledClassRequest request) {
+        log.debug("Updating scheduled class {}", id);
+        ScheduledClass scheduledClass = getById(id);
         
-        if (!teacher.hasRole(UserRole.TEACHER)) {
-            log.warn("User {} is not a teacher", teacher.getId());
-            throw new IllegalArgumentException(
-                "User with id %d is not a teacher".formatted(updateRequest.teacherId())
+        // Buscar novas entidades se necessário
+        CohortSubject cohortSubject = scheduledClass.getCohortSubject();
+        Room room = scheduledClass.getRoom();
+        
+        if (!request.cohortSubjectId().equals(cohortSubject.getId())) {
+            cohortSubject = cohortSubjectService.getById(request.cohortSubjectId());
+            scheduledClass.setCohortSubject(cohortSubject);
+        }
+        
+        if (!request.roomId().equals(room.getId())) {
+            room = roomService.getById(request.roomId());
+            scheduledClass.setRoom(room);
+        }
+        
+        Timetable timetable = scheduledClass.getTimetable();
+        if (request.timetableId() != null && 
+            (timetable == null || !request.timetableId().equals(timetable.getId()))) {
+            timetable = timetableService.getById(request.timetableId());
+            scheduledClass.setTimetable(timetable);
+        } else if (request.timetableId() == null) {
+            scheduledClass.setTimetable(null);
+        }
+        
+        // Validar que o CohortSubject está ativo
+        if (!cohortSubject.isActive()) {
+            throw new IllegalStateException(
+                "Cannot schedule a class for an inactive cohort subject assignment"
             );
         }
-
-        // Validate teacher teaches this subject
-        if (!subject.getTeachers().contains(teacher)) {
-            log.warn("Teacher {} does not teach this subject", teacher.getId());
-            throw new IllegalArgumentException(
-                "Teacher with id %d is not assigned to subject '%s'".formatted(
-                    updateRequest.teacherId(), subject.getName()
-                )
-            );
-        }
-
-        Room room = roomService.getById(updateRequest.roomId());
-
-        Cohort cohort = cohortService.getById(updateRequest.cohortId());
-
-        // Validate time constraints
-        validateTimeConstraints(updateRequest.startTime(), updateRequest.endTime());
-
-        // Check for conflicts (excluding current time slot)
+        
+        // Validar datas e horários
+        validateScheduleConstraints(
+            cohortSubject,
+            request.date(),
+            request.startTime(),
+            request.endTime()
+        );
+        
+        // Verificar conflitos (excluindo esta aula)
         checkForConflicts(
             id,
-            teacher,
+            cohortSubject,
             room,
-            cohort,
-            updateRequest.date(),
-            updateRequest.startTime(),
-            updateRequest.endTime()
+            request.date(),
+            request.startTime(),
+            request.endTime()
         );
-
-        timeSlot.setSubject(subject);
-        timeSlot.setTeacher(teacher);
-        timeSlot.setRoom(room);
-        timeSlot.setCohort(cohort);
-        timeSlot.setDate(updateRequest.date());
-        timeSlot.setStartTime(updateRequest.startTime());
-        timeSlot.setEndTime(updateRequest.endTime());
-
-        ScheduledClass updated = scheduledClassRepository.save(timeSlot);
-
-        log.info("Timeslot {} updated", updated.getId());
+        
+        // Atualizar campos
+        scheduledClass.setDate(request.date());
+        scheduledClass.setStartTime(request.startTime());
+        scheduledClass.setEndTime(request.endTime());
+        
+        ScheduledClass updated = scheduledClassRepository.save(scheduledClass);
+        
+        log.info("Scheduled class {} updated", updated.getId());
         return updated;
     }
 
     @Transactional
-    public void deleteTimeSlot(Long id) {
-        log.debug("Deleting timeslot {}", id);
+    public void deleteScheduledClass(Long id) {
+        log.debug("Deleting scheduled class {}", id);
         if (!scheduledClassRepository.existsById(id)) {
-            log.warn("Timeslot {} not found", id);
-            throw new TimeSlotNotFoundException(
-                "Time slot with id %d not found".formatted(id)
+            throw new ScheduledClassNotFoundException(
+                String.format("Scheduled class with id %d not found", id)
             );
         }
-
+        
         scheduledClassRepository.deleteById(id);
-        log.info("Timeslot {} deleted", id);
+        log.info("Scheduled class {} deleted", id);
     }
 
-    private void validateTimeConstraints(LocalTime startTime, LocalTime endTime) {
+    private void validateScheduleConstraints(
+        CohortSubject cohortSubject,
+        LocalDate date,
+        LocalTime startTime,
+        LocalTime endTime
+    ) {
         if (startTime == null || endTime == null) {
             throw new IllegalArgumentException("Start time and end time are required");
         }
         
         if (!startTime.isBefore(endTime)) {
-            throw new IllegalArgumentException(
-                "Start time must be before end time"
-            );
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+        
+        if (date == null) {
+            throw new IllegalArgumentException("Date is required");
+        }
+        
+        // Validar que a data está dentro do ano/semestre acadêmico
+        // (implementar conforme as regras da instituição)
+        validateAcademicDate(date, cohortSubject.getAcademicYear(), cohortSubject.getSemester());
+        
+        // Validar duração mínima/máxima da aula
+        int durationMinutes = (int) java.time.Duration.between(startTime, endTime).toMinutes();
+        if (durationMinutes < 30) {
+            throw new IllegalArgumentException("Class duration must be at least 30 minutes");
+        }
+        if (durationMinutes > 240) { // 4 horas
+            throw new IllegalArgumentException("Class duration cannot exceed 4 hours");
         }
     }
 
     private void checkForConflicts(
-        Long excludeTimeSlotId,
-        ApplicationUser teacher,
+        Long excludeScheduledClassId,
+        CohortSubject cohortSubject,
         Room room,
-        Cohort cohort,
         LocalDate date,
         LocalTime startTime,
         LocalTime endTime
     ) {
-        // Check teacher availability
+        // Verificar conflitos de professor
         List<ScheduledClass> teacherConflicts = scheduledClassRepository
-            .findByTeacherAndDateAndTimeOverlap(teacher, date, startTime, endTime);
+            .findByTeacherAndDateAndTimeOverlap(
+                cohortSubject.getAssignedTeacher(), 
+                date, startTime, endTime
+            );
         
-        if (excludeTimeSlotId != null) {
-            teacherConflicts.removeIf(slot -> slot.getId().equals(excludeTimeSlotId));
+        if (excludeScheduledClassId != null) {
+            teacherConflicts.removeIf(sc -> sc.getId().equals(excludeScheduledClassId));
         }
         
         if (!teacherConflicts.isEmpty()) {
@@ -254,13 +264,13 @@ public class ScheduledClassService {
                 "Teacher is already scheduled for another class at this time"
             );
         }
-
-        // Check room availability
+        
+        // Verificar conflitos de sala
         List<ScheduledClass> roomConflicts = scheduledClassRepository
             .findByRoomAndDateAndTimeOverlap(room, date, startTime, endTime);
         
-        if (excludeTimeSlotId != null) {
-            roomConflicts.removeIf(slot -> slot.getId().equals(excludeTimeSlotId));
+        if (excludeScheduledClassId != null) {
+            roomConflicts.removeIf(sc -> sc.getId().equals(excludeScheduledClassId));
         }
         
         if (!roomConflicts.isEmpty()) {
@@ -268,13 +278,16 @@ public class ScheduledClassService {
                 "Room is already booked for another class at this time"
             );
         }
-
-        // Check cohort availability
-        List<ScheduledClass> cohortConflicts = scheduledClassRepository
-            .findByCohortAndDateAndTimeOverlap(cohort, date, startTime, endTime);
         
-        if (excludeTimeSlotId != null) {
-            cohortConflicts.removeIf(slot -> slot.getId().equals(excludeTimeSlotId));
+        // Verificar conflitos de turma
+        List<ScheduledClass> cohortConflicts = scheduledClassRepository
+            .findByCohortAndDateAndTimeOverlap(
+                cohortSubject.getCohort(), 
+                date, startTime, endTime
+            );
+        
+        if (excludeScheduledClassId != null) {
+            cohortConflicts.removeIf(sc -> sc.getId().equals(excludeScheduledClassId));
         }
         
         if (!cohortConflicts.isEmpty()) {
@@ -282,5 +295,30 @@ public class ScheduledClassService {
                 "Cohort already has a class scheduled at this time"
             );
         }
+    }
+
+    private void validateAcademicDate(LocalDate date, int academicYear, int semester) {
+        // Implementar lógica específica da instituição
+        // Exemplo: verificar se a data está dentro do semestre acadêmico
+        
+        // Para simplificar, apenas verificar o ano
+        if (date.getYear() != academicYear) {
+            log.warn("Scheduled class date ({}) does not match academic year ({})", 
+                date.getYear(), academicYear);
+            // Pode ser um aviso em vez de erro, dependendo das regras
+        }
+    }
+    
+    @Transactional(readOnly = true)
+    public List<ScheduledClass> getWeeklySchedule(Long cohortId, LocalDate weekStartDate) {
+        log.debug("Fetching weekly schedule for cohort {} starting {}", cohortId, weekStartDate);
+        LocalDate weekEndDate = weekStartDate.plusDays(6);
+        return scheduledClassRepository.findByCohortIdAndDateBetween(
+            cohortId, weekStartDate, weekEndDate);
+    }
+    
+    @Transactional(readOnly = true)
+    public int countScheduledClassesForCohortSubject(Long cohortSubjectId) {
+        return scheduledClassRepository.countByCohortSubjectId(cohortSubjectId);
     }
 }

@@ -24,7 +24,6 @@ public class TimetableService {
     @Transactional
     public Timetable createTimetable(CreateTimetableRequest createRequest) {
         log.debug("Creating timetable");
-        // Check if timetable for this academic period already exists
         if (timetableRepository.existsByAcademicYearAndSemester(createRequest.academicYear(), createRequest.semester())) {
             log.warn("Timetable for period {} already exists", createRequest.academicYear());
             throw new IllegalStateException(

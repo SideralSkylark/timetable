@@ -25,3 +25,4 @@ public record CreateScheduledClassRequest(
     @NotNull(message = "End time is required")
     LocalTime endTime
 ) {}
+

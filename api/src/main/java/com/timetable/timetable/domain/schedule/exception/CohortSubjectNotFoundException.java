@@ -2,9 +2,8 @@ package com.timetable.timetable.domain.schedule.exception;
 
 import com.timetable.timetable.common.exception.ResourceNotFoundException;
 
-public class TimeSlotNotFoundException extends ResourceNotFoundException {
-    public TimeSlotNotFoundException(String message) {
+public class CohortSubjectNotFoundException extends ResourceNotFoundException {
+    public CohortSubjectNotFoundException(String message) {
         super(message);
     }
 }
-
