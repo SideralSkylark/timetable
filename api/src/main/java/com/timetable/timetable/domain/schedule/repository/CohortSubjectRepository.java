@@ -22,37 +22,45 @@ public interface CohortSubjectRepository extends JpaRepository<CohortSubject, Lo
     boolean existsByCohortAndSubjectAndAcademicYearAndSemester(
         Cohort cohort, Subject subject, int academicYear, int semester);
     
-    @EntityGraph(attributePaths = {"cohort", "subject", "assignedTeacher"})
-    Optional<CohortSubject> findWithDetailsById(Long id);
+    @Query("SELECT cs FROM CohortSubject cs " +
+           "JOIN FETCH cs.cohort " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.assignedTeacher " +
+           "WHERE cs.id = :id")
+    Optional<CohortSubject> findByIdWithDetails(@Param("id") Long id);
     
+    @Override
     @EntityGraph(attributePaths = {"cohort", "subject", "assignedTeacher"})
-    Page<CohortSubject> findAllWithDetails(Pageable pageable);
+    Page<CohortSubject> findAll(Pageable pageable);
     
     @EntityGraph(attributePaths = {"subject", "assignedTeacher"})
-    Page<CohortSubject> findByCohortWithDetails(Cohort cohort, Pageable pageable);
+    Page<CohortSubject> findByCohort(Cohort cohort, Pageable pageable);
     
     @EntityGraph(attributePaths = {"cohort", "assignedTeacher"})
-    Page<CohortSubject> findBySubjectWithDetails(Subject subject, Pageable pageable);
+    Page<CohortSubject> findBySubject(Subject subject, Pageable pageable);
     
     @EntityGraph(attributePaths = {"cohort", "subject"})
-    Page<CohortSubject> findByAssignedTeacherWithDetails(ApplicationUser teacher, Pageable pageable);
+    Page<CohortSubject> findByAssignedTeacher(ApplicationUser teacher, Pageable pageable);
     
-    @EntityGraph(attributePaths = {"cohort", "subject", "assignedTeacher"})
-    List<CohortSubject> findByAcademicYearAndSemester(int academicYear, int semester);
-    
-    @EntityGraph(attributePaths = {"subject", "assignedTeacher"})
-    List<CohortSubject> findByCohort(Cohort cohort);
+    @Query("SELECT cs FROM CohortSubject cs " +
+           "JOIN FETCH cs.cohort " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.assignedTeacher " +
+           "WHERE cs.academicYear = :academicYear AND cs.semester = :semester")
+    List<CohortSubject> findByAcademicYearAndSemester(@Param("academicYear") int academicYear, 
+                                                     @Param("semester") int semester);
     
     List<CohortSubject> findByCohortAndIsActive(Cohort cohort, boolean isActive);
     
     @EntityGraph(attributePaths = {"cohort", "subject"})
     List<CohortSubject> findByAssignedTeacher(ApplicationUser teacher);
     
-    @Query("SELECT cs FROM CohortSubject cs WHERE cs.cohort = :cohort AND cs.isActive = true")
-    @EntityGraph(attributePaths = {"subject", "assignedTeacher"})
+    @Query("SELECT cs FROM CohortSubject cs " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.assignedTeacher " +
+           "WHERE cs.cohort = :cohort AND cs.isActive = true")
     List<CohortSubject> findActiveByCohort(@Param("cohort") Cohort cohort);
     
-    // Estatísticas e cálculos
     @Query("SELECT SUM(cs.weeklyHours) FROM CohortSubject cs WHERE cs.assignedTeacher = :teacher AND cs.isActive = true")
     Integer sumWeeklyHoursByTeacher(@Param("teacher") ApplicationUser teacher);
     
@@ -63,10 +71,13 @@ public interface CohortSubjectRepository extends JpaRepository<CohortSubject, Lo
     int countScheduledClassesByCohortSubjectId(@Param("cohortSubjectId") Long cohortSubjectId);
     
     // Busca avançada
-    @Query("SELECT cs FROM CohortSubject cs WHERE " +
-           "(:cohortId IS NULL OR cs.cohort.id = :cohortId) AND " +
-           "(:subjectId IS NULL OR cs.subject.id = :subjectId) AND " +
-           "(:teacherId IS NULL OR cs.assignedTeacher.id = :teacherId) AND " +
+    @Query("SELECT cs FROM CohortSubject cs " +
+           "LEFT JOIN cs.cohort c " +
+           "LEFT JOIN cs.subject s " +
+           "LEFT JOIN cs.assignedTeacher t " +
+           "WHERE (:cohortId IS NULL OR c.id = :cohortId) AND " +
+           "(:subjectId IS NULL OR s.id = :subjectId) AND " +
+           "(:teacherId IS NULL OR t.id = :teacherId) AND " +
            "(:academicYear IS NULL OR cs.academicYear = :academicYear) AND " +
            "(:semester IS NULL OR cs.semester = :semester) AND " +
            "(:isActive IS NULL OR cs.isActive = :isActive)")

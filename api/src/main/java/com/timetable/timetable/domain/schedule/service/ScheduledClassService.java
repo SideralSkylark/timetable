@@ -88,44 +88,44 @@ public class ScheduledClassService {
     @Transactional(readOnly = true)
     public Page<ScheduledClass> getAll(Pageable pageable) {
         log.debug("Fetching all scheduled classes");
-        return scheduledClassRepository.findAllWithDetails(pageable);
+        return scheduledClassRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<ScheduledClass> getByTimetable(Long timetableId, Pageable pageable) {
         log.debug("Fetching scheduled classes for timetable {}", timetableId);
         Timetable timetable = timetableService.getById(timetableId);
-        return scheduledClassRepository.findByTimetableWithDetails(timetable, pageable);
+        return scheduledClassRepository.findByTimetable(timetable, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<ScheduledClass> getByCohort(Long cohortId, Pageable pageable) {
         log.debug("Fetching scheduled classes for cohort {}", cohortId);
-        return scheduledClassRepository.findByCohortIdWithDetails(cohortId, pageable);
+        return scheduledClassRepository.findByCohortId(cohortId, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<ScheduledClass> getByTeacher(Long teacherId, Pageable pageable) {
         log.debug("Fetching scheduled classes for teacher {}", teacherId);
-        return scheduledClassRepository.findByTeacherIdWithDetails(teacherId, pageable);
+        return scheduledClassRepository.findByTeacherId(teacherId, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<ScheduledClass> getByCohortSubject(Long cohortSubjectId, Pageable pageable) {
         log.debug("Fetching scheduled classes for cohort subject {}", cohortSubjectId);
-        return scheduledClassRepository.findByCohortSubjectIdWithDetails(cohortSubjectId, pageable);
+        return scheduledClassRepository.findByCohortSubjectId(cohortSubjectId, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<ScheduledClass> getByDateRange(LocalDate startDate, LocalDate endDate, Pageable pageable) {
         log.debug("Fetching scheduled classes between {} and {}", startDate, endDate);
-        return scheduledClassRepository.findByDateBetweenWithDetails(startDate, endDate, pageable);
+        return scheduledClassRepository.findByDateBetween(startDate, endDate, pageable);
     }
 
     @Transactional(readOnly = true)
     public ScheduledClass getById(Long id) {
         log.debug("Fetching scheduled class {}", id);
-        return scheduledClassRepository.findWithDetailsById(id)
+        return scheduledClassRepository.findByIdWithDetails(id)
             .orElseThrow(() -> new ScheduledClassNotFoundException(
                 String.format("Scheduled class with id %d not found", id)
             ));

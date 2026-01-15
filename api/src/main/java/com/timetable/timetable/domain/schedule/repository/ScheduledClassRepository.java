@@ -23,36 +23,67 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ScheduledClassRepository extends JpaRepository<ScheduledClass, Long> {
     
+    @Override
     @EntityGraph(attributePaths = {"cohortSubject", "cohortSubject.cohort", 
         "cohortSubject.subject", "cohortSubject.assignedTeacher", "room", "timetable"})
-    Page<ScheduledClass> findAllWithDetails(Pageable pageable);
+    Page<ScheduledClass> findAll(Pageable pageable);
     
     @EntityGraph(attributePaths = {"cohortSubject", "cohortSubject.cohort", 
         "cohortSubject.subject", "cohortSubject.assignedTeacher", "room"})
-    Page<ScheduledClass> findByTimetableWithDetails(Timetable timetable, Pageable pageable);
+    Page<ScheduledClass> findByTimetable(Timetable timetable, Pageable pageable);
     
-    @EntityGraph(attributePaths = {"cohortSubject", "cohortSubject.subject", 
-        "cohortSubject.assignedTeacher", "room", "timetable"})
-    Page<ScheduledClass> findByCohortIdWithDetails(Long cohortId, Pageable pageable);
+    @Query("SELECT sc FROM ScheduledClass sc " +
+           "JOIN FETCH sc.cohortSubject cs " +
+           "JOIN FETCH cs.cohort " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.assignedTeacher " +
+           "JOIN FETCH sc.room " +
+           "LEFT JOIN FETCH sc.timetable " +
+           "WHERE cs.cohort.id = :cohortId")
+    Page<ScheduledClass> findByCohortId(@Param("cohortId") Long cohortId, Pageable pageable);
     
-    @EntityGraph(attributePaths = {"cohortSubject", "cohortSubject.cohort", 
-        "cohortSubject.subject", "room", "timetable"})
-    Page<ScheduledClass> findByTeacherIdWithDetails(Long teacherId, Pageable pageable);
+    @Query("SELECT sc FROM ScheduledClass sc " +
+           "JOIN FETCH sc.cohortSubject cs " +
+           "JOIN FETCH cs.cohort " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.assignedTeacher " +
+           "JOIN FETCH sc.room " +
+           "LEFT JOIN FETCH sc.timetable " +
+           "WHERE cs.assignedTeacher.id = :teacherId")
+    Page<ScheduledClass> findByTeacherId(@Param("teacherId") Long teacherId, Pageable pageable);
     
-    @EntityGraph(attributePaths = {"cohortSubject.cohort", "cohortSubject.subject", 
-        "cohortSubject.assignedTeacher", "room", "timetable"})
-    Page<ScheduledClass> findByCohortSubjectIdWithDetails(Long cohortSubjectId, Pageable pageable);
+    @Query("SELECT sc FROM ScheduledClass sc " +
+           "JOIN FETCH sc.cohortSubject cs " +
+           "JOIN FETCH cs.cohort " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.assignedTeacher " +
+           "JOIN FETCH sc.room " +
+           "LEFT JOIN FETCH sc.timetable " +
+           "WHERE cs.id = :cohortSubjectId")
+    Page<ScheduledClass> findByCohortSubjectId(@Param("cohortSubjectId") Long cohortSubjectId, Pageable pageable);
     
-    @EntityGraph(attributePaths = {"cohortSubject", "cohortSubject.cohort", 
-        "cohortSubject.subject", "cohortSubject.assignedTeacher", "room", "timetable"})
-    Page<ScheduledClass> findByDateBetweenWithDetails(
-        LocalDate startDate, LocalDate endDate, Pageable pageable);
+    @Query("SELECT sc FROM ScheduledClass sc " +
+           "JOIN FETCH sc.cohortSubject cs " +
+           "JOIN FETCH cs.cohort " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.assignedTeacher " +
+           "JOIN FETCH sc.room " +
+           "LEFT JOIN FETCH sc.timetable " +
+           "WHERE sc.date BETWEEN :startDate AND :endDate")
+    Page<ScheduledClass> findByDateBetween(@Param("startDate") LocalDate startDate, 
+                                          @Param("endDate") LocalDate endDate, 
+                                          Pageable pageable);
     
-    @EntityGraph(attributePaths = {"cohortSubject", "cohortSubject.cohort", 
-        "cohortSubject.subject", "cohortSubject.assignedTeacher", "room", "timetable"})
-    Optional<ScheduledClass> findWithDetailsById(Long id);
+    @Query("SELECT sc FROM ScheduledClass sc " +
+           "JOIN FETCH sc.cohortSubject cs " +
+           "JOIN FETCH cs.cohort " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.assignedTeacher " +
+           "JOIN FETCH sc.room " +
+           "LEFT JOIN FETCH sc.timetable " +
+           "WHERE sc.id = :id")
+    Optional<ScheduledClass> findByIdWithDetails(@Param("id") Long id);
     
-    // Métodos de consulta para conflitos (usando CohortSubject)
     @Query("SELECT sc FROM ScheduledClass sc " +
            "WHERE sc.cohortSubject.assignedTeacher = :teacher " +
            "AND sc.date = :date " +
@@ -83,7 +114,6 @@ public interface ScheduledClassRepository extends JpaRepository<ScheduledClass, 
         @Param("startTime") LocalTime startTime, 
         @Param("endTime") LocalTime endTime);
     
-    // Métodos de consulta adicionais
     List<ScheduledClass> findByCohortSubject(CohortSubject cohortSubject);
     
     @Query("SELECT sc FROM ScheduledClass sc WHERE sc.cohortSubject.cohort.id = :cohortId " +
@@ -100,10 +130,14 @@ public interface ScheduledClassRepository extends JpaRepository<ScheduledClass, 
     
     int countByCohortSubjectId(Long cohortSubjectId);
     
-    @Query("SELECT sc FROM ScheduledClass sc WHERE " +
-           "(:cohortId IS NULL OR sc.cohortSubject.cohort.id = :cohortId) AND " +
-           "(:teacherId IS NULL OR sc.cohortSubject.assignedTeacher.id = :teacherId) AND " +
-           "(:subjectId IS NULL OR sc.cohortSubject.subject.id = :subjectId) AND " +
+    @Query("SELECT sc FROM ScheduledClass sc " +
+           "LEFT JOIN sc.cohortSubject cs " +
+           "LEFT JOIN cs.cohort c " +
+           "LEFT JOIN cs.subject s " +
+           "LEFT JOIN cs.assignedTeacher t " +
+           "WHERE (:cohortId IS NULL OR c.id = :cohortId) AND " +
+           "(:teacherId IS NULL OR t.id = :teacherId) AND " +
+           "(:subjectId IS NULL OR s.id = :subjectId) AND " +
            "(:roomId IS NULL OR sc.room.id = :roomId) AND " +
            "(:dateFrom IS NULL OR sc.date >= :dateFrom) AND " +
            "(:dateTo IS NULL OR sc.date <= :dateTo)")

@@ -84,21 +84,21 @@ public class CohortSubjectService {
     @Transactional(readOnly = true)
     public Page<CohortSubject> getAll(Pageable pageable) {
         log.debug("Fetching all cohort subject assignments");
-        return cohortSubjectRepository.findAllWithDetails(pageable);
+        return cohortSubjectRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<CohortSubject> getByCohort(Long cohortId, Pageable pageable) {
         log.debug("Fetching cohort subject assignments for cohort {}", cohortId);
         Cohort cohort = cohortService.getById(cohortId);
-        return cohortSubjectRepository.findByCohortWithDetails(cohort, pageable);
+        return cohortSubjectRepository.findByCohort(cohort, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<CohortSubject> getBySubject(Long subjectId, Pageable pageable) {
         log.debug("Fetching cohort subject assignments for subject {}", subjectId);
         Subject subject = subjectService.getById(subjectId);
-        return cohortSubjectRepository.findBySubjectWithDetails(subject, pageable);
+        return cohortSubjectRepository.findBySubject(subject, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -112,13 +112,13 @@ public class CohortSubjectService {
             );
         }
         
-        return cohortSubjectRepository.findByAssignedTeacherWithDetails(teacher, pageable);
+        return cohortSubjectRepository.findByAssignedTeacher(teacher, pageable);
     }
 
     @Transactional(readOnly = true)
     public CohortSubject getById(Long id) {
         log.debug("Fetching cohort subject assignment {}", id);
-        return cohortSubjectRepository.findWithDetailsById(id)
+        return cohortSubjectRepository.findByIdWithDetails(id)
             .orElseThrow(() -> new CohortSubjectNotFoundException(
                 String.format("Cohort subject assignment with id %d not found", id)
             ));
