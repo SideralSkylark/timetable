@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.timetable.timetable.domain.schedule.dto.CreateCohortSubjectRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortSubjectRequest;
+import com.timetable.timetable.domain.schedule.entity.AcademicPolicy;
 import com.timetable.timetable.domain.schedule.entity.Cohort;
 import com.timetable.timetable.domain.schedule.entity.CohortSubject;
 import com.timetable.timetable.domain.schedule.entity.Subject;
@@ -34,16 +35,13 @@ public class CohortSubjectService {
     public CohortSubject createCohortSubject(CreateCohortSubjectRequest request) {
         log.debug("Creating cohort subject assignment");
         
-        // Buscar entidades relacionadas
         Cohort cohort = cohortService.getById(request.cohortId());
         Subject subject = subjectService.getById(request.subjectId());
         ApplicationUser teacher = userService.getUserById(request.assignedTeacherId());
         
-        // Validações básicas
         validateTeacherIsEligible(teacher, subject);
         validateCohortSubjectCompatibility(cohort, subject);
         
-        // Verificar se já existe atribuição para esta combinação
         if (cohortSubjectRepository.existsByCohortAndSubjectAndAcademicYearAndSemester(
             cohort, subject, cohort.getAcademicYear(), cohort.getSemester())) {
             log.warn("Cohort subject assignment already exists for cohort {}, subject {}, year {}, semester {}",
@@ -54,10 +52,8 @@ public class CohortSubjectService {
             );
         }
         
-        // Validar que o professor está disponível (sem sobrecarga)
         validateTeacherWorkload(teacher, request.weeklyHours());
         
-        // Construir a entidade
         CohortSubject cohortSubject = CohortSubject.builder()
             .cohort(cohort)
             .subject(subject)
@@ -69,7 +65,6 @@ public class CohortSubjectService {
             .isActive(true)
             .build();
         
-        // Validar consistência
         if (!cohortSubject.isValid()) {
             throw new IllegalArgumentException("Invalid cohort subject assignment");
         }
@@ -227,13 +222,11 @@ public class CohortSubjectService {
     }
 
     private void validateTeacherWorkload(ApplicationUser teacher, int additionalHours) {
-        // Implementar lógica de validação de carga horária do professor
-        // Exemplo: não permitir mais de 40 horas semanais
         int currentWeeklyHours = cohortSubjectRepository.sumWeeklyHoursByTeacher(teacher);
         
-        if (currentWeeklyHours + additionalHours > 40) { // Limite de 40 horas semanais
+        if (currentWeeklyHours + additionalHours > AcademicPolicy.WEEKLY_TEACHING_HOURS_LIMIT) { 
             throw new IllegalArgumentException(
-                String.format("Teacher would exceed maximum weekly hours (current: %d, additional: %d, max: 40)",
+                String.format("Teacher would exceed maximum weekly hours (current: %d, additional: %d, max: 8)",
                     currentWeeklyHours, additionalHours)
             );
         }
