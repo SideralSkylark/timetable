@@ -1,35 +1,17 @@
 package com.timetable.timetable.domain.schedule.entity;
 
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 /**
  * Representa a atribuição de uma disciplina a uma turma específica com um professor específico.
  * Esta é a "instância concreta" de uma disciplina sendo lecionada.
- * 
- * Exemplo:
- * - Cohort: "2º ano - Eng. Informática - Turma A - 2026"
- * - Subject: "Programação II"
- * - AssignedTeacher: "Prof. João Silva"
- * 
- * Esta entidade responde à pergunta: 
- * "Que disciplinas esta turma tem e com que professores?"
  */
 @Entity
-@Table(name = "cohort_subjects")
+@Table(name = "cohort_subjects", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"cohort_id", "subject_id", "academic_year", "semester"})
+})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -41,80 +23,65 @@ public class CohortSubject {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    /**
-     * The cohort(class) to have this subject
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cohort_id", nullable = false)
     private Cohort cohort;
     
-    /**
-     * The subject to be lectured
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
     
-    /**
-     * The teacher assigned to this subject in this specific class. Idealy from the eligible teachers list
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_teacher_id", nullable = false)
     private ApplicationUser assignedTeacher;
     
-    /**
-     * The academic year (ie: 2026) must coincide with it's associated entities
-     */
     @Column(nullable = false)
     private int academicYear;
     
-    /**
-     * The semester (1 or 2) must coincide with its associated entities
-     */
     @Column(nullable = false)
     private int semester;
     
-    /**
-     * Allows temporary disabling of this atribution (when a teacher is sick, or a subject is suspended)
-     */
     @Column(nullable = false)
     @Builder.Default
     private boolean isActive = true;
     
     /**
-     * Number of weekly hours this class has per week
+     * Horas semanais calculadas a partir dos créditos da disciplina
      */
-    @Column(nullable = false)
-    @Builder.Default
-    private int weeklyHours = 4;
-    
-    /**
-     * Number of lessons per week (so the solver knows how many scheduled classes to create)
-     */
-    @Column(nullable = false)
-    @Builder.Default
-    private int lessonsPerWeek = 2;
-    
-    /**
-     * Lesson duration in minutes
-     * @return int
-     */
-    public int getMinutesPerLesson() {
-        int totalWeeklyMinutes = weeklyHours * 60;
-        return totalWeeklyMinutes / lessonsPerWeek;
+    public int getWeeklyHours() {
+        return AcademicPolicy.calculateWeeklyHours(subject.getCredits());
     }
     
     /**
-     * Total number of lessons per semester(assuming 16 weeks per semester)
-     * @return int
+     * Blocos de aula por semana (cada bloco = 110 minutos)
      */
-    public int getTotalLessonsInSemester() {
-        return lessonsPerWeek * 16; // 16 semanas padrão
+    public int getLessonBlocksPerWeek() {
+        return AcademicPolicy.calculateLessonBlocksPerWeek(subject.getCredits());
     }
     
     /**
-     * To String like method for display purposes
-     * @return String
+     * Slots de 50 minutos por semana
+     */
+    public int getSlotsPerWeek() {
+        return AcademicPolicy.calculateSlotsPerWeek(subject.getCredits());
+    }
+    
+    /**
+     * Duração de cada bloco de aula em minutos
+     */
+    public int getMinutesPerLessonBlock() {
+        return AcademicPolicy.LESSON_BLOCK_DURATION_MINUTES;
+    }
+    
+    /**
+     * Total de blocos de aula no semestre
+     */
+    public int getTotalLessonBlocksInSemester() {
+        return getLessonBlocksPerWeek() * AcademicPolicy.WEEKS_PER_SEMESTER;
+    }
+    
+    /**
+     * Nome para exibição
      */
     public String getDisplayName() {
         return cohort.getDisplayName() + " - " + subject.getName() + 
@@ -122,21 +89,50 @@ public class CohortSubject {
     }
     
     /**
-     * Check if the assigned teacher is eligible to teach this lesson
-     * @return boolean
+     * Verifica se o professor é elegível para lecionar esta disciplina
      */
     public boolean isTeacherEligible() {
         return subject.getEligibleTeachers().contains(assignedTeacher);
     }
     
     /**
-     * check data consistency against it's cohort
-     * @return boolean
+     * Valida consistência de dados
      */
     public boolean isValid() {
-        return cohort.getAcademicYear() == academicYear &&
-               cohort.getSemester() == semester &&
-               subject.getTargetSemester() == semester &&
-               isTeacherEligible();
+        // Verifica alinhamento de ano académico e semestre
+        if (cohort.getAcademicYear() != academicYear || cohort.getSemester() != semester) {
+            return false;
+        }
+        
+        // Verifica se a disciplina é do semestre correto
+        if (subject.getTargetSemester() != semester) {
+            return false;
+        }
+        
+        // Verifica se o professor é elegível
+        if (!isTeacherEligible()) {
+            return false;
+        }
+        
+        // Verifica se a disciplina pertence ao curso da turma
+        if (!subject.getCourse().equals(cohort.getCourse())) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Validação antes de persistir
+     */
+    @PrePersist
+    @PreUpdate
+    private void validate() {
+        if (!isValid()) {
+            throw new IllegalStateException(
+                "CohortSubject inválido: " + getDisplayName() + 
+                " - Verifique alinhamento de ano/semestre, curso e elegibilidade do professor"
+            );
+        }
     }
 }

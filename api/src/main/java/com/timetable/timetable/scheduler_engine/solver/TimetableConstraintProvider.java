@@ -2,53 +2,154 @@ package com.timetable.timetable.scheduler_engine.solver;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.*;
-import com.timetable.timetable.scheduler_engine.domain.*;
+import com.timetable.timetable.scheduler_engine.domain.LessonAssignment;
 
+/**
+ * Defines the constraints for the timetabling problem.
+ * Hard constraints must be satisfied for a feasible solution.
+ * Soft constraints are preferences that should be optimized.
+ */
 public class TimetableConstraintProvider implements ConstraintProvider {
-
+    
     @Override
     public Constraint[] defineConstraints(ConstraintFactory factory) {
         return new Constraint[]{
+            // HARD CONSTRAINTS (must be satisfied)
             teacherConflict(factory),
             roomConflict(factory),
             cohortConflict(factory),
-            roomCapacity(factory)
+            roomCapacity(factory),
+            roomCourseRestriction(factory),
+            
+            // SOFT CONSTRAINTS (preferences to optimize)
+            // minimizeTeacherGaps(factory),
+            // distributeSubjectEvenly(factory)
         };
     }
-
-    // 1. Professor não pode dar 2 aulas no mesmo horário
-    public Constraint teacherConflict(ConstraintFactory factory) {
-        return factory.forEachUniquePair(LessonAssignment.class,
-                Joiners.equal(a -> a.getTeacher().getId()),
-                Joiners.equal(a -> a.getTimeSlot()))
-            .penalize("Teacher conflict", HardSoftScore.ONE_HARD);
+    
+    // ========================================
+    // HARD CONSTRAINTS
+    // ========================================
+    
+    /**
+     * HC1: A teacher cannot teach two lessons at the same time.
+     */
+    private Constraint teacherConflict(ConstraintFactory factory) {
+        return factory.forEachUniquePair(
+                LessonAssignment.class,
+                Joiners.equal(LessonAssignment::getTeacher),
+                Joiners.equal(LessonAssignment::getTimeslot)
+            )
+            .filter((lesson1, lesson2) -> 
+                lesson1.getTimeslot() != null && 
+                lesson1.getTeacher() != null
+            )
+            .penalize(HardSoftScore.ONE_HARD)
+            .asConstraint("Teacher conflict");
     }
-
-    // 2. Duas aulas não podem ocorrer na mesma sala no mesmo horário
+    
+    /**
+     * HC2: A room cannot host two lessons at the same time.
+     */
     private Constraint roomConflict(ConstraintFactory factory) {
-        return factory.forEachUniquePair(LessonAssignment.class,
-                Joiners.equal(a -> a.getRoom().getId()),
-                Joiners.equal(a -> a.getTimeSlot()))
-            .penalize("Room conflict", HardSoftScore.ONE_HARD);
+        return factory.forEachUniquePair(
+                LessonAssignment.class,
+                Joiners.equal(LessonAssignment::getRoom),
+                Joiners.equal(LessonAssignment::getTimeslot)
+            )
+            .filter((lesson1, lesson2) -> 
+                lesson1.getRoom() != null && 
+                lesson1.getTimeslot() != null
+            )
+            .penalize(HardSoftScore.ONE_HARD)
+            .asConstraint("Room conflict");
     }
-
-    // 3. Uma turma não pode ter duas aulas no mesmo horário
+    
+    /**
+     * HC3: A cohort (student group) cannot have two lessons at the same time.
+     */
     private Constraint cohortConflict(ConstraintFactory factory) {
-        return factory.forEachUniquePair(LessonAssignment.class,
-                Joiners.equal(a -> a.getCohort().getId()),
-                Joiners.equal(a -> a.getTimeSlot()))
-            .penalize("Cohort conflict", HardSoftScore.ONE_HARD);
+        return factory.forEachUniquePair(
+                LessonAssignment.class,
+                Joiners.equal(LessonAssignment::getCohort),
+                Joiners.equal(LessonAssignment::getTimeslot)
+            )
+            .filter((lesson1, lesson2) -> 
+                lesson1.getTimeslot() != null && 
+                lesson1.getCohort() != null
+            )
+            .penalize(HardSoftScore.ONE_HARD)
+            .asConstraint("Cohort conflict");
     }
-
-    // 4. Sala precisa ter capacidade suficiente
+    
+    /**
+     * HC4: A room must have sufficient capacity for the cohort's students.
+     */
     private Constraint roomCapacity(ConstraintFactory factory) {
         return factory.forEach(LessonAssignment.class)
-            .filter(a ->
-                a.getRoom() != null &&
-                a.getCohort() != null &&
-                a.getRoom().getCapacity() < 30 // Podes substituir pelo tamanho real da turma
+            .filter(lesson -> 
+                lesson.getRoom() != null &&
+                lesson.getCohort() != null &&
+                !lesson.getRoom().hasSufficientCapacity(lesson.getStudentCount())
             )
-            .penalize("Insufficient room capacity", HardSoftScore.ONE_HARD);
+            .penalize(HardSoftScore.ONE_HARD)
+            .asConstraint("Insufficient room capacity");
     }
+    
+    /**
+     * HC5: If a room is restricted to a specific course, only that course can use it.
+     */
+    private Constraint roomCourseRestriction(ConstraintFactory factory) {
+        return factory.forEach(LessonAssignment.class)
+            .filter(lesson -> 
+                lesson.getRoom() != null &&
+                lesson.getCourseId() != null &&
+                !lesson.getRoom().isAvailableForCourse(lesson.getCourseId())
+            )
+            .penalize(HardSoftScore.ONE_HARD)
+            .asConstraint("Room course restriction violated");
+    }
+    
+    // ========================================
+    // SOFT CONSTRAINTS (commented out for now)
+    // ========================================
+    
+    /**
+     * SC1: Minimize gaps in a teacher's schedule (same day).
+     * Teachers prefer to have consecutive lessons without breaks.
+     */
+    /*
+    private Constraint minimizeTeacherGaps(ConstraintFactory factory) {
+        return factory.forEach(LessonAssignment.class)
+            .join(LessonAssignment.class,
+                Joiners.equal(LessonAssignment::getTeacher),
+                Joiners.equal(lesson -> lesson.getTimeslot().getDayOfWeek())
+            )
+            .filter((lesson1, lesson2) -> 
+                lesson1.getTimeslot() != null && 
+                lesson2.getTimeslot() != null &&
+                hasGapBetween(lesson1.getTimeslot(), lesson2.getTimeslot())
+            )
+            .penalize(HardSoftScore.ONE_SOFT)
+            .asConstraint("Teacher schedule gap");
+    }
+    */
+    
+    /**
+     * SC2: Distribute lessons of the same subject evenly across the week.
+     */
+    /*
+    private Constraint distributeSubjectEvenly(ConstraintFactory factory) {
+        return factory.forEach(LessonAssignment.class)
+            .join(LessonAssignment.class,
+                Joiners.equal(lesson -> lesson.getCohortSubject().getId()),
+                Joiners.equal(lesson -> lesson.getTimeslot().getDayOfWeek())
+            )
+            .filter((lesson1, lesson2) -> 
+                lesson1.getId() < lesson2.getId() // Avoid double counting
+            )
+            .penalize(HardSoftScore.ONE_SOFT)
+            .asConstraint("Subject lessons on same day");
+    }
+    */
 }
-

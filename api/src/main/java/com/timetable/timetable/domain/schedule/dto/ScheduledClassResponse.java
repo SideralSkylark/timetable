@@ -1,28 +1,30 @@
 package com.timetable.timetable.domain.schedule.dto;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 import com.timetable.timetable.domain.schedule.entity.ScheduledClass;
 
 public record ScheduledClassResponse(
+
     Long id,
-    Long cohortSubjectId, 
+    Long cohortSubjectId,
     Long timetableId,
     Long roomId,
-    LocalDate date,
-    LocalTime startTime,
-    LocalTime endTime
+    Long timeslotId,
+
+    String dayOfWeek,
+    String startTime,
+    String endTime
 ) {
-    public static ScheduledClassResponse from(ScheduledClass scheduledClass) {
+
+    public static ScheduledClassResponse from(ScheduledClass sc) {
         return new ScheduledClassResponse(
-            scheduledClass.getId(), 
-            scheduledClass.getCohortSubject().getId(), 
-            scheduledClass.getTimetable().getId(), 
-            scheduledClass.getRoom().getId(), 
-            scheduledClass.getDate(), 
-            scheduledClass.getStartTime(), 
-            scheduledClass.getEndTime()
+                sc.getId(),
+                sc.getCohortSubject().getId(),
+                sc.getTimetable() != null ? sc.getTimetable().getId() : null,
+                sc.getRoom().getId(),
+                sc.getTimeslot().getId(),
+                sc.getTimeslot().getDayOfWeek().name(),
+                sc.getTimeslot().getStartTime().toString(),
+                sc.getTimeslot().getEndTime().toString()
         );
     }
 }

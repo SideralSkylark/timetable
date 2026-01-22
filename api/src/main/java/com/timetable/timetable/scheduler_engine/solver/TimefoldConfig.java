@@ -1,8 +1,8 @@
 package com.timetable.timetable.scheduler_engine.solver;
 
-import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
@@ -12,34 +12,62 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 
+import com.timetable.timetable.scheduler_engine.domain.LessonAssignment;
+import com.timetable.timetable.scheduler_engine.domain.TimetableSolution;
+
+/**
+ * Configuration for the Timefold Solver.
+ * 
+ * The solver works in two phases:
+ * 1. Construction Heuristic: Quickly builds an initial solution
+ * 2. Local Search: Improves the solution iteratively
+ */
 @Configuration
 public class TimefoldConfig {
     
     @Bean
     public SolverConfig solverConfig() {
         return new SolverConfig()
-                .withSolutionClass(com.timetable.timetable.scheduler_engine.domain.TimetableSolution.class)
-                .withEntityClasses(com.timetable.timetable.scheduler_engine.domain.LessonAssignment.class)
+                .withSolutionClass(TimetableSolution.class)
+                .withEntityClasses(LessonAssignment.class)
                 .withConstraintProviderClass(TimetableConstraintProvider.class)
+                
+                // Global termination: solver stops after 60 seconds max
                 .withTerminationConfig(new TerminationConfig()
-                        .withSecondsSpentLimit(30L))
+                        .withSecondsSpentLimit(60L)
+                        // Stop early if no improvement for 15 seconds
+                        .withUnimprovedSecondsSpentLimit(15L))
+                
                 .withPhases(
+                        // Phase 1: Build initial solution (first 10 seconds)
+                        // FIRST_FIT_DECREASING sorts entities by difficulty before assigning
+                        // (now works because LessonAssignment has difficultyComparatorClass)
                         new ConstructionHeuristicPhaseConfig()
-                                .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT),
+                                .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT_DECREASING)
+                                .withTerminationConfig(new TerminationConfig()
+                                        .withSecondsSpentLimit(10L)),
+                        
+                        // Phase 2: Improve solution (remaining 50 seconds)
+                        // Uses hill climbing, tabu search, simulated annealing, etc.
                         new LocalSearchPhaseConfig()
                                 .withTerminationConfig(new TerminationConfig()
-                                        .withSecondsSpentLimit(25L))
+                                        .withSecondsSpentLimit(50L))
                 );
     }
     
     @Bean
-    public SolverFactory<com.timetable.timetable.scheduler_engine.domain.TimetableSolution> solverFactory(SolverConfig solverConfig) {
+    public SolverFactory<TimetableSolution> solverFactory(SolverConfig solverConfig) {
         return SolverFactory.create(solverConfig);
     }
     
     @Bean
-    public SolverManager<com.timetable.timetable.scheduler_engine.domain.TimetableSolution, java.util.UUID> solverManager(
-            SolverFactory<com.timetable.timetable.scheduler_engine.domain.TimetableSolution> solverFactory) {
-        return SolverManager.create(solverFactory, new SolverManagerConfig());
+    public SolverManager<TimetableSolution, java.util.UUID> solverManager(
+            SolverFactory<TimetableSolution> solverFactory) {
+        
+        // Configure parallel solving if needed
+        SolverManagerConfig config = new SolverManagerConfig();
+        // config.setParallelSolverCount("AUTO"); // Use all CPU cores
+        
+        return SolverManager.create(solverFactory, config);
     }
 }

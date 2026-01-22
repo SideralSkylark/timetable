@@ -5,8 +5,5 @@ import jakarta.validation.constraints.NotNull;
 public record CreateCohortSubjectRequest(
     @NotNull Long cohortId,
     @NotNull Long subjectId,
-    @NotNull Long assignedTeacherId,
-    @NotNull Integer weeklyHours,
-    @NotNull Integer lessonsPerWeek
+    @NotNull Long assignedTeacherId
 ) {}
-
