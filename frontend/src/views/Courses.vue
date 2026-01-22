@@ -215,7 +215,10 @@ const courseFields = [
 
 const disciplineFields = [
   { name: 'name', type: 'text', placeholder: 'Nome da Disciplina' },
-  { name: 'teacherIds', type: 'text', placeholder: 'IDs dos Professores (separados por ,)' },
+  { name: 'credits', type: 'number', placeholder: 'Numero de creditos da Disciplina' },
+  { name: 'targetYear', type: 'number', placeholder: 'Ano em que a disciplina e lecionada' },
+  { name: 'targetSemester', type: 'number', placeholder: 'Semestre em que a disciplina e lecionada' },
+  { name: 'eligibleTeacherIds', type: 'text', placeholder: 'IDs dos Professores elegiveis (separados por ,)' },
 ]
 
 // ========================
@@ -289,8 +292,11 @@ const updateCourse = async (data: any) => {
 const createDiscipline = async (data: any) => {
   await subjectService.create({
     name: data.name,
+    credits: data.credits,
+    targetYear: data.targetYear,
+    targetSemester: data.targetSemester,
     courseId: selectedCourse.value.id,
-    teacherIds: data.teacherIds.split(',').map((x: string) => Number(x.trim())),
+    eligibleTeacherIds: data.eligibleTeacherIds.split(',').map((x: string) => Number(x.trim())),
   })
 
   showDisciplineModal.value = false
@@ -301,7 +307,10 @@ const updateDiscipline = async (data: any) => {
   if (!editingDiscipline.value) return
   await subjectService.update(editingDiscipline.value.id, {
     name: data.name,
-    teacherIds: data.teacherIds.split(',').map((x: string) => Number(x.trim())),
+    credits: data.credits,
+    targetYear: data.targetYear,
+    targetSemester: data.targetSemester,
+    eligibleTeacherIds: data.eligibleTeacherIds.split(',').map((x: string) => Number(x.trim())),
   })
   showDisciplineModal.value = false
   editingDiscipline.value = null

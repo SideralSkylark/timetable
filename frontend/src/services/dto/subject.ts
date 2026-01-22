@@ -1,20 +1,29 @@
 export interface CreateSubjectRequest {
   name: string,
+  credits: number,
+  targetYear: number,
+  targetSemester: number,
   courseId: number,
-  teacherIds: number[]
+  eligibleTeacherIds: number[]
 }
 
 export interface UpdateSubjectRequest {
   name: string,
-  teacherIds: number[]
+  credits: number,
+  targetYear: number,
+  targetSemester: number,
+  eligibleTeacherIds: number[]
 }
 
 export interface SubjectDetailResponse {
   id: number,
   name: string,
+  credits: number,
+  targetYear: number,
+  targetSemester: number,
   courseId: number,
   courseName: string,
-  teachers: TeacherInfo[]
+  eligibleTeacherIds: number[]
 }
 
 export interface SubjectListResponse {

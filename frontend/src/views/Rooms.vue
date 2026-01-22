@@ -10,7 +10,7 @@
             </div>
             <div>
               <h1 class="text-2xl font-bold text-gray-900">Gestão de Salas</h1>
-              <p class="text-gray-500 text-sm">Gerir salas e suas capacidades</p>
+              <p class="text-gray-500 text-sm">Gerir as salas da instituicao</p>
             </div>
           </div>
 
@@ -87,11 +87,13 @@ const tableColumns = [
   { key: 'id', label: 'ID' },
   { key: 'name', label: 'Nome' },
   { key: 'capacity', label: 'Capacidade' },
+  { key: 'restrictedToCourseId', label: 'Atribuido'},
 ]
 
 const roomFields = [
   { name: 'name', type: 'text', placeholder: 'Nome da sala' },
   { name: 'capacity', type: 'number', placeholder: 'Capacidade' },
+  { name: 'restrictedToCourseId', type: 'number', placeholder: 'atribuido' },
 ]
 
 const fetchRooms = async (page = 0) => {

@@ -56,5 +56,5 @@ public class Subject {
         inverseJoinColumns = @JoinColumn(name = "teacher_id")
     )
     private Set<ApplicationUser> eligibleTeachers;
-
 }
+

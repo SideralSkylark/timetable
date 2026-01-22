@@ -7,6 +7,8 @@ import com.timetable.timetable.domain.schedule.dto.SubjectDetailResponse;
 import com.timetable.timetable.domain.schedule.dto.UpdateSubjectRequest;
 import com.timetable.timetable.domain.schedule.service.SubjectService;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +37,13 @@ public class SubjectController {
         );
     }
 
+    @GetMapping("/course/{courseId}")
+    public ResponseEntity<ApiResponse<PagedModel<SubjectDetailResponse>>> getAllByCourse(@PathVariable Long courseId, Pageable pageable) {
+        return ResponseFactory.ok(
+            new PagedModel<>(subjectService.getAllByCourse(courseId, pageable).map(SubjectDetailResponse::from)),
+            "Subject fetched successfully."
+        );
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SubjectDetailResponse>> getById(@PathVariable Long id) {
