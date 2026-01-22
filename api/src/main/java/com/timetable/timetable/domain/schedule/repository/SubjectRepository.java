@@ -31,6 +31,7 @@ public interface SubjectRepository extends JpaRepository<Subject, Long> {
         @Param("course") Course course,
         @Param("excludeId") Long excludeId);
     
+    @EntityGraph(attributePaths = {"eligibleTeachers"})
     Page<Subject> findByCourse(Course course, Pageable pageable);
     
     Page<Subject> findByTargetYearAndTargetSemester(int targetYear, int targetSemester, Pageable pageable);

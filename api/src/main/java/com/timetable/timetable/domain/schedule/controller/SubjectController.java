@@ -32,25 +32,23 @@ public class SubjectController {
     public ResponseEntity<ApiResponse<SubjectDetailResponse>> create(
             @Valid @RequestBody CreateSubjectRequest request) {
         return ResponseFactory.ok(
-            SubjectDetailResponse.from(subjectService.createSubject(request)),
-            "subject created"
-        );
+                SubjectDetailResponse.from(subjectService.createSubject(request)),
+                "subject created");
     }
 
     @GetMapping("/course/{courseId}")
-    public ResponseEntity<ApiResponse<PagedModel<SubjectDetailResponse>>> getAllByCourse(@PathVariable Long courseId, Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<SubjectDetailResponse>>> getAllByCourse(@PathVariable Long courseId,
+            Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(subjectService.getAllByCourse(courseId, pageable).map(SubjectDetailResponse::from)),
-            "Subject fetched successfully."
-        );
+                new PagedModel<>(subjectService.getAllByCourse(courseId, pageable).map(SubjectDetailResponse::from)),
+                "Subject fetched successfully.");
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SubjectDetailResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            SubjectDetailResponse.from(subjectService.getById(id)),
-            "Subject fetched successfully."
-        );
+                SubjectDetailResponse.from(subjectService.getById(id)),
+                "Subject fetched successfully.");
     }
 
     @PutMapping("/{id}")
@@ -58,9 +56,8 @@ public class SubjectController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateSubjectRequest request) {
         return ResponseFactory.ok(
-            SubjectDetailResponse.from(subjectService.updateSubject(id, request)),
-            "subject updated successfully."
-        );
+                SubjectDetailResponse.from(subjectService.updateSubject(id, request)),
+                "subject updated successfully.");
     }
 
     @DeleteMapping("/{id}")
@@ -69,5 +66,3 @@ public class SubjectController {
         return ResponseEntity.noContent().build();
     }
 }
-
-
