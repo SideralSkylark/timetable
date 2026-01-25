@@ -15,4 +15,5 @@ export interface RoomResponse {
   name: string
   capacity: number
   restrictedToCourseId: number
+  restrictedToCourseName: string
 }

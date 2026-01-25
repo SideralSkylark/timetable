@@ -18,11 +18,55 @@
         >
           {{ field.label || field.placeholder }}
         </label>
+
+        <!-- Select/Dropdown Field -->
+        <div v-if="field.type === 'select'" class="relative">
+          <select
+            :id="field.name"
+            v-model="form[field.name]"
+            :required="field.required"
+            class="w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg
+                   appearance-none bg-white
+                   focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent
+                   transition cursor-pointer"
+          >
+            <option 
+              v-if="field.placeholder && !field.required" 
+              :value="null"
+              class="text-gray-400"
+            >
+              {{ field.placeholder }}
+            </option>
+            <option
+              v-if="field.placeholder && field.required"
+              value=""
+              disabled
+              selected
+              class="text-gray-400"
+            >
+              {{ field.placeholder }}
+            </option>
+            <option
+              v-for="option in field.options"
+              :key="option.value"
+              :value="option.value"
+              class="text-gray-900"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+          <!-- Dropdown Icon -->
+          <ChevronDown class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+
+        <!-- Regular Input Fields -->
         <input
+          v-else
           :id="field.name"
           v-model="form[field.name]"
           :type="field.type"
           :placeholder="field.placeholder"
+          :required="field.required"
           class="w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg
                  placeholder:text-gray-400
                  focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent
@@ -56,10 +100,24 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { Save, Plus } from 'lucide-vue-next'
+import { Save, Plus, ChevronDown } from 'lucide-vue-next'
+
+interface FieldOption {
+  label: string
+  value: any
+}
+
+interface Field {
+  name: string
+  type: string
+  placeholder: string
+  label?: string
+  options?: FieldOption[]
+  required?: boolean
+}
 
 const props = defineProps<{
-  fields: { name: string; type: string; placeholder: string; label?: string }[]
+  fields: Field[]
   data?: Record<string, any>
   title: string
   subtitle?: string
@@ -77,11 +135,15 @@ watch(
   () => props.data,
   (val) => {
     if (val) {
-      for (const key of Object.keys(val)) form[key] = val[key]
+      for (const key of Object.keys(val)) {
+        form[key] = val[key]
+      }
     }
   },
   { immediate: true }
 )
 
-const handleSubmit = () => emit('submit', { ...form })
+const handleSubmit = () => {
+  emit('submit', { ...form })
+}
 </script>

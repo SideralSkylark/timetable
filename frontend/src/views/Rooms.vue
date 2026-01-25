@@ -69,46 +69,60 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoomStore } from '@/stores/room'
+import { useToast } from '@/composables/useToast'
 import type { RoomResponse } from '@/services/dto/room'
 import CrudForm from '@/component/ui/CrudForm.vue'
 import CrudTable from '@/component/ui/CrudTable.vue'
 
 import { Building, Plus } from 'lucide-vue-next'
+import { useCourseStore } from '@/stores/course'
 
 const roomStore = useRoomStore()
+const courseStore = useCourseStore()
+const toast = useToast()
 const editingRoom = ref<RoomResponse | null>(null)
 const showRoomModal = ref(false)
-const pagedRooms = ref(roomStore.pagedRooms)
+const pagedRooms = computed(() => roomStore.pagedRooms)
 const currentPage = ref(0)
 
 const tableColumns = [
-  { key: 'id', label: 'ID' },
   { key: 'name', label: 'Nome' },
   { key: 'capacity', label: 'Capacidade' },
-  { key: 'restrictedToCourseId', label: 'Atribuido'},
+  { key: 'restrictedToCourseName', label: 'Atribuido'},
 ]
 
-const roomFields = [
-  { name: 'name', type: 'text', placeholder: 'Nome da sala' },
-  { name: 'capacity', type: 'number', placeholder: 'Capacidade' },
-  { name: 'restrictedToCourseId', type: 'number', placeholder: 'atribuido' },
-]
+const roomFields = computed(() => [
+  { name: 'name', type: 'text', placeholder: 'Nome da sala', required: true },
+  { name: 'capacity', type: 'number', placeholder: 'Capacidade', required: true },
+  {
+    name: 'restrictedToCourseId',
+    type: 'select',
+    label: 'Atribuído ao curso',
+    options: courseStore.courses.map(c => ({
+      label: c.name,
+      value: c.id,
+    })),
+    placeholder: 'Selecione um curso',
+    required: true,  
+  },
+])
 
 const fetchRooms = async (page = 0) => {
   currentPage.value = page
   await roomStore.fetchRooms(page, 10)
-  pagedRooms.value = roomStore.pagedRooms
 }
 
 const createRoom = async (data: any) => {
   await roomStore.createRoom(data)
   showRoomModal.value = false
+  toast.success('Sala criada com sucesso!')
   fetchRooms(currentPage.value)
 }
 
-const openEditRoomModal = (room: RoomResponse) => {
+const openEditRoomModal = async (room: RoomResponse) => {
+  await courseStore.fetchAllCoursesSimple()
   editingRoom.value = { ...room }
   showRoomModal.value = true
 }
@@ -117,16 +131,20 @@ const updateRoom = async (data: any) => {
   if (!editingRoom.value) return
   await roomStore.updateRoom(editingRoom.value.id, data)
   editingRoom.value = null
+  toast.success('Sala atualizada com sucesso')
   fetchRooms(currentPage.value)
+  showRoomModal.value = false
 }
 
 const deleteRoom = async (id: number) => {
   await roomStore.deleteRoom(id)
+  toast.success('Sala removida com sucesso')
   fetchRooms(currentPage.value)
 }
 
-const openRoomModal = () => {
+const openRoomModal = async () => {
   editingRoom.value = null
+  await courseStore.fetchAllCoursesSimple()
   showRoomModal.value = true
 }
 

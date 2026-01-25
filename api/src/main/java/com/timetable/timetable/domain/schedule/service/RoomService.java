@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,6 +44,7 @@ public class RoomService {
         return saved;
     }
 
+    @Transactional
     public Page<Room> getAll(Pageable pageable) {
         return roomRepository.findAll(pageable);
     }
@@ -56,6 +58,7 @@ public class RoomService {
         return room;
     }
 
+    @Transactional
     public Room updateRoom(Long id, UpdateRoomRequest updateRequest) {
         log.debug("Updating room {}", id);
         Room room = getById(id);

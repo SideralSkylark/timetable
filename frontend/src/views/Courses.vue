@@ -253,7 +253,7 @@ const loadSubjects = async (course: any, force = false) => {
 
   course.loadingSubjects = true
   try {
-    const page = await courseService.getSubjectsByCourse(course.id, 0, 100)
+    const page = await subjectService.getAllByCourse(course.id, 0, 100)
     course.disciplines = page.content
   } finally {
     course.loadingSubjects = false

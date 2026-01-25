@@ -5,7 +5,6 @@ import type {
   CreateSubjectRequest,
   UpdateSubjectRequest,
   SubjectDetailResponse,
-  SubjectListResponse
 } from './dto/subject'
 
 const BASE_URL = '/v1/subjects'
@@ -16,10 +15,12 @@ export const subjectService = {
     return res.data.data
   },
 
-  async getAll(page: number = 0, size: number = 10) {
-    const res = await api.get<ApiResponse<Page<SubjectListResponse>>>(BASE_URL, {
-      params: { page, size },
-    })
+  async getAllByCourse(courseId: number, page = 0, size = 10) {
+    const res = await api.get<ApiResponse<Page<SubjectDetailResponse>>>(
+      `${BASE_URL}/course/${courseId}`, {
+        params: { page, size },
+      })
+
     return res.data.data
   },
 
