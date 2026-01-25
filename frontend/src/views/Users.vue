@@ -226,6 +226,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useToast } from '@/composables/useToast'
 import type { UserResponse } from '@/services/dto/user'
 import CrudTable from '@/component/ui/CrudTable.vue'
 import { 
@@ -237,16 +238,12 @@ import {
   Mail,
   Lock,
   Shield,
-  UserCheck,
-  GraduationCap,
-  BookOpen,
-  Briefcase,
-  Crown,
   X,
   Check
 } from 'lucide-vue-next'
 
 const userStore = useUserStore()
+const toast = useToast()
 const editingUser = ref<UserResponse | null>(null)
 const showUserModal = ref(false)
 const pagedUsers = ref(userStore.pagedUsers)
@@ -259,7 +256,6 @@ const formData = reactive({
   selectedRoles: [] as string[]
 })
 
-// Colunas da tabela (sem ID)
 const tableColumns = [
   { key: 'username', label: 'Username' },
   { key: 'email', label: 'Email' },
@@ -273,7 +269,6 @@ const fetchUsers = async (page = 0) => {
 }
 
 const handleSubmit = async () => {
-  // USER sempre está incluído
   const roles = ['USER', ...formData.selectedRoles]
   
   const data = {
@@ -292,6 +287,7 @@ const handleSubmit = async () => {
 
 const createUser = async (data: any) => {
   await userStore.createUser(data)
+  toast.success('Usuario criado com sucesso')
   closeModal()
   fetchUsers(currentPage.value)
 }
@@ -299,6 +295,7 @@ const createUser = async (data: any) => {
 const updateUser = async (data: any) => {
   if (!editingUser.value) return
   await userStore.updateUser(editingUser.value.id, data)
+  toast.success('Usuario atualizado com sucesso')
   closeModal()
   fetchUsers(currentPage.value)
 }
@@ -320,6 +317,7 @@ const openEdit = (user: UserResponse) => {
 const deleteUser = async (id: number) => {
   if (confirm('Tem certeza que deseja excluir este utilizador?')) {
     await userStore.deleteUser(id)
+    toast.success('Usuario removido com sucesso')
     fetchUsers(currentPage.value)
   }
 }
