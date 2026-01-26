@@ -148,6 +148,11 @@ public class SubjectService {
     }
 
     @Transactional
+    public Long countLessonsByCourseId(Long courseId) {
+        return subjectRepository.countByCourseId(courseId);
+    }
+
+    @Transactional
     public void deleteSubject(Long id) {
         log.debug("Deleting subject {}", id);
         if (!subjectRepository.existsById(id)) {

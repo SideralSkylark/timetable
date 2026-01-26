@@ -2,11 +2,13 @@ package com.timetable.timetable.domain.schedule.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
+import com.timetable.timetable.domain.schedule.dto.CoordinatorOption;
+import com.timetable.timetable.domain.schedule.dto.CourseListResponse;
 import com.timetable.timetable.domain.schedule.dto.CourseResponse;
 import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
+import com.timetable.timetable.domain.schedule.query.CourseQueryService;
 import com.timetable.timetable.domain.schedule.service.CourseService;
-import com.timetable.timetable.domain.schedule.service.SubjectService;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
@@ -28,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("api/v1/courses")
 public class CourseController {
     private final CourseService courseService;
-    private final SubjectService subjectService;
+    private final CourseQueryService courseQueryService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<CourseResponse>> create(@Valid @RequestBody CreateCourseRequest request) {
@@ -39,10 +41,18 @@ public class CourseController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedModel<CourseResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<CourseListResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(courseService.getAll(pageable).map(CourseResponse::from)),
+            new PagedModel<>(courseQueryService.findAllWithSubjectCount(pageable)),
             "Courses fetched"
+        );
+    }
+
+    @GetMapping("/coordinators")
+    public ResponseEntity<ApiResponse<PagedModel<CoordinatorOption>>> getCoordinators(Pageable pageable) {
+        return ResponseFactory.ok(
+            new PagedModel<>(courseQueryService.getAvailableCoordinators(pageable)),
+            "Coordinators fetched"
         );
     }
 

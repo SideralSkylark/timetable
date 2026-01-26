@@ -1,0 +1,41 @@
+package com.timetable.timetable.domain.user.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import com.timetable.timetable.common.response.ApiResponse;
+import com.timetable.timetable.common.response.ResponseFactory;
+import com.timetable.timetable.domain.user.dto.UserResponse;
+import com.timetable.timetable.domain.user.entity.UserRole;
+import com.timetable.timetable.domain.user.mapper.UserMapper;
+import com.timetable.timetable.domain.user.service.UserService;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("api/v1/teachers")
+@RequiredArgsConstructor
+@Slf4j
+public class TeacherController {
+    private final UserService userService;
+    private final UserMapper userMapper;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<PagedModel<UserResponse>>> getAllTeachers(Pageable pageable) {
+        return ResponseFactory.ok(
+            new PagedModel<>(userService.getUsersByRole(UserRole.TEACHER, pageable).map(userMapper::toDTO)),
+            "teachers fetched sucessfully"
+        );
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> getById(@PathVariable Long id) {
+        return ResponseFactory.ok(
+            userMapper.toDTO(userService.getUserByRoleAndId(UserRole.TEACHER, id)),
+            "teachers fetched sucessfully"
+        );
+    }
+}

@@ -5,8 +5,9 @@ import type {
   CreateCourseRequest,
   UpdateCourseRequest,
   CourseResponse,
+  CourseListResponse,
+  CoordinatorOption,
 } from './dto/course'
-import type { SubjectListResponse, SubjectDetailResponse } from './dto/subject'
 
 const BASE_URL = '/v1/courses'
 
@@ -17,7 +18,7 @@ export const courseService = {
   },
 
   async getAll(page: number = 0, size: number = 10) {
-    const res = await api.get<ApiResponse<Page<CourseResponse>>>(BASE_URL, {
+    const res = await api.get<ApiResponse<Page<CourseListResponse>>>(BASE_URL, {
       params: { page, size },
     })
     return res.data.data
@@ -28,8 +29,8 @@ export const courseService = {
     return res.data.data
   },
 
-  async getSubjectsByCourse(id: number, page: number = 0, size: number = 0) {
-    const res = await api.get<ApiResponse<Page<SubjectListResponse>>>(`${BASE_URL}/${id}/subjects`)
+  async getCoordinators() {
+    const res = await api.get<ApiResponse<CoordinatorOption[]>>(`${BASE_URL}/coordinators`)
     return res.data.data
   },
 

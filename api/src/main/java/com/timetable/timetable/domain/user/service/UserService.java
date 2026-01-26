@@ -82,6 +82,15 @@ public class UserService {
         return getByIdOrThrow(id);
     }
 
+    public ApplicationUser getUserByRoleAndId(UserRole role, Long id) {
+        ApplicationUser user = getByIdOrThrow(id);
+        if (!user.hasRole(role)) {
+           throw new UserNotFoundException("requested user is not a teacher"); 
+        }
+
+        return user;
+    }
+
     public ApplicationUser getUserByUsername(String username) {
         return getByUsernameOrThrow(username);
     }

@@ -20,6 +20,7 @@ import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.exception.CourseNotFoundException;
+import com.timetable.timetable.domain.schedule.query.CourseQueryService;
 import com.timetable.timetable.domain.schedule.repository.CourseRepository;
 import com.timetable.timetable.domain.schedule.service.CourseService;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
@@ -41,6 +42,9 @@ class CourseServiceTest {
     
     @InjectMocks
     private CourseService courseService;
+
+    @InjectMocks
+    private CourseQueryService courseQueryService;
     
     private ApplicationUser testCoordinator;
     private ApplicationUser testNonCoordinator;
@@ -132,7 +136,7 @@ class CourseServiceTest {
         when(courseRepository.findAll(pageable)).thenReturn(page);
         
         // When
-        Page<Course> result = courseService.getAll(pageable);
+        Page<Course> result = courseQueryService.getAll(pageable);
         
         // Then
         assertThat(result.getContent()).hasSize(1);

@@ -9,8 +9,6 @@ import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.service.UserService;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -50,17 +48,11 @@ public class CourseService {
         return saved;
     }
 
-    public Page<Course> getAll(Pageable pageable) {
-        return courseRepository.findAll(pageable);
-    }
-
     public Course getById(Long id) {
-        log.debug("Looking for course {}", id);
-        Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
-
-        log.info("Course {} found", id);
-        return course;
+        return courseRepository.findById(id)
+            .orElseThrow(() ->
+                new CourseNotFoundException("No course with id: %d".formatted(id))
+            );
     }
 
     public Course updateCourse(Long id, UpdateCourseRequest updateRequest) {
