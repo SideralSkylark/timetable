@@ -29,5 +29,5 @@ public record SubjectDetailResponse(
         );
     }
 
-    public record TeacherInfo(Long id, String name) {}
+    public record TeacherInfo(Long id, String username) {}
 }

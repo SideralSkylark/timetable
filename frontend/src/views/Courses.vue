@@ -134,7 +134,7 @@
                         class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-900 rounded text-xs"
                       >
                         <User class="w-3 h-3" />
-                        {{ teacher.name }}
+                        {{ teacher.username }}
                       </span>
                     </div>
                     <span v-else class="text-sm text-gray-400">Nenhum professor elegível</span>
@@ -287,7 +287,7 @@
                 class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-900 text-white rounded-lg text-sm"
               >
                 <User class="w-3.5 h-3.5" />
-                <span>{{ teacher.name }}</span>
+                <span>{{ teacher.username }}</span>
                 <button
                   @click="removeTeacher(teacher.id)"
                   class="hover:bg-blue-800 rounded p-0.5"
@@ -323,7 +323,7 @@
                       <Check v-if="isTeacherSelected(teacher.id)" class="w-3 h-3 text-white" />
                     </div>
                     <div class="text-left">
-                      <p class="font-medium text-gray-900">{{ teacher.name }}</p>
+                      <p class="font-medium text-gray-900">{{ teacher.username }}</p>
                       <p class="text-xs text-gray-500">{{ teacher.email }}</p>
                     </div>
                   </div>
@@ -372,12 +372,16 @@ import {
   BookOpen,
   GraduationCap,
   User,
+  X,    
+  Check,
+  Search
 } from 'lucide-vue-next'
 
 interface Teacher {
   id: number
-  name: string
+  username: string
   email: string
+  enabled: boolean
 }
 
 // State
@@ -421,7 +425,7 @@ const filteredTeachers = computed(() => {
   if (!query) return teachers.value
   
   return teachers.value.filter(t => 
-    t.name.toLowerCase().includes(query) || 
+    t.username.toLowerCase().includes(query) || 
     t.email.toLowerCase().includes(query)
   )
 })
@@ -667,13 +671,15 @@ const openEditDisciplineModal = async (discipline: any, course: any) => {
   if (teachers.value.length === 0) {
     await loadTeachers()
   }
+
+  const teachersCopy = (discipline.eligibleTeachers || []).map((t: any) => ({ ...t }))
   
   disciplineForm.value = {
     name: discipline.name,
     credits: discipline.credits,
     targetYear: discipline.targetYear,
     targetSemester: discipline.targetSemester,
-    selectedTeachers: discipline.eligibleTeachers || [],
+    selectedTeachers: teachersCopy,
   }
   
   showDisciplineModal.value = true

@@ -4,8 +4,9 @@ import type { Page } from './types/page'
 
 interface TeacherResponse {
   id: number
-  name: string
+  username: string
   email: string
+  enabled: boolean
 }
 
 const BASE_URL = '/v1/teachers'

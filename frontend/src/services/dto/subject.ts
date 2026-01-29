@@ -23,7 +23,7 @@ export interface SubjectDetailResponse {
   targetSemester: number,
   courseId: number,
   courseName: string,
-  eligibleTeacherIds: number[]
+  eligibleTeachers: TeacherInfo[],
 }
 
 export interface SubjectListResponse {
@@ -34,5 +34,5 @@ export interface SubjectListResponse {
 
 export interface TeacherInfo {
   id: number,
-  name: string
+  username: string
 }
