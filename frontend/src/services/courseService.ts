@@ -29,8 +29,11 @@ export const courseService = {
     return res.data.data
   },
 
-  async getCoordinators() {
-    const res = await api.get<ApiResponse<CoordinatorOption[]>>(`${BASE_URL}/coordinators`)
+  async getCoordinators(page = 0, size = 20) {
+    const res = await api.get<ApiResponse<Page<CoordinatorOption>>>(
+      `${BASE_URL}/coordinators`,
+      { params: { page, size } }
+    )
     return res.data.data
   },
 

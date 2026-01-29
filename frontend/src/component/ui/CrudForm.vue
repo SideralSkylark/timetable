@@ -131,16 +131,37 @@ const emit = defineEmits<{
 
 const form = reactive<Record<string, any>>({})
 
-watch(
-  () => props.data,
-  (val) => {
-    if (val) {
-      for (const key of Object.keys(val)) {
-        form[key] = val[key]
-      }
+// Inicializar campos do formulário
+const initializeForm = () => {
+  // Limpar formulário primeiro
+  Object.keys(form).forEach(key => delete form[key])
+  
+  // Se há dados, popular com eles
+  if (props.data) {
+    for (const key of Object.keys(props.data)) {
+      form[key] = props.data[key]
     }
+  } else {
+    // Se não há dados (modo criação), inicializar campos vazios
+    props.fields.forEach(field => {
+      if (field.type === 'select') {
+        form[field.name] = field.required ? '' : null
+      } else if (field.type === 'number') {
+        form[field.name] = 0
+      } else {
+        form[field.name] = ''
+      }
+    })
+  }
+}
+
+// Watch para mudanças nos dados ou campos
+watch(
+  () => [props.data, props.fields],
+  () => {
+    initializeForm()
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 )
 
 const handleSubmit = () => {

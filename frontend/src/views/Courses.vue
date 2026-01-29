@@ -413,10 +413,10 @@ const courseFields = computed(() => [
     type: 'select',
     placeholder: 'Coordenador',
     required: true,
-    options: coordinators.value.map(c => ({
+    options: (coordinators.value || []).map(c => ({
       value: c.id,
       label: c.name
-    }))
+    }))    
   },
 ])
 
@@ -461,9 +461,11 @@ const loadCourses = async () => {
 
 const loadCoordinators = async () => {
   try {
-    coordinators.value = await courseService.getCoordinators()
+    const page = await courseService.getCoordinators()
+    coordinators.value = page.content
   } catch (error) {
     console.error('Erro ao carregar coordenadores:', error)
+    coordinators.value = []
   }
 }
 
@@ -691,4 +693,4 @@ const closeDisciplineModal = () => {
   selectedCourse.value = null
   resetDisciplineForm()
 }
-</script>
+</script
