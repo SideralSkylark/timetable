@@ -1,5 +1,9 @@
 package com.timetable.timetable.domain.schedule.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -7,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,6 +37,11 @@ public class Room {
     @Column(nullable = false)
     private int capacity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Course restrictedToCourse;
+    /**
+     * Restrições de curso por período
+     * Se vazio = sala disponível para todos os cursos em todos os períodos
+     */
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<RoomCourseRestriction> restrictions = new HashSet<>();
 }

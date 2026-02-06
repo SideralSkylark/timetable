@@ -1,9 +1,15 @@
 package com.timetable.timetable.domain.schedule.service;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import com.timetable.timetable.domain.schedule.dto.CreateRoomRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateRoomRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.entity.Room;
+import com.timetable.timetable.domain.schedule.entity.RoomCourseRestriction;
+import com.timetable.timetable.domain.schedule.entity.TimePeriod;
 import com.timetable.timetable.domain.schedule.exception.RoomNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.RoomRepository;
 
@@ -30,13 +36,13 @@ public class RoomService {
             throw new IllegalStateException();
         } 
 
-        Course course = courseService.getById(roomRequest.restrictedToCourseId());
-
         Room room = Room.builder()
             .name(roomRequest.name())
             .capacity(roomRequest.capacity())
-            .restrictedToCourse(course)
+            .restrictions(new HashSet<>())
             .build();
+
+        addRestrictions(room, roomRequest.restrictedToCourseId(), roomRequest.periodRestrictions());
 
         Room saved = roomRepository.save(room);
 
@@ -68,11 +74,9 @@ public class RoomService {
             throw new IllegalArgumentException("Another room with that name already exists.");
         }
 
-        Course course = courseService.getById(updateRequest.restrictedToCourseId());
-
         room.setName(updateRequest.name());
         room.setCapacity(updateRequest.capacity());
-        room.setRestrictedToCourse(course);
+        addRestrictions(room, updateRequest.restrictedToCourseId(), updateRequest.periodRestrictions());
 
         Room saved = roomRepository.save(room);
 
@@ -88,5 +92,55 @@ public class RoomService {
 
         roomRepository.deleteById(id);
         log.info("Room {} deleted", id);
+    }
+
+    /**
+     * Helper: Adiciona restrições à sala
+     * Prioriza periodRestrictions, senão usa restrictedToCourseId
+     */
+    private void addRestrictions(Room room, Long singleCourseId, 
+                                 Map<TimePeriod, Set<Long>> periodRestrictions) {
+        
+        // CASO 1: Restrições granulares por período (nova API)
+        if (periodRestrictions != null && !periodRestrictions.isEmpty()) {
+            for (Map.Entry<TimePeriod, Set<Long>> entry : periodRestrictions.entrySet()) {
+                TimePeriod period = entry.getKey();
+                Set<Long> courseIds = entry.getValue();
+                
+                for (Long courseId : courseIds) {
+                    Course course = courseService.getById(courseId);
+                    
+                    RoomCourseRestriction restriction = RoomCourseRestriction.builder()
+                        .room(room)
+                        .course(course)
+                        .period(period)
+                        .build();
+                    
+                    room.getRestrictions().add(restriction);
+                }
+            }
+            log.debug("Added {} granular restrictions", room.getRestrictions().size());
+            return;
+        }
+        
+        // CASO 2: Curso único para todos os períodos (retrocompatibilidade)
+        if (singleCourseId != null) {
+            Course course = courseService.getById(singleCourseId);
+            
+            for (TimePeriod period : TimePeriod.values()) {
+                RoomCourseRestriction restriction = RoomCourseRestriction.builder()
+                    .room(room)
+                    .course(course)
+                    .period(period)
+                    .build();
+                
+                room.getRestrictions().add(restriction);
+            }
+            log.debug("Added course restriction for all periods: {}", course.getName());
+            return;
+        }
+        
+        // CASO 3: Sem restrições (sala disponível para todos)
+        log.debug("No restrictions - room available for all courses in all periods");
     }
 }

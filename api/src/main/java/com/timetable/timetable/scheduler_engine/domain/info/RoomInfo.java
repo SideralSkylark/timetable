@@ -1,5 +1,10 @@
 package com.timetable.timetable.scheduler_engine.domain.info;
 
+import java.util.Map;
+import java.util.Set;
+
+import com.timetable.timetable.domain.schedule.entity.TimePeriod;
+
 import lombok.*;
 
 /**
@@ -28,22 +33,25 @@ public class RoomInfo {
      */
     private int capacity;
     
-    /**
-     * If set, this room can only be used by the specified course.
-     * If null, the room is available to all courses.
-     */
-    private Long restrictedToCourseId;
+    private Map<TimePeriod, Set<Long>> allowedCoursesByPeriod;
     
     /**
-     * Checks if this room can be used by a specific course
+     * Checks if this room can be used by a specific course in a specifig time period
      */
-    public boolean isAvailableForCourse(Long courseId) {
-        // If no restriction, available to all
-        if (restrictedToCourseId == null) {
+    public boolean isAvailableForCourse(Long courseId, TimePeriod period) {
+        // Sem restrições = disponível para todos
+        if (allowedCoursesByPeriod == null || allowedCoursesByPeriod.isEmpty()) {
             return true;
         }
-        // Otherwise, only available if course matches
-        return restrictedToCourseId.equals(courseId);
+
+        // Sem restrição para este período = disponível para todos neste período
+        Set<Long> allowedCourses = allowedCoursesByPeriod.get(period);
+        if (allowedCourses == null || allowedCourses.isEmpty()) {
+            return true;
+        }
+
+        // Verificar se o curso está na lista permitida
+        return allowedCourses.contains(courseId);
     }
     
     /**
@@ -72,7 +80,6 @@ public class RoomInfo {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", capacity=" + capacity +
-                ", restricted=" + (restrictedToCourseId != null) +
                 '}';
     }
 }

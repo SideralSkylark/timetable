@@ -1,5 +1,10 @@
 package com.timetable.timetable.domain.schedule.dto;
 
+import java.util.Map;
+import java.util.Set;
+
+import com.timetable.timetable.domain.schedule.entity.TimePeriod;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +17,8 @@ public record UpdateRoomRequest (
     int capacity,
 
     @NotNull(message = "course restriction must be specified")
-    Long restrictedToCourseId
+    Long restrictedToCourseId,
+    Map<TimePeriod, Set<Long>> periodRestrictions
 ) {
 
 }

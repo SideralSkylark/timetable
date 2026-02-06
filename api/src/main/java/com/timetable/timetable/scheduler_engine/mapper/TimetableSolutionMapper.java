@@ -7,7 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -214,15 +218,21 @@ public class TimetableSolutionMapper {
     }
     
     private RoomInfo toRoomInfo(Room room) {
+        Map<TimePeriod, Set<Long>> restrictionsMap = new HashMap<>();
+        
+        if (room.getRestrictions() != null && !room.getRestrictions().isEmpty()) {
+            for (RoomCourseRestriction restriction : room.getRestrictions()) {
+                restrictionsMap
+                    .computeIfAbsent(restriction.getPeriod(), k -> new HashSet<>())
+                    .add(restriction.getCourse().getId());
+            }
+        }
+
         return RoomInfo.builder()
             .id(room.getId())
             .name(room.getName())
             .capacity(room.getCapacity())
-            .restrictedToCourseId(
-                room.getRestrictedToCourse() != null 
-                    ? room.getRestrictedToCourse().getId() 
-                    : null
-            )
+            .allowedCoursesByPeriod(restrictionsMap.isEmpty() ? null : restrictionsMap)
             .build();
     }
 }

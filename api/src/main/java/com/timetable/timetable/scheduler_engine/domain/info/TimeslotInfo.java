@@ -4,6 +4,8 @@ import lombok.*;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
+import com.timetable.timetable.domain.schedule.entity.TimePeriod;
+
 /**
  * Represents a time slot when lessons can be scheduled.
  * This is a lightweight, immutable representation for the solver.
@@ -34,6 +36,10 @@ public class TimeslotInfo {
      * End time (e.g., 09:50 for a 110-minute block)
      */
     private LocalTime endTime;
+
+    public TimePeriod getPeriod() {
+        return TimePeriod.fromStartTime(startTime);
+    }
     
     /**
      * Returns a human-readable description (e.g., "MONDAY 08:00-09:50")

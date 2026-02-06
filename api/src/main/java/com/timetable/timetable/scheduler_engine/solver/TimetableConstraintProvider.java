@@ -104,7 +104,9 @@ public class TimetableConstraintProvider implements ConstraintProvider {
             .filter(lesson -> 
                 lesson.getRoom() != null &&
                 lesson.getCourseId() != null &&
-                !lesson.getRoom().isAvailableForCourse(lesson.getCourseId())
+                !lesson.getRoom().isAvailableForCourse(
+                    lesson.getCourseId(), 
+                    lesson.getTimeslot().getPeriod())
             )
             .penalize(HardSoftScore.ONE_HARD)
             .asConstraint("Room course restriction violated");
