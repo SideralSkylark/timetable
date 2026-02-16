@@ -1,5 +1,6 @@
 ## Dominio
 
+
 ### entidades
 - Cohort: Turma de estudantes de um curso. Usada para separa-los de modo a caberem nas salas.
 - Course: Entidade que ancora as disciplinas. Governada pelo coordenador da mesma.
@@ -20,6 +21,25 @@ surpluss de turmas antes de gerar.
 ## Solver
 ### entidades
 - TfRoom: recurso a ser usado pela planning sollution
+
+1. PREPARAÇÃO DE DADOS
+   ├─ Criar/Validar Cohorts
+   ├─ ATRIBUIR PROFESSORES (algoritmo ganancioso)
+   │  ├─ Calcular carga de trabalho
+   │  ├─ Escolher professor com menor carga
+   │  └─ Criar fantasma se todos extrapolam 8h
+   └─ Criar CohortSubjects (teacher JÁ definido)
+
+2. GERAR LESSON ASSIGNMENTS
+   └─ Para cada CohortSubject:
+       └─ Criar N LessonAssignments (N = blocks/week)
+           ├─ teacher = cohortSubject.teacher (FIXO)
+           ├─ timeslot = null (SOLVER VAI DECIDIR)
+           └─ room = null (SOLVER VAI DECIDIR)
+
+3. SOLVER
+   └─ Atribui timeslot + room
+       └─ Respeita constraint: teacher não pode ter 2 aulas simultâneas
 
 ## testing
 There are unit test for all services avaliable, to run them *cd* into api and then run:
