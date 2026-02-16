@@ -8,11 +8,18 @@
 - TimeSlot(lesson assignment): aula planeada para uma disciplina a ser lecionada por docente x as horas y na sala z ao cohort A
 - Timetable: entidade que agrega as aulas a serem lecionadas em um periodo academico(ex: 2026 ou 2026 1 semestre)
 
+estudo autonomo como e calculado? (funcao da carga horaria)
+atribuir horarios mesmo sem corpo de docente suficiente (docentes fantasma)
+
+
+1 dia de estudo autonomo
+9 horas sexta feira missa.
+surpluss de turmas antes de gerar.
+
 
 ## Solver
 ### entidades
 - TfRoom: recurso a ser usado pela planning sollution
-
 
 ## testing
 There are unit test for all services avaliable, to run them *cd* into api and then run:
