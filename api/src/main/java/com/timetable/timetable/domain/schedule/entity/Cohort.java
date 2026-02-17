@@ -7,6 +7,8 @@ import com.timetable.timetable.domain.user.entity.ApplicationUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -70,14 +72,28 @@ public class Cohort {
         joinColumns = @JoinColumn(name = "cohort_id"),
         inverseJoinColumns = @JoinColumn(name = "student_id")
     )
+    @Builder.Default
     private Set<ApplicationUser> students = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private CohortStatus status = CohortStatus.ESTIMATED;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private int estimatedStudentCount = 30;
+
+    public int getStudentCount() {
+        if (status == CohortStatus.CONFIRMED && !students.isEmpty()) {
+            return students.size();
+        }
+
+        return estimatedStudentCount;
+    }
 
     public String getDisplayName() {
         return year + "ano" + "-" + courseNameSnapshot + "-" + section + "-" + academicYear;
-    }
-
-    public int getStudentNumber() {
-        return students.size();
     }
 }
 

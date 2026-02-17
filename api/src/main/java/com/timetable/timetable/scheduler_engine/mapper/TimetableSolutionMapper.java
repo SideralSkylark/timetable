@@ -182,7 +182,7 @@ public class TimetableSolutionMapper {
         return CohortInfo.builder()
             .id(cohort.getId())
             .displayName(cohort.getDisplayName())
-            .studentCount(cohort.getStudentNumber())
+            .studentCount(cohort.getStudentCount())
             .courseId(cohort.getCourse().getId())
             .year(cohort.getYear())
             .section(cohort.getSection())
