@@ -13,6 +13,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @EntityGraph(attributePaths = "restrictedToCourse")
     boolean existsByName(String name);
 
-    @EntityGraph(attributePaths = "restrictedToCourse")
+    @EntityGraph(attributePaths = "restrictions")
     Page<Room> findAll(Pageable pageable);
 }

@@ -17,7 +17,6 @@ public record CreateRoomRequest(
     @Min(value = 1, message = "Capacity must be at leat 1.")
     int capacity,
 
-    @NotNull(message = "course restriction must be specified")
     Long restrictedToCourseId,
 
     Map<TimePeriod, Set<Long>> periodRestrictions

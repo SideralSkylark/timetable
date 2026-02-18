@@ -55,6 +55,7 @@ public class RoomService {
         return roomRepository.findAll(pageable);
     }
 
+    @Transactional
     public Room getById(Long id) {
         log.debug("Looking for room: {}", id);
         Room room = roomRepository.findById(id)
@@ -76,6 +77,7 @@ public class RoomService {
 
         room.setName(updateRequest.name());
         room.setCapacity(updateRequest.capacity());
+        room.getRestrictions().clear();
         addRestrictions(room, updateRequest.restrictedToCourseId(), updateRequest.periodRestrictions());
 
         Room saved = roomRepository.save(room);

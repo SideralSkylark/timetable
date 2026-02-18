@@ -14,10 +14,8 @@
             </div>
           </div>
 
-          <button
-            @click="openRoomModal"
-            class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition"
-          >
+          <button @click="openRoomModal"
+            class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition">
             <Plus class="w-5 h-5" />
             Nova Sala
           </button>
@@ -28,23 +26,14 @@
     <!-- Tabela -->
     <div class="max-w-6xl mx-auto">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <CrudTable
-          :columns="tableColumns"
-          :rows="pagedRooms?.content ?? []"
-          :currentPage="currentPage"
-          :totalPages="pagedRooms?.page.totalPages ?? 0"
-          @edit="openEditRoomModal"
-          @delete="deleteRoom"
-          @change-page="fetchRooms"
-        />
+        <CrudTable :columns="tableColumns" :rows="mappedRooms" :currentPage="currentPage"
+          :totalPages="pagedRooms?.page.totalPages ?? 0" @edit="openEditRoomModal" @delete="deleteRoom"
+          @change-page="fetchRooms" />
       </div>
     </div>
 
     <!-- Modal Sala -->
-    <div
-      v-if="showRoomModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-    >
+    <div v-if="showRoomModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <!-- Header -->
         <div class="border-b border-gray-200 p-6">
@@ -68,13 +57,9 @@
               <Tag class="w-4 h-4 text-gray-500" />
               Nome da Sala *
             </label>
-            <input
-              v-model="formData.name"
-              type="text"
-              required
+            <input v-model="formData.name" type="text" required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Ex: Sala A101, Laboratório 3..."
-            />
+              placeholder="Ex: Sala A101, Laboratório 3..." />
           </div>
 
           <!-- Capacidade -->
@@ -83,58 +68,57 @@
               <Users class="w-4 h-4 text-gray-500" />
               Capacidade *
             </label>
-            <input
-              v-model.number="formData.capacity"
-              type="number"
-              required
-              min="1"
+            <input v-model.number="formData.capacity" type="number" required min="1"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Número de lugares"
-            />
+              placeholder="Número de lugares" />
           </div>
 
-          <!-- Curso Atribuído -->
+          <!-- Restrições -->
           <div>
-            <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-              <BookMarked class="w-4 h-4 text-gray-500" />
-              Atribuído ao Curso *
+            <label class="text-sm font-medium text-gray-700 mb-2 block">
+              Restrições da Sala
             </label>
-            <div class="relative">
-              <select
-                v-model="formData.restrictedToCourseId"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-              >
-                <option value="" disabled>Selecione um curso</option>
-                <option
-                  v-for="course in courseStore.courses"
-                  :key="course.id"
-                  :value="course.id"
-                >
+
+            <div v-for="(restriction, index) in formData.restrictions" :key="index" class="flex gap-2 mb-2">
+              <!-- Curso -->
+              <select v-model="restriction.courseId" required
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg">
+                <option value="" disabled>Curso</option>
+                <option v-for="course in courseStore.courses" :key="course.id" :value="course.id">
                   {{ course.name }}
                 </option>
               </select>
-              <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+
+              <!-- Período -->
+              <select v-model="restriction.period" required class="flex-1 px-3 py-2 border border-gray-300 rounded-lg">
+                <option value="" disabled>Período</option>
+                <option value="MORNING">Manhã</option>
+                <option value="AFTERNOON">Tarde</option>
+                <option value="EVENING">Noite</option>
+              </select>
+
+              <!-- Remover -->
+              <button type="button" @click="formData.restrictions.splice(index, 1)" class="text-red-600">
+                ✕
+              </button>
             </div>
-            <p class="text-xs text-gray-500 mt-1">
-              A sala será exclusiva para este curso
-            </p>
+
+            <!-- Botão adicionar -->
+            <button type="button" @click="formData.restrictions.push({ courseId: null, period: null })"
+              class="text-sm text-blue-900">
+              + Adicionar Restrição
+            </button>
           </div>
 
           <!-- Botões -->
           <div class="flex gap-3 pt-4">
-            <button
-              type="button"
-              @click="closeModal"
-              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2"
-            >
+            <button type="button" @click="closeModal"
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2">
               <X class="w-4 h-4" />
               Cancelar
             </button>
-            <button
-              type="submit"
-              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition flex items-center justify-center gap-2"
-            >
+            <button type="submit"
+              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition flex items-center justify-center gap-2">
               <Check class="w-4 h-4" />
               {{ editingRoom ? 'Atualizar' : 'Criar' }}
             </button>
@@ -153,8 +137,8 @@ import { useToast } from '@/composables/useToast'
 import type { RoomResponse } from '@/services/dto/room'
 import CrudTable from '@/component/ui/CrudTable.vue'
 
-import { 
-  Building, 
+import {
+  Building,
   Plus,
   DoorOpen,
   Edit,
@@ -177,14 +161,32 @@ const currentPage = ref(0)
 const formData = reactive({
   name: '',
   capacity: null as number | null,
-  restrictedToCourseId: '' as string | number
+  restrictions: [] as Array<{
+    courseId: number | null
+    period: string | null
+  }>
 })
 
 const tableColumns = [
   { key: 'name', label: 'Nome' },
   { key: 'capacity', label: 'Capacidade' },
-  { key: 'restrictedToCourseName', label: 'Atribuído'},
+  { key: 'assignedCourses', label: 'Cursos Atribuídos' },
 ]
+
+const mappedRooms = computed(() => {
+  return (pagedRooms.value?.content ?? []).map(room => {
+    const uniqueCourses = [
+      ...new Map(
+        room.restrictions.map(r => [r.courseId, r.courseName])
+      ).values()
+    ]
+
+    return {
+      ...room,
+      assignedCourses: uniqueCourses.join(', ')
+    }
+  })
+})
 
 const fetchRooms = async (page = 0) => {
   currentPage.value = page
@@ -195,7 +197,7 @@ const handleSubmit = async () => {
   const data = {
     name: formData.name,
     capacity: formData.capacity,
-    restrictedToCourseId: formData.restrictedToCourseId
+    restrictions: formData.restrictions
   }
 
   if (editingRoom.value) {
@@ -215,12 +217,15 @@ const createRoom = async (data: any) => {
 const openEditRoomModal = async (room: RoomResponse) => {
   await courseStore.fetchAllCoursesSimple()
   editingRoom.value = { ...room }
-  
-  // Preencher o formulário
+
   formData.name = room.name
   formData.capacity = room.capacity
-  formData.restrictedToCourseId = room.restrictedToCourseId || ''
-  
+
+  formData.restrictions = room.restrictions.map(r => ({
+    courseId: r.courseId,
+    period: r.period
+  }))
+
   showRoomModal.value = true
 }
 
@@ -244,8 +249,8 @@ const openRoomModal = async () => {
   editingRoom.value = null
   formData.name = ''
   formData.capacity = null
-  formData.restrictedToCourseId = ''
-  
+  formData.restrictions = []
+
   await courseStore.fetchAllCoursesSimple()
   showRoomModal.value = true
 }

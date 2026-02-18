@@ -1,15 +1,15 @@
 package com.timetable.timetable.domain.schedule.dto;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.timetable.timetable.domain.schedule.entity.Room;
-import com.timetable.timetable.domain.schedule.entity.RoomCourseRestriction;
 
 public record RoomResponse(
     Long id,
     String name,
     int capacity,
-    Set<RoomCourseRestriction> restricoes
+    Set<RoomRestrictionResponse> restrictions
 ) {
     public static RoomResponse from(Room room) {
         return new RoomResponse(
@@ -17,6 +17,9 @@ public record RoomResponse(
             room.getName(),
             room.getCapacity(),
             room.getRestrictions()
+                .stream()
+                .map(RoomRestrictionResponse::from)
+                .collect(Collectors.toSet())
         );
     }
 }
