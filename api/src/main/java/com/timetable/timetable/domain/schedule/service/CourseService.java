@@ -25,22 +25,25 @@ public class CourseService {
         log.debug("Creating course");
         if (courseRepository.existsByName(createRequest.name())) {
             log.warn("Course already exists with name: {}", createRequest.name());
-            throw new IllegalStateException("Course already exists"); 
+            throw new IllegalStateException("Course already exists");
         }
-        
+
         ApplicationUser coordinator = userService.getUserById(createRequest.coordinatorId());
 
         if (!coordinator.hasRole(UserRole.COORDINATOR)) {
             log.warn("User {}, is not a coordinator", createRequest.coordinatorId());
             throw new IllegalArgumentException(
-                "User %d is not a coordinator".formatted(createRequest.coordinatorId())
-            );
+                    "User %d is not a coordinator".formatted(createRequest.coordinatorId()));
         }
 
         Course course = Course.builder()
-            .name(createRequest.name())
-            .coordinator(coordinator)
-            .build();
+                .name(createRequest.name())
+                .coordinator(coordinator)
+                .years(
+                        createRequest.years() != null
+                                ? createRequest.years()
+                                : 4)
+                .build();
 
         Course saved = courseRepository.save(course);
 
@@ -50,9 +53,7 @@ public class CourseService {
 
     public Course getById(Long id) {
         return courseRepository.findById(id)
-            .orElseThrow(() ->
-                new CourseNotFoundException("No course with id: %d".formatted(id))
-            );
+                .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
     }
 
     public Course updateCourse(Long id, UpdateCourseRequest updateRequest) {
@@ -63,18 +64,21 @@ public class CourseService {
             log.warn("Another course with that name already exists");
             throw new IllegalArgumentException("Another course with that name already exists.");
         }
-        
+
         ApplicationUser coordinator = userService.getUserById(updateRequest.coordinatorId());
 
         if (!coordinator.hasRole(UserRole.COORDINATOR)) {
             log.warn("User {} is not a coordinator", updateRequest.coordinatorId());
             throw new IllegalArgumentException(
-                "User %d is not a coordinator".formatted(updateRequest.coordinatorId())
-            );
+                    "User %d is not a coordinator".formatted(updateRequest.coordinatorId()));
         }
 
         course.setName(updateRequest.name());
         course.setCoordinator(coordinator);
+
+        if (updateRequest.years() != null) {
+            course.setYears(updateRequest.years());
+        }
 
         Course updated = courseRepository.save(course);
 
@@ -86,8 +90,7 @@ public class CourseService {
         log.debug("Deleting course {}", id);
         if (!courseRepository.existsById(id)) {
             throw new IllegalArgumentException(
-                "No course with id: %d".formatted(id)
-            );
+                    "No course with id: %d".formatted(id));
         }
         courseRepository.deleteById(id);
         log.info("Course {} deleted", id);

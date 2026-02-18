@@ -9,6 +9,7 @@ public record CourseListResponse (
     String name,
     Long coordinatorId,
     String coordinatorName,
+    int years,
     Long subjectCount,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
@@ -19,6 +20,7 @@ public record CourseListResponse (
             course.getName(),
             course.getCoordinator().getId(),
             course.getCoordinator().getUsername(),
+            course.getYears(),
             subjectCount,
             course.getCreatedAt(),
             course.getUpdatedAt()

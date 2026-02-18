@@ -84,7 +84,7 @@ class CourseServiceTest {
     @Test
     void createCourse_Success() {
         // Given
-        CreateCourseRequest request = new CreateCourseRequest("Engineering", 1L);
+        CreateCourseRequest request = new CreateCourseRequest("Engineering", 1L, 4);
         
         when(courseRepository.existsByName("Engineering")).thenReturn(false);
         when(userService.getUserById(1L)).thenReturn(testCoordinator);
@@ -103,7 +103,7 @@ class CourseServiceTest {
     @Test
     void createCourse_DuplicateName_ThrowsException() {
         // Given
-        CreateCourseRequest request = new CreateCourseRequest("Computer Science", 1L);
+        CreateCourseRequest request = new CreateCourseRequest("Computer Science", 1L, 4);
         
         when(courseRepository.existsByName("Computer Science")).thenReturn(true);
         
@@ -116,7 +116,7 @@ class CourseServiceTest {
     @Test
     void createCourse_NonCoordinator_ThrowsException() {
         // Given
-        CreateCourseRequest request = new CreateCourseRequest("Engineering", 2L);
+        CreateCourseRequest request = new CreateCourseRequest("Engineering", 2L, 4);
         
         when(courseRepository.existsByName("Engineering")).thenReturn(false);
         when(userService.getUserById(2L)).thenReturn(testNonCoordinator);
@@ -169,7 +169,7 @@ class CourseServiceTest {
     @Test
     void updateCourse_Success() {
         // Given
-        UpdateCourseRequest request = new UpdateCourseRequest("Updated Name", 1L);
+        UpdateCourseRequest request = new UpdateCourseRequest("Updated Name", 1L, 4);
         
         when(courseRepository.findById(1L)).thenReturn(Optional.of(testCourse));
         when(courseRepository.existsByName("Updated Name")).thenReturn(false);
@@ -187,7 +187,7 @@ class CourseServiceTest {
     @Test
     void updateCourse_DuplicateName_ThrowsException() {
         // Given
-        UpdateCourseRequest request = new UpdateCourseRequest("Existing Course", 1L);
+        UpdateCourseRequest request = new UpdateCourseRequest("Existing Course", 1L, 4);
         
         when(courseRepository.findById(1L)).thenReturn(Optional.of(testCourse));
         when(courseRepository.existsByName("Existing Course")).thenReturn(true);
@@ -201,7 +201,7 @@ class CourseServiceTest {
     @Test
     void updateCourse_NonCoordinator_ThrowsException() {
         // Given
-        UpdateCourseRequest request = new UpdateCourseRequest("Updated Name", 2L);
+        UpdateCourseRequest request = new UpdateCourseRequest("Updated Name", 2L, 4);
         
         when(courseRepository.findById(1L)).thenReturn(Optional.of(testCourse));
         when(courseRepository.existsByName("Updated Name")).thenReturn(false);

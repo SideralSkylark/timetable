@@ -3,6 +3,7 @@ export interface CourseListResponse {
   name: string
   coordinatorId: number
   coordinatorName: string
+  years: number
   subjectCount: number
   createdAt: string
   updatedAt: string
@@ -13,6 +14,7 @@ export interface CourseResponse {
   name: string
   coordinatorId: number
   coordinatorName: string
+  years: number
   createdAt: string
   updatedAt: string
 }
@@ -25,9 +27,11 @@ export interface CoordinatorOption {
 export interface CreateCourseRequest {
   name: string
   coordinatorId: number
+  years: number
 }
 
 export interface UpdateCourseRequest {
   name: string
   coordinatorId: number
+  years: number
 }

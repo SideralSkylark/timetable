@@ -9,6 +9,7 @@ public record CourseResponse (
     String name,
     Long coordinatorId,
     String coordinatorName,
+    int years,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -18,6 +19,7 @@ public record CourseResponse (
             course.getName(),
             course.getCoordinator().getId(),
             course.getCoordinator().getUsername(),
+            course.getYears(),
             course.getCreatedAt(),
             course.getUpdatedAt()
         );

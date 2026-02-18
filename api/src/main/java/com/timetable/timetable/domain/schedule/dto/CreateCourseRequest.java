@@ -10,5 +10,8 @@ public record CreateCourseRequest(
   
     @NotNull(message = "Course coordinator not specified.")
     @Positive(message = "Coordinator ID must be positive.")
-    Long coordinatorId
+    Long coordinatorId,
+
+    @Positive(message = "Course span must be positive")
+    Integer years
 ) { }
