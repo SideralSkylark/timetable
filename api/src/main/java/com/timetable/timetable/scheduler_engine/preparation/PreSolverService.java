@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 /**
- * Orquestra a preparação de dados antes do solver.
- * Garante que todos os CohortSubjects existem com professores atribuídos.
+ * Orquestrates the data before the solver can ran.
+ * Garantees that all {@link CohortSubject} exist with teachers assigned to them.
  */
 @Service
 @RequiredArgsConstructor
@@ -30,12 +30,11 @@ public class PreSolverService {
     private final TeacherAssignmentService teacherAssignment;
     
     /**
-     * Prepara TODOS os dados para o solver.
-     * Usa dados reais se existem, cria estimativas se não existem.
+     * Prepares all the data to be used by the solver.
+     * Uses persisted data, only estimating as a fallback
      */
     @Transactional
     public PreSolverResult prepare(PreSolverRequest request) {
-        
         log.info("=".repeat(60));
         log.info("PRE-SOLVER PREPARATION for {}.{}",
             request.academicYear(), request.semester());
@@ -46,24 +45,20 @@ public class PreSolverService {
         int estimatedCohorts = 0;
         int cohortSubjectsCreated = 0;
         
-        // Cursos a processar
         List<Course> courses = request.courseIds() != null
             ? courseRepository.findAllById(request.courseIds())
             : courseRepository.findAll();
         
         log.info("Processing {} courses", courses.size());
         
-        // Buscar assignments existentes (para calcular carga dos professores)
         List<CohortSubject> existingInSemester = cohortSubjectRepository
             .findByAcademicYearAndSemesterAndIsActive(
-                request.academicYear(), request.semester(), true);
+                request.academicYear(), 
+                request.semester(), 
+                true
+            );
         
         for (Course course : courses) {
-            
-            // ========================================
-            // 1. GARANTIR COHORTS (reais ou estimados)
-            // ========================================
-            
             CohortEstimationResult cohortResult = cohortEstimation.ensureCohortsExist(
                 course,
                 request.academicYear(),
@@ -78,10 +73,6 @@ public class PreSolverService {
                 warnings.addAll(cohortResult.warnings());
             }
             
-            // ========================================
-            // 2. GARANTIR COHORT-SUBJECTS COM DOCENTES
-            // ========================================
-            
             List<Subject> subjects = subjectRepository
                 .search(null, null, request.semester(), course.getId()); 
             
@@ -92,8 +83,6 @@ public class PreSolverService {
                     .toList();
                 
                 for (Subject subject : yearSubjects) {
-                    
-                    // Já existe este CohortSubject?
                     boolean exists = cohortSubjectRepository
                         .existsByCohortAndSubjectAndAcademicYearAndSemester(
                             cohort, subject,
@@ -105,7 +94,6 @@ public class PreSolverService {
                         continue;
                     }
                     
-                    // Atribuir professor
                     TeacherAssignmentResult assignment = teacherAssignment.assignTeacher(
                         subject, existingInSemester, request.policy());
                     
@@ -120,8 +108,6 @@ public class PreSolverService {
                     CohortSubject cs = CohortSubject.builder()
                         .cohort(cohort)
                         .subject(subject)
-                        .assignedTeacher(assignment.teacher())
-                        .academicYear(request.academicYear())
                         .semester(request.semester())
                         .isActive(true)
                         .build();

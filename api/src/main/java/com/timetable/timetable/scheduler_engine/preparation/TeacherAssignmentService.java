@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +22,8 @@ public class TeacherAssignmentService {
     private final UserService userService;
 
     /**
-     * Distribui professores pelas disciplinas
-     * respeitando limite de 8h/semana
+     * Distributes teacher for the lessons
+     * limit to 8h/week
      */
     public TeacherAssignmentResult assignTeacher(
             Subject subject,
@@ -35,10 +36,8 @@ public class TeacherAssignmentService {
             return handleNoTeachers(subject, policy);
         }
 
-        // Calcular carga atual (horas/semana) de cada professor elegível
-        Map<Long, Integer> workload = computeWorkload(eligible, existingInSemester);
+        Map<Long, Integer> workload = computeGlobalWorkload(eligible, existingInSemester);
 
-        // Horas que esta disciplina vai adicionar
         int hoursNeeded = AcademicPolicy.calculateWeeklyHours(subject.getCredits());
 
         // Procurar professor com menor carga que não vai ultrapassar limite
@@ -66,16 +65,24 @@ public class TeacherAssignmentService {
         return handleNoTeachers(subject, policy);
     }
 
-    private Map<Long, Integer> computeWorkload(
-            Set<ApplicationUser> teachers,
-            List<CohortSubject> existing) {
+    private Map<Long, Integer> computeGlobalWorkload(
+            Set<ApplicationUser> eligibleTeachers,
+            List<CohortSubject> allExistingInSemester) {
 
         Map<Long, Integer> workload = new HashMap<>();
 
-        for (CohortSubject cs : existing) {
-            ApplicationUser t = cs.getAssignedTeacher();
-            if (t != null && teachers.contains(t)) {
-                workload.merge(t.getId(), cs.getWeeklyHours(), Integer::sum);
+        Set<Long> eligibleTeacherIds = eligibleTeachers.stream()
+            .map(ApplicationUser::getId)
+            .collect(Collectors.toSet());
+
+        for (CohortSubject cs : allExistingInSemester) {
+            ApplicationUser teacher = cs.getAssignedTeacher();
+
+            if (teacher != null && eligibleTeacherIds.contains(teacher.getId())) {
+                workload.merge(teacher.getId(), cs.getWeeklyHours(), Integer::sum);
+
+                log.trace("Teacher {} has {} hours from {}", 
+                    teacher.getUsername(), cs.getWeeklyHours(), cs.getDisplayName());
             }
         }
 

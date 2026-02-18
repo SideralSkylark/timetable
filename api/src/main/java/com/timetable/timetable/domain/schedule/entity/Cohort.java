@@ -82,7 +82,7 @@ public class Cohort {
 
     @Column(nullable = false)
     @Builder.Default
-    private int estimatedStudentCount = 30;
+    private int estimatedStudentCount = 35;
 
     public int getStudentCount() {
         if (status == CohortStatus.CONFIRMED && !students.isEmpty()) {

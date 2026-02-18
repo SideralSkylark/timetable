@@ -41,6 +41,13 @@ public class Course {
     @JoinColumn(name = "coordinator_id")
     private ApplicationUser coordinator;
 
+    /**
+     * duration of the course in years
+     */
+    @Column(nullable = false)
+    @Builder.Default
+    private int years = 4;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

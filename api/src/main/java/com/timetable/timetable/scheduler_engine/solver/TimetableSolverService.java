@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Service;
@@ -41,6 +43,8 @@ public class TimetableSolverService {
     private final TimeslotRepository timeslotRepository;
     private final TimetableSolutionMapper solutionMapper;
     private final PreSolverService preSolverService;
+
+    private final ExecutorService asyncExecutor = Executors.newCachedThreadPool();
 
     /**
      * starts a solver job from a TimetableSolution. Used for tests
@@ -128,52 +132,47 @@ public class TimetableSolverService {
         jobs.remove(jobId);
     }
 
-    @Transactional
-    public GenerationStartResult prepareAndGenerate(
-            int academicYear, int semester,
-            PreSolverRequest prepRequest) {
-
-        // FASE 1: PRE-SOLVER (preparar dados)
-        log.info("Starting pre-solver preparation...");
-        PreSolverResult prepResult = preSolverService.prepare(prepRequest);
-
-        if (prepResult.hasWarnings()) {
-            log.warn("Preparation warnings:");
-            prepResult.warnings().forEach(log::warn);
-        }
-
-        // FASE 2: SOLVER (gerar horário)
-        UUID jobId = generateTimetable(academicYear, semester, 60L);
-
-        return new GenerationStartResult(jobId, prepResult);
-    }
-
     /**
-     * Starts a job to generate a timetable for the specified academic period
-     * 
-     * @param academicYear         The academic year (e.g., 2026)
-     * @param semester             The semester (1 or 2)
-     * @param solverTimeoutSeconds Maximum time to spend solving (default: 60s)
-     * @return The jobId for the timetable
-     * @throws IllegalStateException if no feasible solution is found
+     * Starts the solver with data from the db, or generates it if not existent
      */
     @Transactional
-    public UUID generateTimetable(int academicYear, int semester, long solverTimeoutSeconds) {
+    public GenerationStartResult prepareAndGenerateAsync(
+            int academicYear,
+            int semester,
+            PreSolverRequest prepRequest) {
 
-        log.info("=".repeat(80));
-        log.info("Starting timetable generation for {}.{}", academicYear, semester);
-        log.info("=".repeat(80));
+        UUID jobId = UUID.randomUUID();
+        log.info("Starting ASYNC preparation + generation for job {}", jobId);
 
-        log.info("Step 1/3: Fetching data from database...");
+        asyncExecutor.submit(() -> {
+            try {
+                PreSolverResult prepResult = preSolverService.prepare(prepRequest);
+                log.info("Pre-solver complete for job {}. Starting solver...", jobId);
+                generateTimetable(academicYear, semester, 60L, jobId);
+            } catch (Exception e) {
+                log.error("Error in async preparation for job {}", jobId);
+            }
+        });
+
+        return new GenerationStartResult(
+            jobId,
+            new PreSolverResult(
+                0, 0, 0,
+                List.of("preparation running in the background")
+            )
+        );
+    }
+
+    @Transactional
+    public UUID generateTimetable(int academicYear, int semester, long timeout, UUID jobId) {
+        log.info("Starting solver for job: {}", jobId);
+
         List<CohortSubject> cohortSubjects = cohortSubjectRepository
                 .findByAcademicYearAndSemesterAndIsActive(academicYear, semester, true);
 
         List<Timeslot> timeslots = timeslotRepository.findAll();
         List<Room> rooms = roomRepository.findAll();
 
-        log.info("Found {} active cohort-subjects, {} timeslots, {} rooms",
-                cohortSubjects.size(), timeslots.size(), rooms.size());
-        // Validate inputs
         if (cohortSubjects.isEmpty()) {
             throw new IllegalStateException(
                     "No active cohort-subjects found for " + academicYear + "." + semester);
@@ -185,18 +184,8 @@ public class TimetableSolverService {
             throw new IllegalStateException("No rooms available for scheduling");
         }
 
-        log.info("Step 2/3: Converting to solver domain...");
-
         TimetableSolution problem = solutionMapper.toPlanningProblem(
                 cohortSubjects, timeslots, rooms, academicYear, semester);
-
-        log.info("Created planning problem with {} lesson assignments",
-                problem.getTotalLessons());
-
-        log.info("Step 3/3: Starting Timefold solver (timeout: {}s)...", solverTimeoutSeconds);
-
-        UUID jobId = startSolverJob(problem);
-        log.info("Solver job started with ID: {}", jobId);
 
         SolverJob<TimetableSolution, UUID> job = solverManager.solve(jobId, problem);
         jobs.put(jobId, job);

@@ -21,8 +21,8 @@ public class CohortEstimationService {
     private final CohortRepository cohortRepository;
     
     /**
-     * Garante que existem cohorts para o período especificado.
-     * Se não existirem, cria cohorts estimados baseado nas regras.
+     * Garantes the existence of cohorts for the specified period.
+     * if not existent creates them based o a policy {@link CohortEstimationConfig}
      */
     @Transactional
     public CohortEstimationResult ensureCohortsExist(
@@ -88,7 +88,7 @@ public class CohortEstimationService {
         
         List<Cohort> cohorts = new ArrayList<>();
         
-        for (int year = 1; year <= config.courseYears(); year++) {
+        for (int year = 1; year <= course.getYears(); year++) {
             
             int cohortsForYear = config.cohortsForYear(year);
             
