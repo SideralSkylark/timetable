@@ -85,7 +85,7 @@ public class UserService {
     public ApplicationUser getUserByRoleAndId(UserRole role, Long id) {
         ApplicationUser user = getByIdOrThrow(id);
         if (!user.hasRole(role)) {
-           throw new UserNotFoundException("requested user is not a teacher"); 
+            throw new UserNotFoundException("requested user is not a teacher");
         }
 
         return user;
@@ -93,6 +93,10 @@ public class UserService {
 
     public ApplicationUser getUserByUsername(String username) {
         return getByUsernameOrThrow(username);
+    }
+
+    public Optional<ApplicationUser> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     public ApplicationUser getUserByEmail(String email) {
@@ -167,10 +171,13 @@ public class UserService {
     private boolean updateAccountStatus(String email, boolean enable) {
         ApplicationUser user = getByEmailOrThrow(email);
 
-        if (user.isEnabled() == enable) return false;
+        if (user.isEnabled() == enable)
+            return false;
 
-        if (enable) user.activate();
-        else user.deactivate();
+        if (enable)
+            user.activate();
+        else
+            user.deactivate();
 
         userRepository.save(user);
         log.info("Account '{}' set to {}", email, enable ? "ENABLED" : "DISABLED");
@@ -186,7 +193,7 @@ public class UserService {
     }
 
     private ApplicationUser getByUsernameOrThrow(String username) {
-        return getOrThrow(username, userRepository::findByUsername, 
+        return getOrThrow(username, userRepository::findByUsername,
                 "No user found with username: " + username);
     }
 
@@ -234,13 +241,17 @@ public class UserService {
     private void validateUsernameAvailable(String username, Long userId) {
         userRepository.findByUsername(username)
                 .filter(u -> !u.getId().equals(userId))
-                .ifPresent(u -> { throw new UserAlreadyExistsException("Username is already taken"); });
+                .ifPresent(u -> {
+                    throw new UserAlreadyExistsException("Username is already taken");
+                });
     }
 
     private void validateEmailAvailable(String email, Long userId) {
         userRepository.findByEmail(email)
                 .filter(u -> !u.getId().equals(userId))
-                .ifPresent(u -> { throw new UserAlreadyExistsException("Email is already in use"); });
+                .ifPresent(u -> {
+                    throw new UserAlreadyExistsException("Email is already in use");
+                });
     }
 
     private void validateAdminRemoval(ApplicationUser user, Set<UserRoleEntity> newRoles) {

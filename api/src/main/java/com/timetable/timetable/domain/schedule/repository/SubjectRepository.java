@@ -42,6 +42,8 @@ public interface SubjectRepository extends JpaRepository<Subject, Long> {
 
     List<Subject> findByEligibleTeachersId(Long teacherId);
 
+    List<Subject> findByTargetSemesterAndCourseId(int semester, Long courseId);
+
     @EntityGraph(attributePaths = { "course", "eligibleTeachers" })
     Optional<Subject> findWithDetailsById(Long id);
 

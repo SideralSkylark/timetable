@@ -32,6 +32,8 @@ public interface CohortRepository extends JpaRepository<Cohort, Long> {
         @Param("courseId") Long courseId,
         @Param("excludeId") Long excludeId
     );
+
+    List<Cohort> findBySemesterAndAcademicYearAndCourseId(int semester, int year, Long courseId);
     
     List<Cohort> findByCourseId(Long courseId);
     

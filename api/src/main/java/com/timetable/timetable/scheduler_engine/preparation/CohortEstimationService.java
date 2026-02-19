@@ -32,7 +32,7 @@ public class CohortEstimationService {
             CohortEstimationConfig config) {
         
         List<Cohort> existing = cohortRepository
-            .findByCriteria(null, semester, academicYear, course.getId());
+            .findBySemesterAndAcademicYearAndCourseId(semester, academicYear, course.getId());
         
         if (!existing.isEmpty()) {
             log.info("Found {} existing cohorts for {} {}.{}",

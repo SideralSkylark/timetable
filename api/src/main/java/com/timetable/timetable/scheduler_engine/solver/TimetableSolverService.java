@@ -43,6 +43,7 @@ public class TimetableSolverService {
     private final TimeslotRepository timeslotRepository;
     private final TimetableSolutionMapper solutionMapper;
     private final PreSolverService preSolverService;
+    private final TimetableGeneratorService timetableGeneratorService;
 
     private final ExecutorService asyncExecutor = Executors.newCachedThreadPool();
 
@@ -135,7 +136,6 @@ public class TimetableSolverService {
     /**
      * Starts the solver with data from the db, or generates it if not existent
      */
-    @Transactional
     public GenerationStartResult prepareAndGenerateAsync(
             int academicYear,
             int semester,
@@ -148,19 +148,17 @@ public class TimetableSolverService {
             try {
                 PreSolverResult prepResult = preSolverService.prepare(prepRequest);
                 log.info("Pre-solver complete for job {}. Starting solver...", jobId);
-                generateTimetable(academicYear, semester, 60L, jobId);
+                timetableGeneratorService.generateTimetable(academicYear, semester, jobId, jobs);
             } catch (Exception e) {
-                log.error("Error in async preparation for job {}", jobId);
+                log.error("Error in async preparation for job {}, error: {}", jobId, e);
             }
         });
 
         return new GenerationStartResult(
-            jobId,
-            new PreSolverResult(
-                0, 0, 0,
-                List.of("preparation running in the background")
-            )
-        );
+                jobId,
+                new PreSolverResult(
+                        0, 0, 0,
+                        List.of("preparation running in the background")));
     }
 
     @Transactional

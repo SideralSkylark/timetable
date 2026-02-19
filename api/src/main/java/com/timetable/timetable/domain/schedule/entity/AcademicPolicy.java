@@ -10,7 +10,7 @@ public final class AcademicPolicy {
     public static final int WEEKS_PER_SEMESTER = 15;
     public static final int LESSON_DURATION_MINUTES = 50;
     public static final int INTERVAL_BETWEEN_LESSONS_MINUTES = 10;
-    public static final int WEEKLY_TEACHING_HOURS_LIMIT = 8;
+    public static final int WEEKLY_TEACHING_HOURS_LIMIT = 12;
     
     /**
      * Total duration of a lesson block (2 slots + 1 break)

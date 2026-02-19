@@ -74,7 +74,7 @@ public class PreSolverService {
             }
             
             List<Subject> subjects = subjectRepository
-                .search(null, null, request.semester(), course.getId()); 
+                .findByTargetSemesterAndCourseId(request.semester(), course.getId());
             
             for (Cohort cohort : cohortResult.cohorts()) {
                 
@@ -108,6 +108,8 @@ public class PreSolverService {
                     CohortSubject cs = CohortSubject.builder()
                         .cohort(cohort)
                         .subject(subject)
+                        .assignedTeacher(assignment.teacher())
+                        .academicYear(request.academicYear())
                         .semester(request.semester())
                         .isActive(true)
                         .build();

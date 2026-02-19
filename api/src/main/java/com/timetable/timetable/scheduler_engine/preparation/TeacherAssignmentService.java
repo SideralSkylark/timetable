@@ -33,7 +33,8 @@ public class TeacherAssignmentService {
         Set<ApplicationUser> eligible = subject.getEligibleTeachers();
 
         if (eligible == null || eligible.isEmpty()) {
-            return handleNoTeachers(subject, policy);
+            return handleNoTeachers(subject, policy, existingInSemester,
+                    AcademicPolicy.calculateWeeklyHours(subject.getCredits()));
         }
 
         Map<Long, Integer> workload = computeGlobalWorkload(eligible, existingInSemester);
@@ -62,7 +63,7 @@ public class TeacherAssignmentService {
         log.warn("All teachers would exceed {}h/week for subject: {}",
                 AcademicPolicy.WEEKLY_TEACHING_HOURS_LIMIT, subject.getName());
 
-        return handleNoTeachers(subject, policy);
+        return handleNoTeachers(subject, policy, existingInSemester, hoursNeeded);
     }
 
     private Map<Long, Integer> computeGlobalWorkload(
@@ -72,8 +73,8 @@ public class TeacherAssignmentService {
         Map<Long, Integer> workload = new HashMap<>();
 
         Set<Long> eligibleTeacherIds = eligibleTeachers.stream()
-            .map(ApplicationUser::getId)
-            .collect(Collectors.toSet());
+                .map(ApplicationUser::getId)
+                .collect(Collectors.toSet());
 
         for (CohortSubject cs : allExistingInSemester) {
             ApplicationUser teacher = cs.getAssignedTeacher();
@@ -81,8 +82,8 @@ public class TeacherAssignmentService {
             if (teacher != null && eligibleTeacherIds.contains(teacher.getId())) {
                 workload.merge(teacher.getId(), cs.getWeeklyHours(), Integer::sum);
 
-                log.trace("Teacher {} has {} hours from {}", 
-                    teacher.getUsername(), cs.getWeeklyHours(), cs.getDisplayName());
+                log.trace("Teacher {} has {} hours from {}",
+                        teacher.getUsername(), cs.getWeeklyHours(), cs.getDisplayName());
             }
         }
 
@@ -91,27 +92,49 @@ public class TeacherAssignmentService {
 
     private TeacherAssignmentResult handleNoTeachers(
             Subject subject,
-            PhantomTeacherPolicy policy) {
+            PhantomTeacherPolicy policy,
+            List<CohortSubject> existingInSemester,
+            int hoursNeeded) {
 
-        if (policy == PhantomTeacherPolicy.NEVER) {
-            throw new IllegalStateException(
-                    "No available teacher for: " + subject.getName());
+        String baseUsername = "PHANTOM_" + subject.getId();
+        int index = 1;
+
+        while (true) {
+            if (index > 50) {
+                throw new IllegalStateException(
+                        "Subject '" + subject.getName() + "' requires " + hoursNeeded +
+                                "h/week which exceeds the " + AcademicPolicy.WEEKLY_TEACHING_HOURS_LIMIT +
+                                "h/week limit. Cannot assign any teacher.");
+            }
+            final String username = index == 1 ? baseUsername : baseUsername + "_" + index;
+            ApplicationUser candidate = userService.findByUsername(username)
+                    .orElseGet(() -> createPhantom(username));
+
+            // Check load across ALL assignments, not just eligible teachers
+            int currentLoad = existingInSemester.stream()
+                    .filter(cs -> cs.getAssignedTeacher() != null
+                            && cs.getAssignedTeacher().getUsername().equals(username))
+                    .mapToInt(CohortSubject::getWeeklyHours)
+                    .sum();
+
+            if (currentLoad + hoursNeeded <= AcademicPolicy.WEEKLY_TEACHING_HOURS_LIMIT) {
+                log.warn("Using phantom teacher {} for subject {} ({}h + {}h)",
+                        username, subject.getName(), currentLoad, hoursNeeded);
+                return new TeacherAssignmentResult(candidate, true,
+                        "Phantom teacher used for: " + subject.getName());
+            }
+            index++;
         }
+    }
 
+    private ApplicationUser createPhantom(String username) {
         CreateUser request = new CreateUser(
-                "PHANTOM_" + subject.getName().replaceAll("\\s+", "_"),
+                username,
                 generatePhantomEmail(),
                 "phantom123",
                 List.of("user", "teacher"));
-
-        ApplicationUser phantom = userService.createUser(request);
-
-        log.warn("Created phantom teacher {} for subject {}",
-                phantom.getUsername(), subject.getName());
-
-        return new TeacherAssignmentResult(
-                phantom, true,
-                "Phantom teacher created for: " + subject.getName());
+        log.warn("Created phantom teacher {}", username);
+        return userService.createUser(request);
     }
 
     private String generatePhantomEmail() {
