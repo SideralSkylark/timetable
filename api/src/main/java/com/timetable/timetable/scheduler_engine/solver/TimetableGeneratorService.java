@@ -1,4 +1,4 @@
-package  com.timetable.timetable.scheduler_engine.solver;
+package com.timetable.timetable.scheduler_engine.solver;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +33,7 @@ public class TimetableGeneratorService {
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public UUID generateTimetable(int academicYear, int semester, UUID jobId,
-                                   Map<UUID, SolverJob<TimetableSolution, UUID>> jobs) {
+            Map<UUID, SolverJob<TimetableSolution, UUID>> jobs) {
         log.info("Starting solver for job: {}", jobId);
 
         List<CohortSubject> cohortSubjects = cohortSubjectRepository
@@ -51,7 +51,7 @@ public class TimetableGeneratorService {
         TimetableSolution problem = solutionMapper.toPlanningProblem(
                 cohortSubjects, timeslots, rooms, academicYear, semester);
 
-        SolverJob<TimetableSolution, UUID> job = solverManager.solve(jobId, problem);
+       SolverJob<TimetableSolution, UUID> job = solverManager.solve(jobId, problem);
         jobs.put(jobId, job);
         return jobId;
     }

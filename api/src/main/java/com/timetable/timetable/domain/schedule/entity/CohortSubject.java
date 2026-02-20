@@ -3,7 +3,7 @@ package com.timetable.timetable.domain.schedule.entity;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import jakarta.persistence.*;
 import lombok.*;
-
+//TODO: Document this class
 /**
  * Representa a atribuição de uma disciplina a uma turma específica com um
  * professor específico.
@@ -46,39 +46,14 @@ public class CohortSubject {
     @Builder.Default
     private boolean isActive = true;
 
-    /**
-     * Horas semanais calculadas a partir dos créditos da disciplina
-     */
-    public int getWeeklyHours() {
-        return AcademicPolicy.calculateWeeklyHours(subject.getCredits());
-    }
-
-    /**
-     * Blocos de aula por semana (cada bloco = 110 minutos)
-     */
+    /** 2 sessões por semana — política institucional */
     public int getLessonBlocksPerWeek() {
-        return AcademicPolicy.calculateLessonBlocksPerWeek(subject.getCredits());
+        return AcademicPolicy.SESSIONS_PER_WEEK;
     }
 
-    /**
-     * Slots de 50 minutos por semana
-     */
-    public int getSlotsPerWeek() {
-        return AcademicPolicy.calculateSlotsPerWeek(subject.getCredits());
-    }
-
-    /**
-     * Duração de cada bloco de aula em minutos
-     */
-    public int getMinutesPerLessonBlock() {
-        return AcademicPolicy.LESSON_BLOCK_DURATION_MINUTES;
-    }
-
-    /**
-     * Total de blocos de aula no semestre
-     */
-    public int getTotalLessonBlocksInSemester() {
-        return getLessonBlocksPerWeek() * AcademicPolicy.WEEKS_PER_SEMESTER;
+    /** 4h de contacto por semana — para cálculo de carga do professor */
+    public int getWeeklyHours() {
+        return AcademicPolicy.WEEKLY_CONTACT_HOURS;
     }
 
     /**
