@@ -14,6 +14,7 @@ import com.timetable.timetable.domain.user.service.UserService;
 
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,7 +51,7 @@ public class CourseService {
                 .name(createRequest.name())
                 .coordinator(coordinator)
                 .years(years)
-                .expectedCohortsPerYear(cohorts)
+                .expectedCohortsPerAcademicYear(cohorts)
                 .build();
 
         Course saved = courseRepository.save(course);
@@ -64,6 +65,7 @@ public class CourseService {
                 .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
     }
 
+    @Transactional
     public Course updateCourse(Long id, UpdateCourseRequest updateRequest) {
         log.debug("Updating course {}", id);
         Course course = getById(id);
@@ -89,7 +91,7 @@ public class CourseService {
         }
 
         if (updateRequest.expectedCohortsPerYear() != null) {
-            course.setExpectedCohortsPerYear(updateRequest.expectedCohortsPerYear());
+            course.setExpectedCohortsPerAcademicYear(updateRequest.expectedCohortsPerYear());
         }
 
         Course updated = courseRepository.save(course);

@@ -53,15 +53,15 @@ public class Course {
     private int years = 4;
 
     /**
-     * Expected number of cohorts per academic year (planning phase)
+     * Maximum number of cohorts per semester for a given academic year.
      * Key = academic year (1..n)
-     * Value = expected number of cohorts
+     * Value = maximum cohorts allowed per semester
      */
     @ElementCollection
     @CollectionTable(name = "course_expected_cohorts", joinColumns = @JoinColumn(name = "course_id"))
     @MapKeyColumn(name = "academic_year")
     @Column(name = "expected_cohorts", nullable = false)
-    private Map<Integer, Integer> expectedCohortsPerYear;
+    private Map<Integer, Integer> expectedCohortsPerAcademicYear;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

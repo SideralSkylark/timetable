@@ -5,6 +5,7 @@ import Dashboard from '@/views/Dashboard.vue'
 import Users from '@/views/Users.vue'
 import Login from '@/views/Login.vue'
 import NotFound from '@/views/NotFound.vue'
+import Cohorts from '@/views/Cohorts.vue'
 import Timetable from '@/views/Timetable.vue'
 import Forbidden from '@/views/Forbidden.vue'
 import Rooms from '@/views/Rooms.vue'
@@ -40,6 +41,7 @@ const routes = [
         component: Courses,
         meta: { roles: ['ADMIN'], label: 'Cursos' },
       },
+      { path: 'cohorts', name: 'Cohorts', component: Cohorts, meta: { roles: ['ADMIN'], label: 'Turmas' } },
       {
         path: 'users',
         name: 'Users',

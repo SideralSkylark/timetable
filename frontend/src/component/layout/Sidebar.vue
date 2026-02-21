@@ -96,6 +96,7 @@ const dashboardRoutes = [
   { name: 'DashboardHome', label: 'Início', icon: Home, roles: ['USER', 'ADMIN'] },
   { name: 'Rooms', label: 'Salas', icon: Building, roles: ['ADMIN'] },
   { name: 'Courses', label: 'Cursos', icon: School, roles: ['ADMIN'] },
+  { name: 'Cohorts', label: 'Turmas', icon: Users, roles: ['ADMIN'] },
   { name: 'Users', label: 'Utilizadores', icon: Users, roles: ['ADMIN'] },
   { name: 'Timetable', label: 'Horários', icon: CalendarDays, roles: ['ADMIN', 'COORDINATOR'] },
 ]

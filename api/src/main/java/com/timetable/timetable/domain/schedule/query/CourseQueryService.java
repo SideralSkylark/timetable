@@ -1,5 +1,10 @@
 package com.timetable.timetable.domain.schedule.query;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.timetable.timetable.domain.schedule.dto.CoordinatorOption;
 import com.timetable.timetable.domain.schedule.dto.CourseListResponse;
 import com.timetable.timetable.domain.schedule.entity.Course;
@@ -10,6 +15,7 @@ import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -31,17 +37,35 @@ public class CourseQueryService {
     }
 
     public Page<CourseListResponse> findAllWithSubjectCount(Pageable pageable) {
-        Page<Course> courses = courseRepository.findAll(pageable);
-        return courses.map(course -> {
-            Long subjectCount = subjectRepository.countByCourseId(course.getId());
-            return CourseListResponse.from(course, subjectCount);
-        });
+        // Step 1: paginated ID query (no JOIN FETCH, so LIMIT works correctly)
+        Page<Long> idPage = courseRepository.findAllIds(pageable);
+
+        if (idPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // Step 2: fetch full entities with the map in a single query
+        List<Course> courses = courseRepository.findAllByIdWithCohorts(idPage.getContent());
+
+        // Preserve the original page order
+        Map<Long, Course> courseById = courses.stream()
+                .collect(Collectors.toMap(Course::getId, Function.identity()));
+
+        List<CourseListResponse> responses = idPage.getContent().stream()
+                .map(id -> {
+                    Course course = courseById.get(id);
+                    Long subjectCount = subjectRepository.countByCourseId(id);
+                    return CourseListResponse.from(course, subjectCount);
+                })
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(responses, pageable, idPage.getTotalElements());
     }
 
     public Course getById(Long id) {
         log.debug("Looking for course {}", id);
         Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
+                .orElseThrow(() -> new CourseNotFoundException("No course with id: %d".formatted(id)));
 
         log.info("Course {} found", id);
         return course;

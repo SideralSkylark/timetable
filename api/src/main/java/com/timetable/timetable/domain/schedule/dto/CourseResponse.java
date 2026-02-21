@@ -22,7 +22,7 @@ public record CourseResponse (
             course.getCoordinator().getId(),
             course.getCoordinator().getUsername(),
             course.getYears(),
-            course.getExpectedCohortsPerYear(),
+            course.getExpectedCohortsPerAcademicYear(),
             course.getCreatedAt(),
             course.getUpdatedAt()
         );

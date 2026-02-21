@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,20 +39,28 @@ public class CohortService {
                 createRequest.semester(),
                 createRequest.academicYear(),
                 createRequest.courseId())) {
+
             String cohortIdentifier = String.format("%d-%s-%d-%d",
                     createRequest.year(),
                     createRequest.section(),
                     createRequest.semester(),
                     createRequest.academicYear());
+
             log.warn("Another cohort already exists with specification: {}", cohortIdentifier);
+
             throw new IllegalStateException(
                     String.format("Cohort '%s' already exists for the designated course", cohortIdentifier));
         }
 
         Course course = courseService.getById(createRequest.courseId());
 
-        int expectedCohorts = course.getExpectedCohortsPerYear()
-                .getOrDefault(createRequest.year(), 0);
+        Integer expectedCohorts = course.getExpectedCohortsPerAcademicYear()
+                .get(createRequest.year());
+
+        if (expectedCohorts == null) {
+            throw new IllegalStateException(
+                    "No cohort limit configured for academic year " + createRequest.year());
+        }
 
         long existingCount = cohortRepository
                 .countByCourseIdAndYearAndAcademicYearAndSemester(
@@ -65,7 +71,12 @@ public class CohortService {
 
         if (existingCount >= expectedCohorts) {
             throw new IllegalStateException(
-                    "Maximum number of cohorts reached for this year");
+                    String.format(
+                            "Maximum number of cohorts (%d) reached for course %d, academic year %d, semester %d",
+                            expectedCohorts,
+                            createRequest.courseId(),
+                            createRequest.academicYear(),
+                            createRequest.semester()));
         }
 
         Set<ApplicationUser> students = new HashSet<>();
@@ -86,12 +97,8 @@ public class CohortService {
         Cohort saved = cohortRepository.save(cohort);
 
         log.info("Cohort {} created with identifier: {}", saved.getId(), saved.getDisplayName());
-        return saved;
-    }
 
-    public Page<Cohort> getAll(Pageable pageable) {
-        log.debug("Fetching all cohorts");
-        return cohortRepository.findAll(pageable);
+        return saved;
     }
 
     public Cohort getById(Long id) {

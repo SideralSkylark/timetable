@@ -17,7 +17,7 @@ export const courseService = {
     return res.data.data
   },
 
-  async getAll(page: number = 0, size: number = 10) {
+  async getAll(page = 0, size = 10) {
     const res = await api.get<ApiResponse<Page<CourseListResponse>>>(BASE_URL, {
       params: { page, size },
     })
@@ -32,16 +32,13 @@ export const courseService = {
   async getCoordinators(page = 0, size = 20) {
     const res = await api.get<ApiResponse<Page<CoordinatorOption>>>(
       `${BASE_URL}/coordinators`,
-      { params: { page, size } }
+      { params: { page, size } },
     )
     return res.data.data
   },
 
   async update(id: number, data: UpdateCourseRequest) {
-    const res = await api.put<ApiResponse<CourseResponse>>(
-      `${BASE_URL}/${id}`,
-      data
-    )
+    const res = await api.put<ApiResponse<CourseResponse>>(`${BASE_URL}/${id}`, data)
     return res.data.data
   },
 

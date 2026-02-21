@@ -2,9 +2,11 @@ package com.timetable.timetable.domain.schedule.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
+import com.timetable.timetable.domain.schedule.dto.CohortListResponse;
 import com.timetable.timetable.domain.schedule.dto.CohortResponse;
 import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
+import com.timetable.timetable.domain.schedule.query.CohortQueryService;
 import com.timetable.timetable.domain.schedule.service.CohortService;
 
 import org.springframework.data.domain.Pageable;
@@ -27,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("api/v1/cohorts")
 public class CohortController {
     private final CohortService cohortService;
+    private final CohortQueryService cohortQueryService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<CohortResponse>> create(@Valid @RequestBody CreateCohortRequest request) {
@@ -37,9 +40,9 @@ public class CohortController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedModel<CohortResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<CohortListResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(cohortService.getAll(pageable).map(CohortResponse::from)),
+            new PagedModel<>(cohortQueryService.findAll(pageable)),
             "Cohorts fetched successfully."
         );
     }

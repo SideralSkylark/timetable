@@ -4,6 +4,7 @@ export interface CourseListResponse {
   coordinatorId: number
   coordinatorName: string
   years: number
+  expectedCohortsPerYear: Record<number, number>
   subjectCount: number
   createdAt: string
   updatedAt: string
@@ -15,6 +16,7 @@ export interface CourseResponse {
   coordinatorId: number
   coordinatorName: string
   years: number
+  expectedCohortsPerYear: Record<number, number>
   createdAt: string
   updatedAt: string
 }
@@ -28,10 +30,12 @@ export interface CreateCourseRequest {
   name: string
   coordinatorId: number
   years: number
+  expectedCohortsPerYear: Record<number, number>
 }
 
 export interface UpdateCourseRequest {
   name: string
   coordinatorId: number
   years: number
+  expectedCohortsPerYear: Record<number, number>
 }

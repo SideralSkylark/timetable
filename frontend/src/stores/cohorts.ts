@@ -1,11 +1,16 @@
 import { defineStore } from 'pinia'
 import { cohortService } from '@/services/cohortService'
-import type { CohortResponse, CreateCohortRequest, UpdateCohortRequest } from '@/services/dto/cohort'
+import type {
+  CohortListResponse,
+  CohortResponse,
+  CreateCohortRequest,
+  UpdateCohortRequest,
+} from '@/services/dto/cohort'
 import type { Page } from '@/services/types/page'
 
 export const useCohortStore = defineStore('cohorts', {
   state: () => ({
-    cohortsPage: null as Page<CohortResponse> | null,
+    cohortsPage: null as Page<CohortListResponse> | null,
     selectedCohort: null as CohortResponse | null,
     loading: false,
     error: null as string | null,
@@ -18,7 +23,7 @@ export const useCohortStore = defineStore('cohorts', {
       try {
         this.cohortsPage = await cohortService.getAll(page, size)
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to load cohorts'
+        this.error = err.response?.data?.message || 'Erro ao carregar turmas'
       } finally {
         this.loading = false
       }
@@ -30,7 +35,7 @@ export const useCohortStore = defineStore('cohorts', {
       try {
         this.selectedCohort = await cohortService.getById(id)
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to load cohort'
+        this.error = err.response?.data?.message || 'Erro ao carregar turma'
       } finally {
         this.loading = false
       }
@@ -40,10 +45,9 @@ export const useCohortStore = defineStore('cohorts', {
       this.loading = true
       this.error = null
       try {
-        const cohort = await cohortService.create(payload)
-        return cohort
+        return await cohortService.create(payload)
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to create cohort'
+        this.error = err.response?.data?.message || 'Erro ao criar turma'
         throw err
       } finally {
         this.loading = false
@@ -54,10 +58,9 @@ export const useCohortStore = defineStore('cohorts', {
       this.loading = true
       this.error = null
       try {
-        const cohort = await cohortService.update(id, payload)
-        return cohort
+        return await cohortService.update(id, payload)
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to update cohort'
+        this.error = err.response?.data?.message || 'Erro ao actualizar turma'
         throw err
       } finally {
         this.loading = false
@@ -70,7 +73,7 @@ export const useCohortStore = defineStore('cohorts', {
       try {
         await cohortService.delete(id)
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to delete cohort'
+        this.error = err.response?.data?.message || 'Erro ao eliminar turma'
         throw err
       } finally {
         this.loading = false

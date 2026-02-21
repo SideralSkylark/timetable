@@ -13,10 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
@@ -173,25 +169,6 @@ class CohortServiceTest {
         assertThatThrownBy(() -> cohortService.createCohort(request))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("is not a student");
-    }
-
-    @Test
-    @DisplayName("Should get all cohorts paginated")
-    void shouldGetAllCohortsPaginated() {
-        Pageable pageable = PageRequest.of(0, 10);
-        List<Cohort> cohorts = Arrays.asList(
-            Cohort.builder().id(1L).year(1).section("A").build(),
-            Cohort.builder().id(2L).year(1).section("B").build()
-        );
-        Page<Cohort> page = new PageImpl<>(cohorts, pageable, cohorts.size());
-
-        when(cohortRepository.findAll(pageable)).thenReturn(page);
-
-        Page<Cohort> result = cohortService.getAll(pageable);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getContent()).hasSize(2);
-        verify(cohortRepository).findAll(pageable);
     }
 
     @Test
