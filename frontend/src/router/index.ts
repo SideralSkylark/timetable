@@ -5,6 +5,7 @@ import Dashboard from '@/views/Dashboard.vue'
 import Users from '@/views/Users.vue'
 import Login from '@/views/Login.vue'
 import NotFound from '@/views/NotFound.vue'
+import Timetable from '@/views/Timetable.vue'
 import Forbidden from '@/views/Forbidden.vue'
 import Rooms from '@/views/Rooms.vue'
 import Courses from '@/views/Courses.vue'
@@ -44,6 +45,12 @@ const routes = [
         name: 'Users',
         component: Users,
         meta: { roles: ['ADMIN'], label: 'Utilizadores' },
+      },
+      {
+        path: 'timetable',
+        name: 'Timetable',
+        component: Timetable,
+        meta: { roles: ['ADMIN', 'COORDENATOR'], label: 'Horarios'},
       },
     ],
   },
