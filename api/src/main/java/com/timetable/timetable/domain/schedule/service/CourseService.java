@@ -1,5 +1,8 @@
 package com.timetable.timetable.domain.schedule.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;
@@ -36,13 +39,18 @@ public class CourseService {
                     "User %d is not a coordinator".formatted(createRequest.coordinatorId()));
         }
 
+        int years = createRequest.years() != null ? createRequest.years() : 4;
+        Map<Integer, Integer> cohorts = createRequest.expectedCohortsPerYear() != null
+                ? createRequest.expectedCohortsPerYear()
+                : buildDefaultCohorts(years);
+
+        validateCohortConfig(years, cohorts);
+
         Course course = Course.builder()
                 .name(createRequest.name())
                 .coordinator(coordinator)
-                .years(
-                        createRequest.years() != null
-                                ? createRequest.years()
-                                : 4)
+                .years(years)
+                .expectedCohortsPerYear(cohorts)
                 .build();
 
         Course saved = courseRepository.save(course);
@@ -80,6 +88,10 @@ public class CourseService {
             course.setYears(updateRequest.years());
         }
 
+        if (updateRequest.expectedCohortsPerYear() != null) {
+            course.setExpectedCohortsPerYear(updateRequest.expectedCohortsPerYear());
+        }
+
         Course updated = courseRepository.save(course);
 
         log.info("Course {} updated", id);
@@ -94,5 +106,29 @@ public class CourseService {
         }
         courseRepository.deleteById(id);
         log.info("Course {} deleted", id);
+    }
+
+    private Map<Integer, Integer> buildDefaultCohorts(int years) {
+        Map<Integer, Integer> defaults = new HashMap<>();
+
+        for (int year = 1; year <= years; year++) {
+            defaults.put(year, 2);
+        }
+
+        return defaults;
+    }
+
+    private void validateCohortConfig(int years, Map<Integer, Integer> cohorts) {
+        cohorts.forEach((year, value) -> {
+            if (year > years) {
+                throw new IllegalArgumentException(
+                        "Cohort configuration contains invalid year: " + year);
+            }
+
+            if (value <= 0) {
+                throw new IllegalArgumentException(
+                        "Cohort number must be positive");
+            }
+        });
     }
 }

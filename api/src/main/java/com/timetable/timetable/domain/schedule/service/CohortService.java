@@ -34,7 +34,6 @@ public class CohortService {
     public Cohort createCohort(CreateCohortRequest createRequest) {
         log.debug("Creating cohort");
         
-        // Verificação de unicidade atualizada para incluir semester
         if (cohortRepository.existsByYearAndSectionAndSemesterAndAcademicYearAndCourseId(
             createRequest.year(), 
             createRequest.section(),

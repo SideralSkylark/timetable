@@ -1,6 +1,7 @@
 package com.timetable.timetable.domain.schedule.dto;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import com.timetable.timetable.domain.schedule.entity.Course;
 
@@ -10,6 +11,7 @@ public record CourseResponse (
     Long coordinatorId,
     String coordinatorName,
     int years,
+    Map<Integer, Integer> expectedCohortsPerYear,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -20,6 +22,7 @@ public record CourseResponse (
             course.getCoordinator().getId(),
             course.getCoordinator().getUsername(),
             course.getYears(),
+            course.getExpectedCohortsPerYear(),
             course.getCreatedAt(),
             course.getUpdatedAt()
         );

@@ -1,5 +1,7 @@
 package com.timetable.timetable.domain.schedule.dto;
 
+import java.util.Map;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -13,5 +15,7 @@ public record CreateCourseRequest(
     Long coordinatorId,
 
     @Positive(message = "Course span must be positive")
-    Integer years
+    Integer years,
+
+    Map<Integer, Integer> expectedCohortsPerYear
 ) { }
