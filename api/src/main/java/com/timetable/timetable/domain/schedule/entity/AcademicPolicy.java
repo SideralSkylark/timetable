@@ -17,6 +17,8 @@ public final class AcademicPolicy {
     /** Weekly contact hours per discipline for teacher workload calculation. */
     public static final int WEEKLY_CONTACT_HOURS = 4;
 
+    public static final int ESTIMATED_STUDENT_COUNT = 35;
+
     public static int calculateLessonBlocksPerWeek(int credits) {
         return SESSIONS_PER_WEEK;
     }

@@ -71,11 +71,9 @@ public class TimetableSolverController {
         PreSolverRequest prepRequest = PreSolverRequest.custom(
                 request.academicYear(),
                 request.semester(),
-                CohortEstimationConfig.forCourse(3, 2, 2),
-                PhantomTeacherPolicy.CREATE_IF_NEEDED
-        );
+                CohortEstimationConfig.defaultConfig(),
+                PhantomTeacherPolicy.CREATE_IF_NEEDED);
 
-        // Retorna IMEDIATAMENTE
         GenerationStartResult result = solverService.prepareAndGenerateAsync(
                 request.academicYear(),
                 request.semester(),
@@ -175,8 +173,11 @@ public class TimetableSolverController {
             int totalLessonsToSchedule) {
     }
 
-    record GenerationStartedResponse(UUID jobId, String message) {}
-    record GenerateRequest(int academicYear, int semester) {}
+    record GenerationStartedResponse(UUID jobId, String message) {
+    }
+
+    record GenerateRequest(int academicYear, int semester) {
+    }
 
     record JobStatusResponse(
             UUID jobId,

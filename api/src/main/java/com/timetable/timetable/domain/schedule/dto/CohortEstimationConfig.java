@@ -13,7 +13,7 @@ public record CohortEstimationConfig(
      * standard config. defaults to 3 cohorts in the first year, and 2 for the remaining years, assumes 35 students per cohort
      */
     public static CohortEstimationConfig defaultConfig() {
-        return new CohortEstimationConfig(3, 2, 2, 35);
+        return new CohortEstimationConfig(2, 2, 2, 35);
     }
     
     /**
