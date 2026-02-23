@@ -4,29 +4,38 @@ import { timetableService } from '@/services/timetableService'
 import type { TimetableSolution } from '@/services/dto/timetable'
 
 export const useTimetableStore = defineStore('timetable', () => {
-  const solution = ref<TimetableSolution | null>(null)
-  const loading = ref(false)
+  const solution   = ref<TimetableSolution | null>(null)
+  const loading    = ref(false)
   const generating = ref(false)
-  const currentJobId = ref<string | null>(null)
-  const error = ref<string | null>(null)
+  const error      = ref<string | null>(null)
 
-  /**
-   * Triggers generation and polls until the solver finishes.
-   * Resolves when solution is available or rejects on error.
-   */
+  /** Loads persisted timetable from DB. Called on mount and on period filter change. */
+  async function loadForPeriod(academicYear: number, semester: number) {
+    loading.value  = true
+    error.value    = null
+    try {
+      solution.value = await timetableService.loadPersisted(academicYear, semester)
+    } catch (e: any) {
+      error.value    = e?.response?.data?.message ?? 'Erro ao carregar horário.'
+      solution.value = null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /** Triggers generation, polls until done, then reloads from DB. */
   async function generate(
     academicYear: number,
     semester: number,
     onTick?: (attempt: number) => void,
   ) {
     generating.value = true
-    error.value = null
-    solution.value = null
-
+    error.value      = null
+    solution.value   = null
     try {
       const { jobId } = await timetableService.generate(academicYear, semester)
-      currentJobId.value = jobId
       await pollUntilReady(jobId, onTick)
+      solution.value = await timetableService.loadPersisted(academicYear, semester)
     } catch (e: any) {
       error.value = e?.response?.data?.message ?? 'Erro ao gerar horário.'
       throw e
@@ -35,65 +44,27 @@ export const useTimetableStore = defineStore('timetable', () => {
     }
   }
 
-  /**
-   * Polls GET /v1/solver/{jobId} every 3.5s until solution arrives or max attempts reached.
-   */
   async function pollUntilReady(
     jobId: string,
     onTick?: (attempt: number) => void,
     maxAttempts = 20,
-    intervalMs = 3500,
+    intervalMs  = 3500,
   ) {
     for (let i = 1; i <= maxAttempts; i++) {
       await new Promise(r => setTimeout(r, intervalMs))
       onTick?.(i)
-
       try {
         const result = await timetableService.getSolution(jobId)
-        if (result !== null) {
-          solution.value = result
-          return
-        }
-      } catch {
-        // 404 or network hiccup — keep trying until maxAttempts
-      }
+        if (result !== null) return
+      } catch { /* keep polling */ }
     }
-
     throw new Error('Tempo limite de geração excedido. Tente novamente.')
-  }
-
-  /**
-   * Loads an existing solution by generating with the same params and
-   * getting whatever is currently stored — or you can swap this for a
-   * dedicated GET endpoint if you add one later.
-   */
-  async function loadSolution(jobId: string) {
-    loading.value = true
-    error.value = null
-    try {
-      const result = await timetableService.getSolution(jobId)
-      solution.value = result
-    } catch (e: any) {
-      error.value = e?.response?.data?.message ?? 'Erro ao carregar horário.'
-    } finally {
-      loading.value = false
-    }
   }
 
   function clear() {
     solution.value = null
-    currentJobId.value = null
-    error.value = null
+    error.value    = null
   }
 
-  return {
-    solution,
-    loading,
-    generating,
-    currentJobId,
-    error,
-    generate,
-    loadSolution,
-    clear,
-  }
+  return { solution, loading, generating, error, loadForPeriod, generate, clear }
 })
