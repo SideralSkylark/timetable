@@ -31,8 +31,6 @@ public class TimetablePersistenceService {
         log.info("Persisting timetable {}.{} — {} lessons ({} unassigned)",
                 year, semester, solution.getTotalLessons(), solution.getUnassignedLessons());
 
-        // Replace any previous solution for this period (cascade deletes ScheduledClass
-        // rows)
         timetableRepository.deleteByAcademicYearAndSemester(year, semester);
 
         Timetable timetable = Timetable.builder()
@@ -41,7 +39,6 @@ public class TimetablePersistenceService {
                 .status(TimetableStatus.DRAFT)
                 .build();
 
-        // PersistenceMapper already resolves CohortSubject / Timeslot / Room by ID
         List<ScheduledClass> classes = persistenceMapper.convertToScheduledClasses(solution, timetable);
         timetable.setScheduledClasses(classes);
 
