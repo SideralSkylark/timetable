@@ -3,6 +3,8 @@ package com.timetable.timetable.scheduler_engine.solver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
@@ -24,20 +26,19 @@ import com.timetable.timetable.scheduler_engine.domain.TimetableSolution;
  */
 @Configuration
 public class TimefoldConfig {
-    
+
     @Bean
     public SolverConfig solverConfig() {
         return new SolverConfig()
                 .withSolutionClass(TimetableSolution.class)
                 .withEntityClasses(LessonAssignment.class)
                 .withConstraintProviderClass(TimetableConstraintProvider.class)
-                
                 // Global termination: solver stops after 60 seconds max
                 .withTerminationConfig(new TerminationConfig()
                         .withSecondsSpentLimit(60L)
                         // Stop early if no improvement for 15 seconds
                         .withUnimprovedSecondsSpentLimit(15L))
-                
+
                 .withPhases(
                         // Phase 1: Build initial solution (first 10 seconds)
                         // FIRST_FIT_DECREASING sorts entities by difficulty before assigning
@@ -46,28 +47,38 @@ public class TimefoldConfig {
                                 .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT_DECREASING)
                                 .withTerminationConfig(new TerminationConfig()
                                         .withSecondsSpentLimit(10L)),
-                        
+
                         // Phase 2: Improve solution (remaining 50 seconds)
                         // Uses hill climbing, tabu search, simulated annealing, etc.
                         new LocalSearchPhaseConfig()
                                 .withTerminationConfig(new TerminationConfig()
-                                        .withSecondsSpentLimit(50L))
-                );
+                                        .withSecondsSpentLimit(50L)));
     }
-    
+
     @Bean
     public SolverFactory<TimetableSolution> solverFactory(SolverConfig solverConfig) {
         return SolverFactory.create(solverConfig);
     }
-    
+
     @Bean
     public SolverManager<TimetableSolution, java.util.UUID> solverManager(
             SolverFactory<TimetableSolution> solverFactory) {
-        
+
         // Configure parallel solving if needed
         SolverManagerConfig config = new SolverManagerConfig();
         // config.setParallelSolverCount("AUTO"); // Use all CPU cores
-        
+
         return SolverManager.create(solverFactory, config);
+    }
+
+    /**
+     * SolutionManager replaces the deprecated ScoreManager.
+     * Used by PermutationService to evaluate constraint scores without re-solving.
+     * Must share the same SolverFactory to use the same constraint configuration.
+     */
+    @Bean
+    public SolutionManager<TimetableSolution, HardSoftScore> solutionManager(
+            SolverFactory<TimetableSolution> solverFactory) {
+        return SolutionManager.create(solverFactory);
     }
 }

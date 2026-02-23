@@ -14,10 +14,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TimetableRepository extends JpaRepository<Timetable, Long> {
     List<Timetable> findByStatus(TimetableStatus status);
+
     Optional<Timetable> findByAcademicYear(int academicYear);
+
+    void deleteByAcademicYearAndSemester(int year, int semester);
+
     Optional<Timetable> findByAcademicYearAndSemester(int academicYear, int semester);
+
     Optional<Timetable> findTopByOrderByCreatedAtDesc();
+
     List<Timetable> findByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
+
     boolean existsByAcademicYearAndSemester(int academicYear, int semester);
+
     Page<Timetable> findByStatus(TimetableStatus status, Pageable pageable);
 }

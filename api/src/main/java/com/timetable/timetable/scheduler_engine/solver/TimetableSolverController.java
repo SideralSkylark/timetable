@@ -14,22 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import ai.timefold.solver.core.api.solver.SolverStatus;
 
-/**
- * REST API for direct solver testing.
- * 
- * This controller allows you to test the solver with raw JSON data
- * WITHOUT touching the database. Useful for:
- * - Quick testing of solver configuration
- * - Debugging constraint logic
- * - Performance benchmarking
- * - Integration tests
- * 
- * Endpoints:
- * - POST /api/v1/solver/test/start - Start solving with JSON input
- * - GET /api/v1/solver/test/{jobId} - Get solution (poll until ready)
- * - GET /api/v1/solver/test/{jobId}/status - Get job status
- * - POST /api/v1/solver/test/{jobId}/terminate - Stop solver early
- */
 @RestController
 @Slf4j
 @RequestMapping("/api/v1/solver")

@@ -7,27 +7,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Service;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverStatus;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.timetable.timetable.domain.schedule.dto.GenerationStartResult;
 import com.timetable.timetable.domain.schedule.dto.PreSolverRequest;
 import com.timetable.timetable.domain.schedule.dto.PreSolverResult;
-import com.timetable.timetable.domain.schedule.entity.CohortSubject;
-import com.timetable.timetable.domain.schedule.entity.Room;
-import com.timetable.timetable.domain.schedule.entity.Timeslot;
-import com.timetable.timetable.domain.schedule.repository.CohortSubjectRepository;
-import com.timetable.timetable.domain.schedule.repository.RoomRepository;
-import com.timetable.timetable.domain.schedule.repository.TimeslotRepository;
 import com.timetable.timetable.scheduler_engine.domain.TimetableSolution;
-import com.timetable.timetable.scheduler_engine.mapper.TimetableSolutionMapper;
 import com.timetable.timetable.scheduler_engine.preparation.PreSolverService;
 
 @Service
@@ -38,31 +29,33 @@ public class TimetableSolverService {
     private final SolverManager<TimetableSolution, UUID> solverManager;
     private final Map<UUID, SolverJob<TimetableSolution, UUID>> jobs = new ConcurrentHashMap<>();
 
-    private final CohortSubjectRepository cohortSubjectRepository;
-    private final RoomRepository roomRepository;
-    private final TimeslotRepository timeslotRepository;
-    private final TimetableSolutionMapper solutionMapper;
     private final PreSolverService preSolverService;
     private final TimetableGeneratorService timetableGeneratorService;
+    private final TimetablePersistenceService persistenceService; // ← NEW
 
     private final ExecutorService asyncExecutor = Executors.newCachedThreadPool();
 
     /**
-     * starts a solver job from a TimetableSolution. Used for tests
-     * 
-     * @param problem
-     * @return job UUID
+     * Test only — raw JSON input, no persistence
      */
     public UUID startSolverJob(TimetableSolution problem) {
         UUID jobId = UUID.randomUUID();
-        log.info("Starting solver job (no callback) with ID: {}", jobId);
-        SolverJob<TimetableSolution, UUID> job = solverManager.solve(jobId, problem);
-        jobs.put(jobId, job);
+        log.info("Starting test solver job with ID: {}", jobId);
+        jobs.put(jobId, solverManager.solve(jobId, problem));
         return jobId;
     }
 
     /**
-     * gets solution by its UUID
+     * Called repeatedly by the frontend until the solver finishes.
+     *
+     * When the solver is done (NOT_SOLVING):
+     * 1. Retrieves the best solution from the job
+     * 2. Persists it to Timetable + ScheduledClass via TimetablePersistenceService
+     * 3. Removes the job from memory
+     * 4. Returns the solution so the controller can forward it (or just the
+     * score/feasibility)
+     *
+     * Returns null while still solving or if jobId is unknown.
      */
     public TimetableSolution getSolution(UUID jobId) {
         SolverJob<TimetableSolution, UUID> job = jobs.get(jobId);
@@ -71,44 +64,27 @@ public class TimetableSolverService {
             return null;
         }
 
-        SolverStatus status = job.getSolverStatus();
-        log.debug("Solver status for job {}: {}", jobId, status);
-
-        if (status == SolverStatus.NOT_SOLVING) {
-            try {
-                TimetableSolution solution = job.getFinalBestSolution();
-                log.info("Solution retrieved for job {}. Score: {}", jobId, solution.getScore());
-                jobs.remove(jobId);
-                return solution;
-            } catch (InterruptedException e) {
-                log.error("Thread interrupted while retrieving solution for job {}", jobId, e);
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException e) {
-                log.error("Error retrieving solution for job {}", jobId, e);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * waits for a solution (sync)
-     */
-    public TimetableSolution getSolutionAndWait(UUID jobId, long timeout, TimeUnit unit) {
-        SolverJob<TimetableSolution, UUID> job = jobs.get(jobId);
-        if (job == null) {
-            log.warn("Job {} not found", jobId);
+        if (job.getSolverStatus() != SolverStatus.NOT_SOLVING) {
             return null;
         }
 
         try {
             TimetableSolution solution = job.getFinalBestSolution();
-            log.info("Solution retrieved for job {}. Score: {}", jobId, solution.getScore());
+            log.info("Solver done for job {}. Score: {} | Feasible: {} | Unassigned: {}",
+                    jobId, solution.getScore(), solution.isFeasible(), solution.getUnassignedLessons());
+
+            try {
+                persistenceService.saveSolution(solution);
+            } catch (Exception e) {
+                log.error("Failed to persist solution for job {}: {}", jobId, e.getMessage(), e);
+            }
+
             jobs.remove(jobId);
             return solution;
+
         } catch (InterruptedException e) {
-            log.error("Thread interrupted while waiting for solution for job {}", jobId, e);
             Thread.currentThread().interrupt();
+            log.error("Thread interrupted retrieving solution for job {}", jobId, e);
         } catch (ExecutionException e) {
             log.error("Error retrieving solution for job {}", jobId, e);
         }
@@ -117,24 +93,7 @@ public class TimetableSolverService {
     }
 
     /**
-     * check job status
-     */
-    public SolverStatus getStatus(UUID jobId) {
-        SolverJob<TimetableSolution, UUID> job = jobs.get(jobId);
-        return job != null ? job.getSolverStatus() : null;
-    }
-
-    /**
-     * terminates a running job
-     */
-    public void terminateEarly(UUID jobId) {
-        log.info("Terminating solver job {} early", jobId);
-        solverManager.terminateEarly(jobId);
-        jobs.remove(jobId);
-    }
-
-    /**
-     * Starts the solver with data from the db, or generates it if not existent
+     * Async prepare + generate
      */
     public GenerationStartResult prepareAndGenerateAsync(
             int academicYear,
@@ -142,52 +101,31 @@ public class TimetableSolverService {
             PreSolverRequest prepRequest) {
 
         UUID jobId = UUID.randomUUID();
-        log.info("Starting ASYNC preparation + generation for job {}", jobId);
+        log.info("Starting ASYNC prep + generation for job {}", jobId);
 
         asyncExecutor.submit(() -> {
             try {
-                PreSolverResult prepResult = preSolverService.prepare(prepRequest);
-                log.info("Pre-solver complete for job {}. Starting solver...", jobId);
+                preSolverService.prepare(prepRequest);
+                log.info("Pre-solver done for job {}. Starting solver...", jobId);
                 timetableGeneratorService.generateTimetable(academicYear, semester, jobId, jobs);
             } catch (Exception e) {
-                log.error("Error in async preparation for job {}, error: {}", jobId, e);
+                log.error("Error in async prep for job {}: {}", jobId, e.getMessage(), e);
             }
         });
 
         return new GenerationStartResult(
                 jobId,
-                new PreSolverResult(
-                        0, 0, 0,
-                        List.of("preparation running in the background")));
+                new PreSolverResult(0, 0, 0, List.of("preparation running in the background")));
     }
 
-    @Transactional
-    public UUID generateTimetable(int academicYear, int semester, long timeout, UUID jobId) {
-        log.info("Starting solver for job: {}", jobId);
+    public SolverStatus getStatus(UUID jobId) {
+        SolverJob<TimetableSolution, UUID> job = jobs.get(jobId);
+        return job != null ? job.getSolverStatus() : null;
+    }
 
-        List<CohortSubject> cohortSubjects = cohortSubjectRepository
-                .findByAcademicYearAndSemesterAndIsActive(academicYear, semester, true);
-
-        List<Timeslot> timeslots = timeslotRepository.findAll();
-        List<Room> rooms = roomRepository.findAll();
-
-        if (cohortSubjects.isEmpty()) {
-            throw new IllegalStateException(
-                    "No active cohort-subjects found for " + academicYear + "." + semester);
-        }
-        if (timeslots.isEmpty()) {
-            throw new IllegalStateException("No timeslots available for scheduling");
-        }
-        if (rooms.isEmpty()) {
-            throw new IllegalStateException("No rooms available for scheduling");
-        }
-
-        TimetableSolution problem = solutionMapper.toPlanningProblem(
-                cohortSubjects, timeslots, rooms, academicYear, semester);
-
-        SolverJob<TimetableSolution, UUID> job = solverManager.solve(jobId, problem);
-        jobs.put(jobId, job);
-
-        return jobId;
+    public void terminateEarly(UUID jobId) {
+        log.info("Terminating solver job {} early", jobId);
+        solverManager.terminateEarly(jobId);
+        jobs.remove(jobId);
     }
 }
