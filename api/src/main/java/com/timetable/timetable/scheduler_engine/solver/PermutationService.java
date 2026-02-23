@@ -7,6 +7,7 @@ import com.timetable.timetable.domain.schedule.repository.TimeslotRepository;
 import com.timetable.timetable.domain.schedule.repository.RoomRepository;
 import com.timetable.timetable.scheduler_engine.domain.LessonAssignment;
 import com.timetable.timetable.scheduler_engine.domain.TimetableSolution;
+import com.timetable.timetable.scheduler_engine.domain.info.RoomInfo;
 import com.timetable.timetable.scheduler_engine.domain.info.TimeslotInfo;
 import com.timetable.timetable.scheduler_engine.mapper.TimetableSolutionMapper;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
@@ -20,6 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Validates candidate timeslot swaps for a single lesson.
+ *
+ * Root cause of "0/14 valid": moving to a new timeslot kept the original room,
+ * which was already occupied in that slot by another lesson → Room conflict.
+ *
+ * Fix: for each candidate timeslot, try ALL rooms. A slot is valid if ANY room
+ * produces hardScore == 0. The best room found is included in the response so
+ * the frontend can show it and the swap can persist both changes.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -65,71 +76,85 @@ public class PermutationService {
 
         int cohortYear = target.getCohort().getYear();
 
-        log.info("Target: {} | cohortYear={} | currentSlot={} {}",
-            targetLesson.getDisplayName(), cohortYear,
-            target.getTimeslot().getDayOfWeek(), target.getTimeslot().getStartTime());
-
-        List<TimeslotInfo> candidates = solution.getAvailableTimeslots().stream()
+        List<TimeslotInfo> candidateSlots = solution.getAvailableTimeslots().stream()
             .filter(ts -> isCorrectPeriod(ts, cohortYear))
             .filter(ts -> ts.getId() != target.getTimeslot().getId())
             .toList();
 
-        log.info("Evaluating {} candidate slots for ScheduledClass {}", candidates.size(), scheduledClassId);
+        List<RoomInfo> allRooms = solution.getAvailableRooms();
 
-        boolean detailedLogged = false;
+        log.info("Target: {} | cohortYear={} | currentSlot={} {} | currentRoom={}",
+            targetLesson.getDisplayName(), cohortYear,
+            target.getTimeslot().getDayOfWeek(), target.getTimeslot().getStartTime(),
+            target.getRoom().getName());
+
+        log.info("Evaluating {} candidate slots × {} rooms for ScheduledClass {}",
+            candidateSlots.size(), allRooms.size(), scheduledClassId);
+
+        TimeslotInfo originalSlot = targetLesson.getTimeslot();
+        RoomInfo originalRoom     = targetLesson.getRoom();
+
         List<ValidSlotResponse> valid = new ArrayList<>();
-        TimeslotInfo original = targetLesson.getTimeslot();
 
-        for (TimeslotInfo candidate : candidates) {
-            targetLesson.setTimeslot(candidate);
+        for (TimeslotInfo candidateSlot : candidateSlots) {
+            targetLesson.setTimeslot(candidateSlot);
 
-            ScoreExplanation<TimetableSolution, HardSoftScore> explanation =
-                solutionManager.explain(solution);
-            HardSoftScore score = explanation.getScore();
+            // Try each room — accept the first one that produces 0 hard violations
+            RoomInfo validRoom = null;
+            for (RoomInfo candidateRoom : allRooms) {
+                targetLesson.setRoom(candidateRoom);
 
-            // Log the first failing candidate in detail so we know which constraint breaks
-            if (!detailedLogged && score.hardScore() < 0) {
-                detailedLogged = true;
-                log.warn("=== First failing candidate: {} {} → score {} ===",
-                    candidate.getDayOfWeek(), candidate.getStartTime(), score);
-                explanation.getConstraintMatchTotalMap().forEach((key, cmt) -> {
-                    if (cmt.getScore().hardScore() < 0) {
-                        log.warn("  HARD VIOLATION  constraint='{}' score={}  matches={}",
-                            key, cmt.getScore(), cmt.getConstraintMatchCount());
-                    }
-                });
+                ScoreExplanation<TimetableSolution, HardSoftScore> explanation =
+                    solutionManager.explain(solution);
+
+                if (explanation.getScore().hardScore() == 0) {
+                    validRoom = candidateRoom;
+                    break;
+                }
             }
 
-            targetLesson.setTimeslot(original);
+            // Always restore both planning variables before next iteration
+            targetLesson.setTimeslot(originalSlot);
+            targetLesson.setRoom(originalRoom);
 
-            if (score.hardScore() == 0) {
+            if (validRoom != null) {
                 valid.add(new ValidSlotResponse(
-                    candidate.getId(),
-                    candidate.getDayOfWeek().toString(),
-                    candidate.getStartTime().toString(),
-                    candidate.getEndTime().toString()
+                    candidateSlot.getId(),
+                    candidateSlot.getDayOfWeek().toString(),
+                    candidateSlot.getStartTime().toString(),
+                    candidateSlot.getEndTime().toString(),
+                    validRoom.getId(),
+                    validRoom.getName()
                 ));
             }
         }
 
-        targetLesson.setTimeslot(original);
-        log.info("ScheduledClass {} → {}/{} valid slots", scheduledClassId, valid.size(), candidates.size());
+        log.info("ScheduledClass {} → {}/{} valid slots", scheduledClassId, valid.size(), candidateSlots.size());
         return valid;
     }
 
+    /**
+     * Persists a confirmed swap — updates both timeslot AND room.
+     */
     @Transactional
-    public void applySwap(Long scheduledClassId, Long targetTimeslotId) {
+    public void applySwap(Long scheduledClassId, Long targetTimeslotId, Long targetRoomId) {
         ScheduledClass sc = scheduledClassRepository.findById(scheduledClassId)
             .orElseThrow(() -> new IllegalArgumentException("ScheduledClass not found: " + scheduledClassId));
 
         Timeslot newTimeslot = timeslotRepository.findById(targetTimeslotId)
             .orElseThrow(() -> new IllegalArgumentException("Timeslot not found: " + targetTimeslotId));
 
-        log.info("Swap applied: ScheduledClass {} → Timeslot {} ({} {})",
+        com.timetable.timetable.domain.schedule.entity.Room newRoom =
+            roomRepository.findById(targetRoomId)
+            .orElseThrow(() -> new IllegalArgumentException("Room not found: " + targetRoomId));
+
+        log.info("Swap applied: ScheduledClass {} → Timeslot {} ({} {}) + Room {}",
             scheduledClassId, targetTimeslotId,
-            newTimeslot.getDayOfWeek(), newTimeslot.getStartTime());
+            newTimeslot.getDayOfWeek(), newTimeslot.getStartTime(),
+            newRoom.getName());
 
         sc.setTimeslot(newTimeslot);
+        sc.setRoom(newRoom);
     }
 
     private boolean isCorrectPeriod(TimeslotInfo ts, int cohortYear) {
@@ -145,6 +170,8 @@ public class PermutationService {
         long timeslotId,
         String dayOfWeek,
         String startTime,
-        String endTime
+        String endTime,
+        long roomId,
+        String roomName
     ) {}
 }

@@ -296,7 +296,7 @@
             <div class="flex items-center gap-3 text-xs">
               <span class="bg-gray-100 px-2 py-1 rounded">{{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0, 5) }}</span>
               <ArrowRightLeft class="w-3 h-3 text-gray-400" />
-              <span class="bg-green-100 px-2 py-1 rounded text-green-700">{{ dayLabel(pendingSwap?.dayOfWeek) }} · {{ pendingSwap?.startTime?.substring(0, 5) }}</span>
+              <span class="bg-green-100 px-2 py-1 rounded text-green-700">{{ dayLabel(pendingSwap?.dayOfWeek) }} · {{ pendingSwap?.startTime?.substring(0, 5) }} · {{ pendingSwap?.roomName }}</span>
             </div>
           </div>
         </div>
@@ -482,7 +482,7 @@ async function handleApplySwap() {
   if (!selectedLesson.value || !pendingSwap.value) return
   applyingSwap.value = true
   try {
-    await permutationService.applySwap(selectedLesson.value.id, pendingSwap.value.timeslotId)
+    await permutationService.applySwap(selectedLesson.value.id, pendingSwap.value.timeslotId, pendingSwap.value.roomId)
     toast.success('Permutação aplicada com sucesso!')
     pendingSwap.value = null
     clearSelection()

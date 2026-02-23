@@ -103,6 +103,9 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .asConstraint("Room course restriction violated");
     }
 
+    /**
+     * HC6: If a lesson is to be taught in the morning or evening
+     */
     private Constraint YearPeriodRestriction(ConstraintFactory factory) {
         return factory.forEach(LessonAssignment.class)
                 .filter(lesson -> lesson.getTimeslot() != null &&
