@@ -1,5 +1,6 @@
 package com.timetable.timetable.scheduler_engine.solver;
 
+import com.timetable.timetable.domain.schedule.entity.Room;
 import com.timetable.timetable.domain.schedule.entity.ScheduledClass;
 import com.timetable.timetable.domain.schedule.entity.Timeslot;
 import com.timetable.timetable.domain.schedule.repository.ScheduledClassRepository;
@@ -7,6 +8,7 @@ import com.timetable.timetable.domain.schedule.repository.TimeslotRepository;
 import com.timetable.timetable.domain.schedule.repository.RoomRepository;
 import com.timetable.timetable.scheduler_engine.domain.LessonAssignment;
 import com.timetable.timetable.scheduler_engine.domain.TimetableSolution;
+import com.timetable.timetable.scheduler_engine.domain.info.RoomInfo;
 import com.timetable.timetable.scheduler_engine.domain.info.TimeslotInfo;
 import com.timetable.timetable.scheduler_engine.mapper.TimetableSolutionMapper;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -101,48 +103,65 @@ public class PermutationService {
 
         List<ValidSlotResponse> valid = new ArrayList<>();
 
+        RoomInfo originalRoom = targetLesson.getRoom();
+
         for (TimeslotInfo candidate : candidates) {
             List<LessonAssignment> occupants = occupantsByTimeslotId
                     .getOrDefault(candidate.getId(), List.of());
 
-            // Para swap simples, só faz sentido se houver exatamente 1 ocupante
-            // (trocar com múltiplos é ambíguo)
             LessonAssignment occupant = occupants.size() == 1 ? occupants.get(0) : null;
 
-            targetLesson.setTimeslot(candidate);
-            if (occupant != null)
-                occupant.setTimeslot(originalTimeslot);
+            // Testar cada sala disponível
+            for (RoomInfo candidateRoom : solution.getAvailableRooms()) {
 
-            try {
-                solutionManager.update(solution);
-                HardSoftScore score = solution.getScore();
+                // Verificações rápidas antes de chamar o ScoreManager (performance)
+                if (!candidateRoom.hasSufficientCapacity(targetLesson.getStudentCount()))
+                    continue;
+                if (!candidateRoom.isAvailableForCourse(targetLesson.getCourseId(), candidate.getPeriod()))
+                    continue;
 
-                if (score != null && score.hardScore() == 0) {
-                    if (occupant != null) {
-                        ScheduledClass occupantSc = allClasses.stream()
-                                .filter(sc -> sc.getId().equals(occupant.getId()))
-                                .findFirst().orElse(null);
-
-                        valid.add(ValidSlotResponse.swap(
-                                candidate.getId(),
-                                candidate.getDayOfWeek().toString(),
-                                candidate.getStartTime().toString(),
-                                candidate.getEndTime().toString(),
-                                occupant.getId(),
-                                occupantSc != null ? occupantSc.getSubject().getName() : "?",
-                                occupantSc != null ? occupantSc.getCohort().getDisplayName() : "?"));
-                    } else {
-                        valid.add(ValidSlotResponse.empty(
-                                candidate.getId(),
-                                candidate.getDayOfWeek().toString(),
-                                candidate.getStartTime().toString(),
-                                candidate.getEndTime().toString()));
-                    }
-                }
-            } finally {
-                targetLesson.setTimeslot(originalTimeslot);
+                targetLesson.setTimeslot(candidate);
+                targetLesson.setRoom(candidateRoom);
                 if (occupant != null)
-                    occupant.setTimeslot(candidate);
+                    occupant.setTimeslot(originalTimeslot);
+
+                try {
+                    solutionManager.update(solution);
+                    HardSoftScore score = solution.getScore();
+
+                    if (score != null && score.hardScore() == 0) {
+                        if (occupant != null) {
+                            ScheduledClass occupantSc = allClasses.stream()
+                                    .filter(sc -> sc.getId().equals(occupant.getId()))
+                                    .findFirst().orElse(null);
+
+                            valid.add(ValidSlotResponse.swap(
+                                    candidate.getId(),
+                                    candidate.getDayOfWeek().toString(),
+                                    candidate.getStartTime().toString(),
+                                    candidate.getEndTime().toString(),
+                                    occupant.getId(),
+                                    occupantSc != null ? occupantSc.getSubject().getName() : "?",
+                                    occupantSc != null ? occupantSc.getCohort().getDisplayName() : "?",
+                                    candidateRoom.getName(),
+                                    candidateRoom.getId()));
+                        } else {
+                            valid.add(ValidSlotResponse.empty(
+                                    candidate.getId(),
+                                    candidate.getDayOfWeek().toString(),
+                                    candidate.getStartTime().toString(),
+                                    candidate.getEndTime().toString(),
+                                    candidateRoom.getName(),
+                                    candidateRoom.getId()));
+                        }
+                        break; // Primeira sala válida chega — não precisas de mais para o mesmo slot
+                    }
+                } finally {
+                    targetLesson.setTimeslot(originalTimeslot);
+                    targetLesson.setRoom(originalRoom);
+                    if (occupant != null)
+                        occupant.setTimeslot(candidate);
+                }
             }
         }
 
@@ -151,12 +170,15 @@ public class PermutationService {
     }
 
     @Transactional
-    public void applySwap(Long scheduledClassId, Long targetTimeslotId, Long swapWithId) {
+    public void applySwap(Long scheduledClassId, Long targetTimeslotId, Long targetRoomId, Long swapWithId) {
         ScheduledClass scX = scheduledClassRepository.findById(scheduledClassId)
                 .orElseThrow(() -> new IllegalArgumentException("ScheduledClass not found: " + scheduledClassId));
 
         Timeslot newTimeslot = timeslotRepository.findById(targetTimeslotId)
                 .orElseThrow(() -> new IllegalArgumentException("Timeslot not found: " + targetTimeslotId));
+
+        Room newRoom = roomRepository.findById(targetRoomId)
+                .orElseThrow(() -> new IllegalArgumentException("Room not found: " + targetRoomId));
 
         if (swapWithId != null) {
             ScheduledClass scY = scheduledClassRepository.findById(swapWithId)
@@ -164,12 +186,15 @@ public class PermutationService {
 
             Timeslot xOriginal = scX.getTimeslot();
             scX.setTimeslot(newTimeslot);
+            scX.setRoom(newRoom); // ← sala também muda
             scY.setTimeslot(xOriginal);
+            // scY mantém a sua sala original
 
             log.info("Full swap: ScheduledClass {} ↔ ScheduledClass {}", scheduledClassId, swapWithId);
         } else {
             scX.setTimeslot(newTimeslot);
-            log.info("Move: ScheduledClass {} → Timeslot {}", scheduledClassId, targetTimeslotId);
+            scX.setRoom(newRoom); // ← sala também muda
+            log.info("Move: ScheduledClass {} → Timeslot {} Room {}", scheduledClassId, targetTimeslotId, targetRoomId);
         }
     }
 
@@ -190,14 +215,19 @@ public class PermutationService {
             boolean isSwap,
             Long swapWithId,
             String swapWithSubject,
-            String swapWithCohort) {
-        static ValidSlotResponse empty(long timeslotId, String day, String start, String end) {
-            return new ValidSlotResponse(timeslotId, day, start, end, false, null, null, null);
+            String swapWithCohort,
+            String roomName, // ← NOVO: sala onde a aula ficará
+            Long roomId) { // ← NOVO: para persistir a mudança de sala
+
+        static ValidSlotResponse empty(long timeslotId, String day, String start, String end,
+                String roomName, Long roomId) {
+            return new ValidSlotResponse(timeslotId, day, start, end, false, null, null, null, roomName, roomId);
         }
 
         static ValidSlotResponse swap(long timeslotId, String day, String start, String end,
-                Long swapWithId, String subject, String cohort) {
-            return new ValidSlotResponse(timeslotId, day, start, end, true, swapWithId, subject, cohort);
+                Long swapWithId, String subject, String cohort, String roomName, Long roomId) {
+            return new ValidSlotResponse(timeslotId, day, start, end, true, swapWithId, subject, cohort, roomName,
+                    roomId);
         }
     }
 }

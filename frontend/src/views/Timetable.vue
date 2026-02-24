@@ -280,6 +280,7 @@
               <p class="text-xs text-gray-500 mt-0.5">
                 {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0, 5) }}
                 → {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0, 5) }}
+                · {{ pendingSwap.roomName }}
               </p>
             </div>
             <div v-if="pendingSwap.isSwap" class="bg-orange-50 rounded-lg p-3">
@@ -493,6 +494,7 @@ async function handleApplySwap() {
     await permutationService.applySwap(
       selectedLesson.value.id,
       pendingSwap.value.timeslotId,
+      pendingSwap.value.roomId,
       pendingSwap.value.swapWithId,
     )
     toast.success(pendingSwap.value.isSwap ? 'Aulas trocadas com sucesso!' : 'Aula movida com sucesso!')

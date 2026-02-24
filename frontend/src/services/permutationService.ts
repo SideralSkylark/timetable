@@ -6,9 +6,11 @@ export interface ValidSlot {
   startTime: string
   endTime: string
   isSwap: boolean
-  swapWithId: number | null       // ScheduledClass.id of the displaced lesson
-  swapWithSubject: string | null  // subject name for display
-  swapWithCohort: string | null   // cohort display name for display
+  swapWithId: number | null
+  swapWithSubject: string | null
+  swapWithCohort: string | null
+  roomName: string        // ← NOVO
+  roomId: number          // ← NOVO
 }
 
 export const permutationService = {
@@ -26,12 +28,14 @@ export const permutationService = {
   applySwap: async (
     scheduledClassId: number,
     targetTimeslotId: number,
+    targetRoomId: number,   // ← NOVO
     swapWithId: number | null,
   ): Promise<void> => {
     await api.post('/v1/permutations/apply', {
       scheduledClassId,
       targetTimeslotId,
-      swapWithId,   // null = move to empty slot
+      targetRoomId,          // ← NOVO
+      swapWithId,
     })
   },
 }

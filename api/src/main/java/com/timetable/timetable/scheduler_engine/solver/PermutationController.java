@@ -24,19 +24,21 @@ public class PermutationController {
      * Body: { "scheduledClassId": 42, "targetTimeslotId": 7, "swapWithId": 55 }
      * swapWithId is optional — null means move to empty slot.
      */
+
     @PostMapping("/apply")
     public ResponseEntity<Void> applySwap(@RequestBody ApplySwapRequest request) {
         permutationService.applySwap(
                 request.scheduledClassId(),
                 request.targetTimeslotId(),
-                request.swapWithId() // nullable
-        );
+                request.targetRoomId(), // ← novo
+                request.swapWithId());
         return ResponseEntity.noContent().build();
     }
 
     record ValidSlotsRequest(Long scheduledClassId, int academicYear, int semester) {
     }
 
-    record ApplySwapRequest(Long scheduledClassId, Long targetTimeslotId, Long swapWithId) {
+    record ApplySwapRequest(Long scheduledClassId, Long targetTimeslotId, Long targetRoomId, Long swapWithId) {
     }
+
 }
