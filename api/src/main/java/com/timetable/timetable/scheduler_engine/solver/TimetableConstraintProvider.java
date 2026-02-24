@@ -3,6 +3,8 @@ package com.timetable.timetable.scheduler_engine.solver;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.*;
 
+import java.time.LocalTime;
+
 import com.timetable.timetable.domain.schedule.entity.TimePeriod;
 import com.timetable.timetable.scheduler_engine.domain.LessonAssignment;
 
@@ -195,9 +197,15 @@ public class TimetableConstraintProvider implements ConstraintProvider {
     }
 
     private boolean areConsecutive(LessonAssignment l1, LessonAssignment l2) {
-        return l1.getTimeslot().getEndTime()
-                .equals(l2.getTimeslot().getStartTime())
-                || l2.getTimeslot().getEndTime()
-                        .equals(l1.getTimeslot().getStartTime());
+        LocalTime end1 = l1.getTimeslot().getEndTime();
+        LocalTime start2 = l2.getTimeslot().getStartTime();
+        LocalTime end2 = l2.getTimeslot().getEndTime();
+        LocalTime start1 = l1.getTimeslot().getStartTime();
+
+        // Considera consecutivo se o gap entre blocos for <= 10 minutos
+        long gap1 = java.time.Duration.between(end1, start2).toMinutes();
+        long gap2 = java.time.Duration.between(end2, start1).toMinutes();
+
+        return (gap1 >= 0 && gap1 <= 10) || (gap2 >= 0 && gap2 <= 10);
     }
 }
