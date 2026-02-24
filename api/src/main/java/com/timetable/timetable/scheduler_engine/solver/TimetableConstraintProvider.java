@@ -23,6 +23,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 roomCapacity(factory),
                 roomCourseRestriction(factory),
                 YearPeriodRestriction(factory),
+                sameSubjectConsecutiveSameDay(factory),
 
                 // SOFT CONSTRAINTS (preferences to optimize)
                 // minimizeTeacherGaps(factory),
@@ -117,6 +118,24 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .asConstraint("year-period restriction violation");
     }
 
+    /**
+     * HC7:
+     * Prevent two consecutive lessons of the same subject
+     * for the same cohort on the same day.
+     */
+    private Constraint sameSubjectConsecutiveSameDay(ConstraintFactory factory) {
+        return factory.forEachUniquePair(
+                LessonAssignment.class,
+                Joiners.equal(LessonAssignment::getCohort),
+                Joiners.equal(LessonAssignment::getSubject))
+                .filter((l1, l2) -> l1.getTimeslot() != null &&
+                        l2.getTimeslot() != null &&
+                        isSameDay(l1, l2) &&
+                        areConsecutive(l1, l2))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Same subject consecutive lessons same day");
+    }
+
     // ========================================
     // SOFT CONSTRAINTS (commented out for now)
     // ========================================
@@ -160,7 +179,6 @@ public class TimetableConstraintProvider implements ConstraintProvider {
      * }
      */
 
-
     private boolean isPeriodAllowedForYear(int year, TimePeriod period) {
         boolean isOddYear = year % 2 != 0;
 
@@ -169,5 +187,17 @@ public class TimetableConstraintProvider implements ConstraintProvider {
         } else {
             return period == TimePeriod.AFTERNOON;
         }
+    }
+
+    private boolean isSameDay(LessonAssignment l1, LessonAssignment l2) {
+        return l1.getTimeslot().getDayOfWeek()
+                .equals(l2.getTimeslot().getDayOfWeek());
+    }
+
+    private boolean areConsecutive(LessonAssignment l1, LessonAssignment l2) {
+        return l1.getTimeslot().getEndTime()
+                .equals(l2.getTimeslot().getStartTime())
+                || l2.getTimeslot().getEndTime()
+                        .equals(l1.getTimeslot().getStartTime());
     }
 }

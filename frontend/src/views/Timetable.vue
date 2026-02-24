@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
 
-    <!-- Header -->
     <div class="max-w-7xl mx-auto mb-8">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex items-center gap-3">
@@ -14,7 +13,6 @@
       </div>
     </div>
 
-    <!-- Filters + Generate -->
     <div class="max-w-7xl mx-auto mb-6">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex flex-wrap items-end gap-4">
@@ -83,11 +81,9 @@
       </div>
     </div>
 
-    <!-- Main area: grid + side panel -->
     <div class="max-w-7xl mx-auto flex gap-4 items-start">
 
-      <!-- Timetable grid -->
-      <div class="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div class="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden min-w-0">
 
         <div v-if="timetableStore.generating" class="flex flex-col items-center justify-center py-24 gap-3 text-gray-400">
           <Loader2 class="w-8 h-8 animate-spin text-blue-900" />
@@ -103,9 +99,7 @@
         <div v-else-if="!hasLessons" class="flex flex-col items-center justify-center py-24 gap-3">
           <div class="bg-gray-100 p-5 rounded-full"><CalendarDays class="w-10 h-10 text-gray-400" /></div>
           <p class="text-base font-semibold text-gray-700">Nenhum horário gerado</p>
-          <p class="text-sm text-gray-500">
-            {{ isAdmin ? 'Seleccione o ano e semestre e clique em "Gerar Horário".' : 'Aguarde a geração pelo administrador.' }}
-          </p>
+          <p class="text-sm text-gray-500">{{ isAdmin ? 'Seleccione o ano e semestre e clique em "Gerar Horário".' : 'Aguarde a geração pelo administrador.' }}</p>
         </div>
 
         <div v-else class="overflow-x-auto">
@@ -132,31 +126,32 @@
                 <td
                   v-for="day in days"
                   :key="`${block.id}-${day.value}`"
-                  class="border-r border-gray-100 last:border-r-0 p-1.5 align-top transition-colors"
-                  :class="isValidSwapTarget(day.value, block.startTime) ? 'bg-green-50 ring-1 ring-inset ring-green-300 cursor-pointer' : ''"
+                  class="border-r border-gray-100 last:border-r-0 p-1.5 align-top relative transition-colors"
+                  :class="cellClass(day.value, block.startTime)"
                   style="min-width: 140px; min-height: 80px;"
-                  @click="isValidSwapTarget(day.value, block.startTime) && confirmSwap(day.value, block.startTime)"
+                  @click="handleCellClick(day.value, block.startTime)"
                 >
-                  <!-- Valid swap target indicator -->
+                  <!-- Green circle for empty valid slots -->
                   <div
-                    v-if="isValidSwapTarget(day.value, block.startTime) && getCellLessons(day.value, block.startTime).length === 0"
-                    class="h-full flex items-center justify-center"
+                    v-if="hasEmptySlot(day.value, block.startTime)"
+                    class="h-full flex items-center justify-center py-4"
                   >
                     <div class="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center">
                       <ArrowRightLeft class="w-4 h-4 text-green-700" />
                     </div>
                   </div>
 
-                  <!-- Lessons -->
                   <div
                     v-for="lesson in getCellLessons(day.value, block.startTime)"
                     :key="lesson.id"
-                    class="rounded-md px-2 py-1.5 mb-1 transition-all"
+                    class="rounded-md px-2 py-1.5 mb-1 transition-all relative"
                     :class="[
                       yearColorClass(lesson.cohort.year),
                       selectedLesson?.id === lesson.id
                         ? 'ring-2 ring-blue-500 shadow-md scale-[1.02]'
-                        : canSelectLesson ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]' : 'cursor-default hover:shadow-md hover:scale-[1.02]',
+                        : canSelectLesson
+                          ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]'
+                          : 'cursor-default hover:shadow-md hover:scale-[1.02]',
                     ]"
                     @click.stop="canSelectLesson && selectLesson(lesson)"
                     @mouseenter="!selectedLesson && (hoveredLesson = lesson)"
@@ -164,6 +159,11 @@
                   >
                     <p class="text-xs font-semibold leading-tight line-clamp-2">{{ lesson.subject.name }}</p>
                     <p class="text-xs opacity-70 mt-0.5">{{ lesson.cohort.displayName }}</p>
+                    <div v-if="hasSwapSlot(day.value, block.startTime)" class="absolute top-1 right-1">
+                      <div class="w-5 h-5 rounded-full bg-orange-400 flex items-center justify-center shadow">
+                        <ArrowRightLeft class="w-3 h-3 text-white" />
+                      </div>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -172,35 +172,23 @@
         </div>
       </div>
 
-      <!-- Permutation side panel — only when viewing a single cohort and admin -->
       <Transition name="slide-panel">
-        <div
-          v-if="isAdmin && selectedCohort && selectedLesson"
-          class="w-72 bg-white rounded-lg shadow-sm border border-gray-200 flex-shrink-0"
-        >
+        <div v-if="isAdmin && selectedCohort && selectedLesson" class="w-72 bg-white rounded-lg shadow-sm border border-gray-200 flex-shrink-0">
           <div class="p-4 border-b border-gray-200 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <ArrowRightLeft class="w-4 h-4 text-blue-900" />
               <h3 class="text-sm font-semibold text-gray-900">Permutar Aula</h3>
             </div>
-            <button @click="clearSelection" class="text-gray-400 hover:text-gray-600 transition">
-              <X class="w-4 h-4" />
-            </button>
+            <button @click="clearSelection" class="text-gray-400 hover:text-gray-600 transition"><X class="w-4 h-4" /></button>
           </div>
-
           <div class="p-4 space-y-3">
-            <!-- Selected lesson info -->
             <div class="bg-gray-50 rounded-lg p-3 text-xs space-y-1">
               <p class="font-semibold text-gray-800 text-sm">{{ selectedLesson.subject.name }}</p>
               <p class="text-gray-500">{{ selectedLesson.cohort.displayName }}</p>
-              <p class="text-gray-500">
-                {{ dayLabel(selectedLesson.timeslot?.dayOfWeek) }}
-                · {{ selectedLesson.timeslot?.startTime?.substring(0, 5) }}
-              </p>
+              <p class="text-gray-500">{{ dayLabel(selectedLesson.timeslot?.dayOfWeek) }} · {{ selectedLesson.timeslot?.startTime?.substring(0, 5) }}</p>
               <p class="text-gray-500">{{ selectedLesson.room?.name }}</p>
             </div>
 
-            <!-- Calculate button -->
             <button
               :disabled="loadingSlots"
               @click="calculateValidSlots"
@@ -208,42 +196,38 @@
             >
               <Loader2 v-if="loadingSlots" class="w-4 h-4 animate-spin" />
               <ArrowRightLeft v-else class="w-4 h-4" />
-              {{ loadingSlots ? 'A calcular...' : validSlots.length > 0 ? 'Recalcular' : 'Calcular Permutações' }}
+              {{ loadingSlots ? 'A calcular...' : slotsCalculated ? 'Recalcular' : 'Calcular Permutações' }}
             </button>
 
-            <!-- Result -->
-            <div v-if="validSlots.length > 0" class="text-xs text-gray-500 text-center">
-              {{ validSlots.length }} slot{{ validSlots.length !== 1 ? 's' : '' }} disponíve{{ validSlots.length !== 1 ? 'is' : 'l' }} — clique numa célula verde
-            </div>
-            <div v-else-if="slotsCalculated && validSlots.length === 0" class="text-xs text-amber-600 bg-amber-50 rounded-lg p-3 text-center">
-              Nenhum slot válido encontrado para esta aula.
-            </div>
+            <template v-if="slotsCalculated">
+              <div v-if="validSlots.length > 0" class="space-y-1">
+                <p class="text-xs text-gray-500 text-center">
+                  {{ validSlots.filter(s => !s.isSwap).length }} slot{{ validSlots.filter(s => !s.isSwap).length !== 1 ? 's' : '' }} livre{{ validSlots.filter(s => !s.isSwap).length !== 1 ? 's' : '' }}
+                  · {{ validSlots.filter(s => s.isSwap).length }} permuta{{ validSlots.filter(s => s.isSwap).length !== 1 ? 'ções' : 'ção' }} possíve{{ validSlots.filter(s => s.isSwap).length !== 1 ? 'is' : 'l' }}
+                </p>
+                <div class="flex gap-3 justify-center text-xs">
+                  <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-full bg-green-200"></div><span class="text-gray-500">Slot livre</span></div>
+                  <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-full bg-orange-400"></div><span class="text-gray-500">Trocar aulas</span></div>
+                </div>
+              </div>
+              <div v-else class="text-xs text-amber-600 bg-amber-50 rounded-lg p-3 text-center">
+                Nenhuma permutação válida encontrada.
+              </div>
+            </template>
 
-            <button
-              @click="clearSelection"
-              class="w-full px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
-              Cancelar
-            </button>
+            <button @click="clearSelection" class="w-full px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition">Cancelar</button>
           </div>
         </div>
       </Transition>
-
     </div>
 
-    <!-- Legend -->
     <div v-if="hasLessons" class="max-w-7xl mx-auto mt-3 flex flex-wrap gap-4 px-1">
       <div v-for="item in yearLegend" :key="item.year" class="flex items-center gap-1.5">
         <div class="w-3 h-3 rounded-sm" :class="item.dot"></div>
         <span class="text-xs text-gray-500">{{ item.label }}</span>
       </div>
-      <div v-if="isAdmin && selectedCohort" class="flex items-center gap-1.5 ml-4">
-        <div class="w-3 h-3 rounded-sm bg-green-200"></div>
-        <span class="text-xs text-gray-500">Slot disponível para permutação</span>
-      </div>
     </div>
 
-    <!-- Tooltip (only when no lesson selected) -->
     <Teleport to="body">
       <Transition name="tooltip">
         <div v-if="hoveredLesson && !selectedLesson" class="fixed bottom-6 right-6 bg-gray-900 text-white rounded-xl shadow-2xl p-4 w-60 z-50 pointer-events-none">
@@ -258,7 +242,6 @@
       </Transition>
     </Teleport>
 
-    <!-- Confirm generate modal -->
     <div v-if="showConfirmModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" @click.self="showConfirmModal = false">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-sm">
         <div class="border-b border-gray-200 p-6">
@@ -268,9 +251,7 @@
           </div>
           <p class="text-sm text-gray-500 mt-3 leading-relaxed">
             Vai gerar o horário para <strong class="text-gray-700">{{ selectedYear }} · {{ selectedSemester }}º Semestre</strong>.
-            <template v-if="timetableStore.solution">
-              <br /><span class="text-amber-600 font-medium">O horário existente será substituído.</span>
-            </template>
+            <template v-if="timetableStore.solution"><br /><span class="text-amber-600 font-medium">O horário existente será substituído.</span></template>
             A operação pode demorar até 60 segundos.
           </p>
         </div>
@@ -283,26 +264,43 @@
       </div>
     </div>
 
-    <!-- Confirm swap modal -->
     <div v-if="pendingSwap" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" @click.self="pendingSwap = null">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-sm">
         <div class="border-b border-gray-200 p-6">
           <div class="flex items-center gap-3">
-            <div class="bg-green-100 p-2 rounded-lg"><ArrowRightLeft class="w-5 h-5 text-green-700" /></div>
-            <h2 class="text-lg font-semibold text-gray-900">Confirmar Permutação</h2>
+            <div class="p-2 rounded-lg" :class="pendingSwap.isSwap ? 'bg-orange-100' : 'bg-green-100'">
+              <ArrowRightLeft class="w-5 h-5" :class="pendingSwap.isSwap ? 'text-orange-700' : 'text-green-700'" />
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900">{{ pendingSwap.isSwap ? 'Trocar Aulas' : 'Mover Aula' }}</h2>
           </div>
-          <div class="text-sm text-gray-500 mt-3 space-y-2">
-            <p><strong class="text-gray-700">{{ selectedLesson?.subject.name }}</strong></p>
-            <div class="flex items-center gap-3 text-xs">
-              <span class="bg-gray-100 px-2 py-1 rounded">{{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0, 5) }}</span>
-              <ArrowRightLeft class="w-3 h-3 text-gray-400" />
-              <span class="bg-green-100 px-2 py-1 rounded text-green-700">{{ dayLabel(pendingSwap?.dayOfWeek) }} · {{ pendingSwap?.startTime?.substring(0, 5) }} · {{ pendingSwap?.roomName }}</span>
+          <div class="mt-4 space-y-3 text-sm">
+            <div class="bg-blue-50 rounded-lg p-3">
+              <p class="text-xs text-blue-600 font-semibold mb-1">A MOVER</p>
+              <p class="font-semibold text-gray-800">{{ selectedLesson?.subject.name }}</p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0, 5) }}
+                → {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0, 5) }}
+              </p>
+            </div>
+            <div v-if="pendingSwap.isSwap" class="bg-orange-50 rounded-lg p-3">
+              <p class="text-xs text-orange-600 font-semibold mb-1">DESLOCADA PARA O LUGAR ACTUAL</p>
+              <p class="font-semibold text-gray-800">{{ pendingSwap.swapWithSubject }}</p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                {{ pendingSwap.swapWithCohort }}
+                · {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0, 5) }}
+                → {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0, 5) }}
+              </p>
             </div>
           </div>
         </div>
         <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3 rounded-b-lg">
           <button @click="pendingSwap = null" class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">Cancelar</button>
-          <button @click="handleApplySwap" :disabled="applyingSwap" class="px-5 py-2.5 text-sm font-medium text-white bg-green-700 rounded-lg hover:bg-green-600 transition flex items-center gap-2 disabled:opacity-50">
+          <button
+            @click="handleApplySwap"
+            :disabled="applyingSwap"
+            class="px-5 py-2.5 text-sm font-medium text-white rounded-lg transition flex items-center gap-2 disabled:opacity-50"
+            :class="pendingSwap.isSwap ? 'bg-orange-600 hover:bg-orange-500' : 'bg-green-700 hover:bg-green-600'"
+          >
             <Loader2 v-if="applyingSwap" class="w-4 h-4 animate-spin" />
             <ArrowRightLeft v-else class="w-4 h-4" />
             Confirmar
@@ -329,7 +327,6 @@ const toast = useToast()
 
 const isAdmin = computed(() => auth.user?.roles?.includes('ADMIN') ?? false)
 
-// ── Filters ────────────────────────────────────────────────────────
 const currentYear = new Date().getFullYear()
 const availableYears = [currentYear - 1, currentYear, currentYear + 1]
 const selectedYear = ref(currentYear)
@@ -339,7 +336,6 @@ const showConfirmModal = ref(false)
 const hoveredLesson = ref<LessonAssignment | null>(null)
 const pollAttempt = ref(0)
 
-// ── Permutation state ──────────────────────────────────────────────
 const selectedLesson = ref<LessonAssignment | null>(null)
 const validSlots = ref<ValidSlot[]>([])
 const slotsCalculated = ref(false)
@@ -347,10 +343,8 @@ const loadingSlots = ref(false)
 const pendingSwap = ref<ValidSlot | null>(null)
 const applyingSwap = ref(false)
 
-// Can only select a lesson when viewing a single cohort and admin
 const canSelectLesson = computed(() => isAdmin.value && !!selectedCohort.value)
 
-// ── Load on mount and period change ───────────────────────────────
 onMounted(() => timetableStore.loadForPeriod(selectedYear.value, selectedSemester.value))
 
 watch([selectedYear, selectedSemester], ([year, semester]) => {
@@ -359,10 +353,8 @@ watch([selectedYear, selectedSemester], ([year, semester]) => {
   timetableStore.loadForPeriod(year, semester)
 })
 
-// Clear permutation state when cohort filter changes
 watch(selectedCohort, () => clearSelection())
 
-// ── Static ─────────────────────────────────────────────────────────
 const days = [
   { value: 'MONDAY', label: 'Segunda' }, { value: 'TUESDAY', label: 'Terça' },
   { value: 'WEDNESDAY', label: 'Quarta' }, { value: 'THURSDAY', label: 'Quinta' },
@@ -382,7 +374,6 @@ const yearLegend = [
   { year: 5, label: '5º Ano', dot: 'bg-pink-300' },
 ]
 
-// ── Computed ───────────────────────────────────────────────────────
 const allLessons = computed(() => timetableStore.solution?.lessonAssignments ?? [])
 
 const availableCohorts = computed(() => {
@@ -400,21 +391,54 @@ const filteredLessons = computed(() =>
 
 const hasLessons = computed(() => filteredLessons.value.length > 0)
 
-// Set of "dayOfWeek|startTime" strings for valid swap targets
-const validSlotKeys = computed(() =>
-  new Set(validSlots.value.map(s => `${s.dayOfWeek}|${s.startTime.substring(0, 5)}`))
-)
+// Map "DAY|HH:MM" → ValidSlot[] — array so multiple slots per cell don't overwrite each other
+const validSlotMap = computed(() => {
+  const map = new Map<string, ValidSlot[]>()
+  for (const s of validSlots.value) {
+    const key = `${s.dayOfWeek}|${s.startTime.substring(0, 5)}`
+    const existing = map.get(key)
+    if (existing) existing.push(s)
+    else map.set(key, [s])
+  }
+  return map
+})
 
-// ── Helpers ────────────────────────────────────────────────────────
+function getSlotsForCell(day: string, blockStart: string): ValidSlot[] {
+  return validSlotMap.value.get(`${day}|${blockStart}`) ?? []
+}
+
+// Cell has at least one empty-slot move (no lesson displaced)
+function hasEmptySlot(day: string, blockStart: string): boolean {
+  return getSlotsForCell(day, blockStart).some(s => !s.isSwap)
+}
+
+// Cell has only swap options (no empty slot) — shown in orange
+function hasSwapSlot(day: string, blockStart: string): boolean {
+  const slots = getSlotsForCell(day, blockStart)
+  return slots.length > 0 && slots.every(s => s.isSwap)
+}
+
+function cellClass(day: string, blockStart: string): string {
+  const slots = getSlotsForCell(day, blockStart)
+  if (slots.length === 0) return ''
+  return slots.some(s => !s.isSwap)
+    ? 'bg-green-50 ring-1 ring-inset ring-green-300 cursor-pointer'
+    : 'bg-orange-50 ring-1 ring-inset ring-orange-300 cursor-pointer'
+}
+
+function handleCellClick(day: string, blockStart: string): void {
+  const slots = getSlotsForCell(day, blockStart)
+  if (slots.length === 0) return
+  // Prefer empty-slot move over swap; slots is non-empty so [0] is always defined
+  const emptySlot = slots.find(s => !s.isSwap)
+  pendingSwap.value = emptySlot !== undefined ? emptySlot : (slots[0] as ValidSlot)
+}
+
 function getCellLessons(day: string, blockStart: string) {
   return filteredLessons.value.filter(l => {
     const slotStart = (l.timeslot?.startTime ?? '').substring(0, 5)
     return l.timeslot?.dayOfWeek === day && slotStart === blockStart
   })
-}
-
-function isValidSwapTarget(day: string, blockStart: string): boolean {
-  return validSlotKeys.value.has(`${day}|${blockStart}`)
 }
 
 function yearColorClass(year: number): string {
@@ -432,12 +456,8 @@ function dayLabel(day?: string): string {
   return days.find(d => d.value === day)?.label ?? day ?? ''
 }
 
-// ── Permutation actions ────────────────────────────────────────────
 function selectLesson(lesson: LessonAssignment) {
-  if (selectedLesson.value?.id === lesson.id) {
-    clearSelection()
-    return
-  }
+  if (selectedLesson.value?.id === lesson.id) { clearSelection(); return }
   selectedLesson.value = lesson
   validSlots.value = []
   slotsCalculated.value = false
@@ -456,14 +476,9 @@ async function calculateValidSlots() {
   slotsCalculated.value = false
   try {
     validSlots.value = await permutationService.getValidSlots(
-      selectedLesson.value.id,
-      selectedYear.value,
-      selectedSemester.value,
-    )
+      selectedLesson.value.id, selectedYear.value, selectedSemester.value)
     slotsCalculated.value = true
-    if (validSlots.value.length === 0) {
-      toast.info('Nenhum slot válido encontrado para esta aula.')
-    }
+    if (validSlots.value.length === 0) toast.info('Nenhuma permutação válida encontrada.')
   } catch {
     toast.error('Erro ao calcular permutações.')
   } finally {
@@ -471,22 +486,18 @@ async function calculateValidSlots() {
   }
 }
 
-function confirmSwap(day: string, blockStart: string) {
-  const slot = validSlots.value.find(
-    s => s.dayOfWeek === day && s.startTime.substring(0, 5) === blockStart
-  )
-  if (slot) pendingSwap.value = slot
-}
-
 async function handleApplySwap() {
   if (!selectedLesson.value || !pendingSwap.value) return
   applyingSwap.value = true
   try {
-    await permutationService.applySwap(selectedLesson.value.id, pendingSwap.value.timeslotId, pendingSwap.value.roomId)
-    toast.success('Permutação aplicada com sucesso!')
+    await permutationService.applySwap(
+      selectedLesson.value.id,
+      pendingSwap.value.timeslotId,
+      pendingSwap.value.swapWithId,
+    )
+    toast.success(pendingSwap.value.isSwap ? 'Aulas trocadas com sucesso!' : 'Aula movida com sucesso!')
     pendingSwap.value = null
     clearSelection()
-    // Reload timetable to reflect the change
     await timetableStore.loadForPeriod(selectedYear.value, selectedSemester.value)
   } catch {
     toast.error('Erro ao aplicar permutação.')
@@ -495,7 +506,6 @@ async function handleApplySwap() {
   }
 }
 
-// ── Generate ───────────────────────────────────────────────────────
 async function handleGenerate() {
   showConfirmModal.value = false
   selectedCohort.value = ''

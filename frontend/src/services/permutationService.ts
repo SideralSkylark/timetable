@@ -5,8 +5,10 @@ export interface ValidSlot {
   dayOfWeek: string
   startTime: string
   endTime: string
-  roomId: number
-  roomName: string
+  isSwap: boolean
+  swapWithId: number | null       // ScheduledClass.id of the displaced lesson
+  swapWithSubject: string | null  // subject name for display
+  swapWithCohort: string | null   // cohort display name for display
 }
 
 export const permutationService = {
@@ -16,9 +18,7 @@ export const permutationService = {
     semester: number,
   ): Promise<ValidSlot[]> => {
     const res = await api.post<ValidSlot[]>('/v1/permutations/valid-slots', {
-      scheduledClassId,
-      academicYear,
-      semester,
+      scheduledClassId, academicYear, semester,
     })
     return res.data
   },
@@ -26,12 +26,12 @@ export const permutationService = {
   applySwap: async (
     scheduledClassId: number,
     targetTimeslotId: number,
-    targetRoomId: number,
+    swapWithId: number | null,
   ): Promise<void> => {
     await api.post('/v1/permutations/apply', {
       scheduledClassId,
       targetTimeslotId,
-      targetRoomId,
+      swapWithId,   // null = move to empty slot
     })
   },
 }
