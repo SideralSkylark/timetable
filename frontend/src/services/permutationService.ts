@@ -13,6 +13,14 @@ export interface ValidSlot {
   roomId: number          // ← NOVO
 }
 
+export interface CohortSwapCandidate {
+  scheduledClassId: number
+  subjectName: string
+  dayOfWeek: string
+  startTime: string
+  roomName: string
+}
+
 export const permutationService = {
   getValidSlots: async (
     scheduledClassId: number,
@@ -36,6 +44,27 @@ export const permutationService = {
       targetTimeslotId,
       targetRoomId,          // ← NOVO
       swapWithId,
+    })
+  },
+
+  getCohortSwapCandidates: async (
+    scheduledClassId: number,
+    academicYear: number,
+    semester: number,
+  ): Promise<CohortSwapCandidate[]> => {
+    const res = await api.post<CohortSwapCandidate[]>('/v1/permutations/cohort-swap/candidates', {
+      scheduledClassId, academicYear, semester,
+    })
+    return res.data
+  },
+
+  applyCohortSwap: async (
+    scheduledClassIdA: number,
+    scheduledClassIdB: number,
+  ): Promise<void> => {
+    await api.post('/v1/permutations/cohort-swap/apply', {
+      scheduledClassIdA,
+      scheduledClassIdB,
     })
   },
 }
