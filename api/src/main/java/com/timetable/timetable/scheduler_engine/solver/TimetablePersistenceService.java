@@ -1,6 +1,7 @@
 package com.timetable.timetable.scheduler_engine.solver;
 
 import com.timetable.timetable.domain.schedule.entity.*;
+import com.timetable.timetable.domain.schedule.repository.ScheduledClassRepository;
 import com.timetable.timetable.domain.schedule.repository.TimetableRepository;
 import com.timetable.timetable.scheduler_engine.domain.TimetableSolution;
 import com.timetable.timetable.scheduler_engine.mapper.PersistenceMapper;
@@ -22,6 +23,7 @@ public class TimetablePersistenceService {
 
     private final TimetableRepository timetableRepository;
     private final PersistenceMapper persistenceMapper;
+    private final ScheduledClassRepository scheduledClassRepository;
 
     @Transactional
     public Timetable saveSolution(TimetableSolution solution) {
@@ -31,22 +33,29 @@ public class TimetablePersistenceService {
         log.info("Persisting timetable {}.{} — {} lessons ({} unassigned)",
                 year, semester, solution.getTotalLessons(), solution.getUnassignedLessons());
 
-        timetableRepository.deleteByAcademicYearAndSemester(year, semester);
+        // Reutiliza o timetable existente (criado pelo PreSolverService)
+        // ou cria um novo se não existir
+        Timetable timetable = timetableRepository
+                .findByAcademicYearAndSemester(year, semester)
+                .orElseGet(() -> timetableRepository.save(
+                        Timetable.builder()
+                                .academicYear(year)
+                                .semester(semester)
+                                .status(TimetableStatus.DRAFT)
+                                .build()));
 
-        Timetable timetable = Timetable.builder()
-                .academicYear(year)
-                .semester(semester)
-                .status(TimetableStatus.DRAFT)
-                .build();
+        // Apaga apenas os ScheduledClass NÃO pinned — preserva os pinned da Simulação
+        scheduledClassRepository.deleteByTimetableAndPinnedFalse(timetable);
 
+        // Persiste os novos ScheduledClass do solver (todos não-pinned)
         List<ScheduledClass> classes = persistenceMapper.convertToScheduledClasses(solution, timetable);
-        timetable.setScheduledClasses(classes);
+        scheduledClassRepository.saveAll(classes);
 
+        timetable.setStatus(TimetableStatus.DRAFT);
         Timetable saved = timetableRepository.save(timetable);
 
         log.info("Saved timetable id={} for {}.{} with {} scheduled classes",
                 saved.getId(), year, semester, classes.size());
-
         return saved;
     }
 }

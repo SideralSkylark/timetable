@@ -32,6 +32,8 @@ public class TeacherInfo {
      * Email address (optional, for reporting)
      */
     private String email;
+
+    private boolean simulationTeam;
     
     @Override
     public boolean equals(Object o) {

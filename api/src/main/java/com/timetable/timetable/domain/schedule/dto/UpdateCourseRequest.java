@@ -7,15 +7,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record UpdateCourseRequest(
-    @NotBlank(message = "Course name must not be empty.") 
-    String name,
+        @NotBlank(message = "Course name must not be empty.") String name,
 
-    @NotNull(message = "Corse coordinator no specified.")
-    Long coordinatorId,
+        @NotNull(message = "Corse coordinator no specified.") Long coordinatorId,
 
-    @Positive(message = "Course span must be positive")
-    Integer years,
+        @Positive(message = "Course span must be positive") Integer years,
 
-    Map<Integer, Integer> expectedCohortsPerYear
+        Map<Integer, Integer> expectedCohortsPerYear,
+
+        boolean hasBusinessSimulation
+
 ) {
 }

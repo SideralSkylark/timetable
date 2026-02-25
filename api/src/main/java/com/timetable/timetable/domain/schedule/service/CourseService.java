@@ -51,6 +51,7 @@ public class CourseService {
                 .name(createRequest.name())
                 .coordinator(coordinator)
                 .years(years)
+                .hasBusinessSimulation(createRequest.hasBusinessSimulation())
                 .expectedCohortsPerAcademicYear(cohorts)
                 .build();
 
@@ -85,6 +86,7 @@ public class CourseService {
 
         course.setName(updateRequest.name());
         course.setCoordinator(coordinator);
+        course.setHasBusinessSimulation(updateRequest.hasBusinessSimulation());
 
         if (updateRequest.years() != null) {
             course.setYears(updateRequest.years());

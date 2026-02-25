@@ -12,6 +12,7 @@ public record CourseResponse (
     String coordinatorName,
     int years,
     Map<Integer, Integer> expectedCohortsPerYear,
+    boolean hasBusinessSimulation,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -23,6 +24,7 @@ public record CourseResponse (
             course.getCoordinator().getUsername(),
             course.getYears(),
             course.getExpectedCohortsPerAcademicYear(),
+            course.isHasBusinessSimulation(),
             course.getCreatedAt(),
             course.getUpdatedAt()
         );

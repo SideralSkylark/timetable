@@ -1,11 +1,14 @@
 package com.timetable.timetable.domain.schedule.entity;
 
+import java.time.DayOfWeek;
 import java.util.Set;
 
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -48,13 +51,16 @@ public class Subject {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
-    
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "subject_teachers",
-        joinColumns = @JoinColumn(name = "subject_id"),
-        inverseJoinColumns = @JoinColumn(name = "teacher_id")
-    )
-    private Set<ApplicationUser> eligibleTeachers;
-}
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "subject_teachers", joinColumns = @JoinColumn(name = "subject_id"), inverseJoinColumns = @JoinColumn(name = "teacher_id"))
+    private Set<ApplicationUser> eligibleTeachers;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean fixedDaySession = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private DayOfWeek fixedDayOfWeek;
+}

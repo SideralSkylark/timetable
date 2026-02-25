@@ -40,16 +40,18 @@ public class TimetableConstraintProvider implements ConstraintProvider {
     /**
      * HC1: A teacher cannot teach two lessons at the same time.
      */
-    private Constraint teacherConflict(ConstraintFactory factory) {
-        return factory.forEachUniquePair(
-                LessonAssignment.class,
-                Joiners.equal(LessonAssignment::getTeacher),
-                Joiners.equal(LessonAssignment::getTimeslot))
-                .filter((lesson1, lesson2) -> lesson1.getTimeslot() != null &&
-                        lesson1.getTeacher() != null)
-                .penalize(HardSoftScore.ONE_HARD)
-                .asConstraint("Teacher conflict");
-    }
+private Constraint teacherConflict(ConstraintFactory factory) {
+    return factory.forEachUniquePair(
+            LessonAssignment.class,
+            Joiners.equal(LessonAssignment::getTeacher),
+            Joiners.equal(LessonAssignment::getTimeslot))
+            .filter((l1, l2) ->
+                    l1.getTimeslot() != null &&
+                    l1.getTeacher() != null &&
+                    !l1.isSimulationTeam())  // ← "A Equipa" pode estar em paralelo
+            .penalize(HardSoftScore.ONE_HARD)
+            .asConstraint("Teacher conflict");
+}
 
     /**
      * HC2: A room cannot host two lessons at the same time.
@@ -132,6 +134,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 Joiners.equal(LessonAssignment::getSubject))
                 .filter((l1, l2) -> l1.getTimeslot() != null &&
                         l2.getTimeslot() != null &&
+                        !l1.isFixedDaySession() &&
                         isSameDay(l1, l2) &&
                         areConsecutive(l1, l2))
                 .penalize(HardSoftScore.ONE_HARD)

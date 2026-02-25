@@ -234,6 +234,7 @@ public class TimetableSolutionMapper {
                     .blockNumber(0) // block number not needed for permutation validation
                     .timeslot(timeslot)
                     .room(room)
+                    .pinned(sc.isPinned())
                     .build();
 
             lessons.add(lesson);
@@ -255,7 +256,7 @@ public class TimetableSolutionMapper {
     // ENTITY → INFO CONVERSIONS
     // ========================================
 
-    private CohortSubjectInfo toCohortSubjectInfo(CohortSubject cs) {
+    public CohortSubjectInfo toCohortSubjectInfo(CohortSubject cs) {
         return CohortSubjectInfo.builder()
                 .id(cs.getId())
                 .cohort(toCohortInfo(cs.getCohort()))
@@ -283,6 +284,7 @@ public class TimetableSolutionMapper {
                 .credits(subject.getCredits())
                 .targetYear(subject.getTargetYear())
                 .targetSemester(subject.getTargetSemester())
+                .fixedDaySession(subject.isFixedDaySession()) // ← NOVO
                 .build();
     }
 
@@ -292,6 +294,7 @@ public class TimetableSolutionMapper {
                 .name(teacher.getUsername())
                 .fullName(teacher.getUsername())
                 .email(teacher.getEmail())
+                .simulationTeam(teacher.isSimulationTeam())
                 .build();
     }
 

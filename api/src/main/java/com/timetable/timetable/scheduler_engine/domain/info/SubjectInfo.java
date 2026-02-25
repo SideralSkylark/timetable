@@ -37,6 +37,8 @@ public class SubjectInfo {
      * Target semester (1 or 2)
      */
     private int targetSemester;
+
+    private boolean fixedDaySession;
     
     @Override
     public boolean equals(Object o) {

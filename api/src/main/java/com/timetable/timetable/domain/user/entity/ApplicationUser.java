@@ -57,6 +57,10 @@ public class ApplicationUser implements UserDetails {
     )
     private Set<UserRoleEntity> roles = new HashSet<>();
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean simulationTeam = false;
+
     // ====== DOMAIN LOGIC ======
 
     public boolean addRole(UserRoleEntity role) {

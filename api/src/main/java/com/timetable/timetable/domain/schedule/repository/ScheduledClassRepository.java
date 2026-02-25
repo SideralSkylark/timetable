@@ -27,6 +27,27 @@ public interface ScheduledClassRepository extends JpaRepository<ScheduledClass, 
     })
     Page<ScheduledClass> findAll(Pageable pageable);
 
+    List<ScheduledClass> findByTimetableAndPinnedTrue(Timetable timetable);
+
+    void deleteByTimetableAndPinnedFalse(Timetable timetable);
+
+    boolean existsByCohortSubjectAndTimeslot(CohortSubject cohortSubject, Timeslot timeslot);
+
+    List<ScheduledClass> findByTimetableAndTimeslot(Timetable timetable, Timeslot timeslot);
+
+    @Query("""
+                SELECT sc FROM ScheduledClass sc
+                JOIN FETCH sc.cohortSubject cs
+                JOIN FETCH cs.cohort co
+                JOIN FETCH co.course
+                JOIN FETCH cs.subject su
+                JOIN FETCH cs.assignedTeacher teacher
+                JOIN FETCH sc.timeslot ts
+                JOIN FETCH sc.room r
+                WHERE sc.timetable = :timetable
+            """)
+    List<ScheduledClass> findByTimetableWithAllDetails(@Param("timetable") Timetable timetable);
+
     @EntityGraph(attributePaths = {
             "cohortSubject",
             "cohortSubject.cohort",

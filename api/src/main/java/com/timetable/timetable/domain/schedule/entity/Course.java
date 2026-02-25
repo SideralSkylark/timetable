@@ -63,6 +63,10 @@ public class Course {
     @Column(name = "expected_cohorts", nullable = false)
     private Map<Integer, Integer> expectedCohortsPerAcademicYear;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean hasBusinessSimulation = false;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

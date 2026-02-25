@@ -2,6 +2,7 @@ package com.timetable.timetable.domain.schedule.entity;
 
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -33,27 +34,30 @@ public class ScheduledClass {
     private CohortSubject cohortSubject;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "timetable_id") 
+    @JoinColumn(name = "timetable_id")
     private Timetable timetable;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private Room room;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "timeslot_id")
     private Timeslot timeslot;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean pinned = false;
+
     public Subject getSubject() {
         return cohortSubject.getSubject();
     }
-    
+
     public ApplicationUser getTeacher() {
         return cohortSubject.getAssignedTeacher();
     }
-    
+
     public Cohort getCohort() {
         return cohortSubject.getCohort();
     }
 }
-

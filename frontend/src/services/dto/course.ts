@@ -5,6 +5,7 @@ export interface CourseListResponse {
   coordinatorName: string
   years: number
   expectedCohortsPerYear: Record<number, number>
+  hasBusinessSimulation: boolean
   subjectCount: number
   createdAt: string
   updatedAt: string
@@ -17,13 +18,9 @@ export interface CourseResponse {
   coordinatorName: string
   years: number
   expectedCohortsPerYear: Record<number, number>
+  hasBusinessSimulation: boolean   // ← NOVO
   createdAt: string
   updatedAt: string
-}
-
-export interface CoordinatorOption {
-  id: number
-  name: string
 }
 
 export interface CreateCourseRequest {
@@ -31,6 +28,7 @@ export interface CreateCourseRequest {
   coordinatorId: number
   years: number
   expectedCohortsPerYear: Record<number, number>
+  hasBusinessSimulation: boolean   // ← NOVO
 }
 
 export interface UpdateCourseRequest {
@@ -38,4 +36,11 @@ export interface UpdateCourseRequest {
   coordinatorId: number
   years: number
   expectedCohortsPerYear: Record<number, number>
+  hasBusinessSimulation: boolean   // ← NOVO
 }
+
+export interface CoordinatorOption {
+  id: number
+  name: string
+}
+

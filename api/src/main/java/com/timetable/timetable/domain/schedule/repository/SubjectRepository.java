@@ -78,4 +78,7 @@ public interface SubjectRepository extends JpaRepository<Subject, Long> {
 
     @Query("SELECT s.targetYear, COUNT(s) FROM Subject s WHERE s.course.id = :courseId GROUP BY s.targetYear")
     List<Object[]> countSubjectsByYearForCourse(@Param("courseId") Long courseId);
+
+    boolean existsByNameAndCourseAndTargetYearAndTargetSemester(
+            String name, Course course, int targetYear, int targetSemester);
 }

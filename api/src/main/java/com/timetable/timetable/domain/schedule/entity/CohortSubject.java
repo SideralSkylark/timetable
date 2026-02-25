@@ -48,6 +48,9 @@ public class CohortSubject {
 
     /** 2 sessões por semana — política institucional */
     public int getLessonBlocksPerWeek() {
+        if (subject != null && subject.isFixedDaySession()) {
+            return 3;
+        }
         return AcademicPolicy.SESSIONS_PER_WEEK;
     }
 
@@ -70,6 +73,9 @@ public class CohortSubject {
     public boolean isTeacherEligible() {
         // Phantom teachers are always considered eligible
         if (assignedTeacher.getUsername().startsWith("PHANTOM_")) {
+            return true;
+        }
+        if (assignedTeacher.isSimulationTeam()) {
             return true;
         }
         return subject.getEligibleTeachers().contains(assignedTeacher);

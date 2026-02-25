@@ -25,4 +25,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     @Query("SELECT c FROM Course c LEFT JOIN FETCH c.expectedCohortsPerAcademicYear WHERE c.id = :id")
     Optional<Course> findByIdWithCohorts(Long id);
+
+    List<Course> findByHasBusinessSimulationTrue();
 }
