@@ -11,9 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
 import com.timetable.timetable.domain.schedule.entity.Cohort;
+import com.timetable.timetable.domain.schedule.entity.CohortStatus;
 import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.exception.CohortNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.CohortRepository;
+import com.timetable.timetable.domain.schedule.repository.RoomRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.service.UserService;
@@ -28,6 +30,7 @@ public class CohortService {
     private final CohortRepository cohortRepository;
     private final CourseService courseService;
     private final UserService userService;
+    private final RoomRepository roomRepository;
 
     @Transactional
     public Cohort createCohort(CreateCohortRequest createRequest) {
@@ -98,6 +101,30 @@ public class CohortService {
 
         log.info("Cohort {} created with identifier: {}", saved.getId(), saved.getDisplayName());
 
+        return saved;
+    }
+
+    @Transactional
+    public Cohort confirmCohort(Long id, int studentCount) {
+        Cohort cohort = getById(id);
+
+        if (cohort.getStatus() == CohortStatus.CONFIRMED) {
+            throw new IllegalStateException("Turma já confirmada");
+        }
+
+        // Valida contra capacidade máxima das salas
+        int maxCapacity = roomRepository.findMaxCapacity();
+        if (studentCount > maxCapacity) {
+            throw new IllegalArgumentException(
+                    "Número de alunos (%d) excede a capacidade máxima das salas (%d). Considere dividir em duas turmas."
+                            .formatted(studentCount, maxCapacity));
+        }
+
+        cohort.setEstimatedStudentCount(studentCount);
+        cohort.setStatus(CohortStatus.CONFIRMED);
+
+        Cohort saved = cohortRepository.save(cohort);
+        log.info("Cohort {} confirmed with {} students", id, studentCount);
         return saved;
     }
 

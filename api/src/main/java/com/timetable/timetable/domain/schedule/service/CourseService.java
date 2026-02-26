@@ -3,6 +3,7 @@ package com.timetable.timetable.domain.schedule.service;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.timetable.timetable.config.BusinessSimulationInitializer;
 import com.timetable.timetable.domain.schedule.dto.CreateCourseRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCourseRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
+    private final BusinessSimulationInitializer businessSimulationInitializer;
 
     public Course createCourse(CreateCourseRequest createRequest) {
         log.debug("Creating course");
@@ -57,6 +59,10 @@ public class CourseService {
 
         Course saved = courseRepository.save(course);
 
+        if (saved.isHasBusinessSimulation()) {
+            businessSimulationInitializer.initSimulationForCourse(saved);
+        }
+
         log.info("Course {} created", saved.getId());
         return saved;
     }
@@ -86,6 +92,8 @@ public class CourseService {
 
         course.setName(updateRequest.name());
         course.setCoordinator(coordinator);
+
+        boolean wasSimulation = course.isHasBusinessSimulation();
         course.setHasBusinessSimulation(updateRequest.hasBusinessSimulation());
 
         if (updateRequest.years() != null) {
@@ -97,6 +105,10 @@ public class CourseService {
         }
 
         Course updated = courseRepository.save(course);
+
+        if (!wasSimulation && updated.isHasBusinessSimulation()) {
+            businessSimulationInitializer.initSimulationForCourse(updated);
+        }
 
         log.info("Course {} updated", id);
         return updated;

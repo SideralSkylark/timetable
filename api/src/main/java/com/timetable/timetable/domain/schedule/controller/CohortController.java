@@ -4,6 +4,7 @@ import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.dto.CohortListResponse;
 import com.timetable.timetable.domain.schedule.dto.CohortResponse;
+import com.timetable.timetable.domain.schedule.dto.ConfirmCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
 import com.timetable.timetable.domain.schedule.query.CohortQueryService;
@@ -14,6 +15,7 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,25 +36,31 @@ public class CohortController {
     @PostMapping
     public ResponseEntity<ApiResponse<CohortResponse>> create(@Valid @RequestBody CreateCohortRequest request) {
         return ResponseFactory.ok(
-            CohortResponse.from(cohortService.createCohort(request)),
-            "Cohort created successfully."
-        );
+                CohortResponse.from(cohortService.createCohort(request)),
+                "Cohort created successfully.");
+    }
+
+    @PatchMapping("/{id}/confirm")
+    public ResponseEntity<ApiResponse<CohortResponse>> confirm(
+            @PathVariable Long id,
+            @Valid @RequestBody ConfirmCohortRequest request) {
+        return ResponseFactory.ok(
+                CohortResponse.from(cohortService.confirmCohort(id, request.studentCount())),
+                "Ingressos confirmados com sucesso.");
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<CohortListResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(cohortQueryService.findAll(pageable)),
-            "Cohorts fetched successfully."
-        );
+                new PagedModel<>(cohortQueryService.findAll(pageable)),
+                "Cohorts fetched successfully.");
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CohortResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            CohortResponse.from(cohortService.getById(id)),
-            "Cohort fetched successfully."
-        );
+                CohortResponse.from(cohortService.getById(id)),
+                "Cohort fetched successfully.");
     }
 
     @PutMapping("/{id}")
@@ -60,9 +68,8 @@ public class CohortController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateCohortRequest request) {
         return ResponseFactory.ok(
-            CohortResponse.from(cohortService.updateCohort(id, request)),
-            "Cohort updated successfully."
-        );
+                CohortResponse.from(cohortService.updateCohort(id, request)),
+                "Cohort updated successfully.");
     }
 
     @DeleteMapping("/{id}")
@@ -71,4 +78,3 @@ public class CohortController {
         return ResponseEntity.noContent().build();
     }
 }
-

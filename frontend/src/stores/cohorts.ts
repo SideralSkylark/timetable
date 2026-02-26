@@ -12,6 +12,7 @@ export const useCohortStore = defineStore('cohorts', {
   state: () => ({
     cohortsPage: null as Page<CohortListResponse> | null,
     selectedCohort: null as CohortResponse | null,
+    maxRoomCapacity: null as number | null,
     loading: false,
     error: null as string | null,
   }),
@@ -24,6 +25,28 @@ export const useCohortStore = defineStore('cohorts', {
         this.cohortsPage = await cohortService.getAll(page, size)
       } catch (err: any) {
         this.error = err.response?.data?.message || 'Erro ao carregar turmas'
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async fetchMaxRoomCapacity() {
+      if (this.maxRoomCapacity !== null) return // cache — só busca uma vez
+      try {
+        this.maxRoomCapacity = await cohortService.getMaxRoomCapacity()
+      } catch {
+        this.maxRoomCapacity = 200 // fallback seguro
+      }
+    },
+
+    async confirmCohort(id: number, studentCount: number) {
+      this.loading = true
+      this.error = null
+      try {
+        return await cohortService.confirm(id, studentCount)
+      } catch (err: any) {
+        this.error = err.response?.data?.message || 'Erro ao confirmar ingressos'
+        throw err
       } finally {
         this.loading = false
       }

@@ -1,6 +1,6 @@
+// cohort.ts
 export type CohortStatus = 'ESTIMATED' | 'CONFIRMED' | 'ACTIVE' | 'ARCHIVED'
 
-// Used by GET /v1/cohorts (list)
 export interface CohortListResponse {
   id: number
   year: number
@@ -13,7 +13,6 @@ export interface CohortListResponse {
   status: CohortStatus
 }
 
-// Used by GET /v1/cohorts/:id, POST, PUT
 export interface CohortResponse {
   id: number
   year: number
@@ -22,6 +21,8 @@ export interface CohortResponse {
   semester: number
   courseId: number
   courseName: string
+  studentCount: number
+  status: CohortStatus
   studentIds: number[]
 }
 
@@ -40,4 +41,9 @@ export interface UpdateCohortRequest {
   academicYear: number
   semester: number
   studentIds: number[]
+}
+
+// NOVO — para confirmar ingressos
+export interface ConfirmCohortRequest {
+  studentCount: number  // número real de alunos
 }

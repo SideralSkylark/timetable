@@ -50,6 +50,10 @@ public class RoomService {
         return saved;
     }
 
+    public int findMaxCapacity() {
+        return roomRepository.findMaxCapacity();
+    }
+
     @Transactional
     public Page<Room> getAll(Pageable pageable) {
         return roomRepository.findAll(pageable);

@@ -51,13 +51,12 @@ public class BusinessSimulationInitializer implements CommandLineRunner {
                                 newRole.setRole(UserRole.USER);
                                 return roleRepository.save(newRole);
                             });
-                                    UserRoleEntity teacherRole = roleRepository.findByRole(UserRole.TEACHER)
+                    UserRoleEntity teacherRole = roleRepository.findByRole(UserRole.TEACHER)
                             .orElseGet(() -> {
                                 UserRoleEntity newRole = new UserRoleEntity();
                                 newRole.setRole(UserRole.TEACHER);
                                 return roleRepository.save(newRole);
                             });
-
 
                     return userRepository.save(
                             ApplicationUser.builder()
@@ -68,6 +67,31 @@ public class BusinessSimulationInitializer implements CommandLineRunner {
                                     .simulationTeam(true)
                                     .build());
                 });
+    }
+
+    public void initSimulationForCourse(Course course) {
+        ensureSimulationTeamUser();
+        initSimulacaoForCourse("Simulação Empresarial I", 3, 2, course);
+        initSimulacaoForCourse("Simulação Empresarial II", 4, 1, course);
+    }
+
+    private void initSimulacaoForCourse(String name, int targetYear, int targetSemester, Course course) {
+        boolean exists = subjectRepository.existsByNameAndCourseAndTargetYearAndTargetSemester(
+                name, course, targetYear, targetSemester);
+        if (exists) {
+            log.debug("Already exists: {} for {}", name, course.getName());
+            return;
+        }
+        subjectRepository.save(Subject.builder()
+                .name(name)
+                .course(course)
+                .targetYear(targetYear)
+                .targetSemester(targetSemester)
+                .credits(5)
+                .fixedDaySession(true)
+                .fixedDayOfWeek(DayOfWeek.WEDNESDAY)
+                .build());
+        log.info("Initialized: {} for course {}", name, course.getName());
     }
 
     private void initSimulacao(String name, int targetYear, int targetSemester) {
@@ -92,8 +116,7 @@ public class BusinessSimulationInitializer implements CommandLineRunner {
                     .course(course)
                     .targetYear(targetYear)
                     .targetSemester(targetSemester)
-                    .credits(0)
-                    // .lessonBlocksPerWeek(3)
+                    .credits(5)
                     .fixedDaySession(true)
                     .fixedDayOfWeek(DayOfWeek.WEDNESDAY)
                     .build());

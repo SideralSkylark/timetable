@@ -31,25 +31,29 @@ public class RoomController {
     @PostMapping
     public ResponseEntity<ApiResponse<RoomResponse>> create(@Valid @RequestBody CreateRoomRequest request) {
         return ResponseFactory.ok(
-            RoomResponse.from(roomService.createRoom(request)),
-            "Room created successfully."
-        );
+                RoomResponse.from(roomService.createRoom(request)),
+                "Room created successfully.");
+    }
+
+    @GetMapping("/max-capacity")
+    public ResponseEntity<ApiResponse<Integer>> getMaxCapacity() {
+        return ResponseFactory.ok(
+                roomService.findMaxCapacity(),
+                "Max capacity fetched.");
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<RoomResponse>>> getAll(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(roomService.getAll(pageable).map(RoomResponse::from)),
-            "Rooms fetched successfully."
-        );
+                new PagedModel<>(roomService.getAll(pageable).map(RoomResponse::from)),
+                "Rooms fetched successfully.");
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RoomResponse>> getById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            RoomResponse.from(roomService.getById(id)),
-            "Room fetched successfully."
-        );
+                RoomResponse.from(roomService.getById(id)),
+                "Room fetched successfully.");
     }
 
     @PutMapping("/{id}")
@@ -57,9 +61,8 @@ public class RoomController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateRoomRequest request) {
         return ResponseFactory.ok(
-            RoomResponse.from(roomService.updateRoom(id, request)),
-            "Room updated successfully."
-        );
+                RoomResponse.from(roomService.updateRoom(id, request)),
+                "Room updated successfully.");
     }
 
     @DeleteMapping("/{id}")
@@ -68,4 +71,3 @@ public class RoomController {
         return ResponseEntity.noContent().build();
     }
 }
-
