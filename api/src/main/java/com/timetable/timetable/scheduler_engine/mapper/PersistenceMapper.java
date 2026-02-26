@@ -54,6 +54,7 @@ public class PersistenceMapper {
         int skippedCount = 0;
         
         for (LessonAssignment lesson : solution.getLessonAssignments()) {
+            if (lesson.isPinned()) continue;
             // Skip unassigned lessons
             if (lesson.getTimeslot() == null || lesson.getRoom() == null) {
                 log.warn("Skipping unassigned lesson: {} (block {})", 

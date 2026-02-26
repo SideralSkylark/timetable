@@ -47,8 +47,10 @@ public class TimetablePersistenceService {
         // Apaga apenas os ScheduledClass NÃO pinned — preserva os pinned da Simulação
         scheduledClassRepository.deleteByTimetableAndPinnedFalse(timetable);
 
-        // Persiste os novos ScheduledClass do solver (todos não-pinned)
-        List<ScheduledClass> classes = persistenceMapper.convertToScheduledClasses(solution, timetable);
+        // Converte APENAS os não-pinned — os pinned já estão na DB
+        List<ScheduledClass> classes = persistenceMapper.convertToScheduledClasses(
+                solution, timetable);
+
         scheduledClassRepository.saveAll(classes);
 
         timetable.setStatus(TimetableStatus.DRAFT);
