@@ -1,5 +1,5 @@
 // cohort.ts
-export type CohortStatus = 'ESTIMATED' | 'CONFIRMED' | 'ACTIVE' | 'ARCHIVED'
+export type CohortStatus = 'ESTIMATED' | 'CONFIRMED'
 
 export interface CohortListResponse {
   id: number
