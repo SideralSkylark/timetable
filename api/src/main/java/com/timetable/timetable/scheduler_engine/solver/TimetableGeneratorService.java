@@ -106,7 +106,7 @@ public class TimetableGeneratorService {
 
                 problem.getLessonAssignments().add(
                         LessonAssignment.builder()
-                                .id(sc.getId())
+                                .id(-sc.getId())
                                 .cohortSubject(solutionMapper.toCohortSubjectInfo(sc.getCohortSubject()))
                                 .blockNumber(0)
                                 .timeslot(timeslot)
