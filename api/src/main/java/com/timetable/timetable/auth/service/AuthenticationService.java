@@ -207,7 +207,7 @@ public class AuthenticationService {
 
 
     /**
-     * Resolves a list of role names (as strings) into corresponding {@link UserRoleEntity} objects.
+     *Resolves a list of role names (as strings) into corresponding {@link UserRoleEntity} objects.
      *
      * <p>This method:
      * <ul>

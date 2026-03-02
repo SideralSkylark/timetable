@@ -1,5 +1,7 @@
 package com.timetable.timetable.domain.schedule.entity;
 
+import com.timetable.timetable.domain.user.entity.ApplicationUser;
+
 /**
  * Centralized academic policies.
  *
@@ -11,13 +13,22 @@ public final class AcademicPolicy {
     /** Every discipline meets 2 sessions per week. */
     public static final int SESSIONS_PER_WEEK = 2;
 
-    /** Maximum weekly teaching hours per teacher (3 disciplines max). */
+    /**
+     * Deprecated. Maximum weekly teaching hours per teacher (3 disciplines max).
+     */
     public static final int WEEKLY_TEACHING_HOURS_LIMIT = 12;
 
     /** Weekly contact hours per discipline for teacher workload calculation. */
     public static final int WEEKLY_CONTACT_HOURS = 4;
 
     public static final int ESTIMATED_STUDENT_COUNT = 35;
+
+    public static int getWeeklyHoursLimit(ApplicationUser teacher) {
+        if (teacher.getTeacherType() == null) {
+            return WEEKLY_TEACHING_HOURS_LIMIT; // legacy fallback 
+        }
+        return teacher.getWeeklyHoursLimit();
+    }
 
     public static int calculateLessonBlocksPerWeek(int credits) {
         return SESSIONS_PER_WEEK;

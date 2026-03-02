@@ -2,6 +2,8 @@ package com.timetable.timetable.domain.user.dto;
 
 import java.util.List;
 
+import com.timetable.timetable.domain.schedule.entity.TeacherType;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,6 +21,8 @@ public record CreateUser(
     String password,
 
     @Size(min = 1, max = 3)
-    List<@NotBlank(message = "Role must not be blank") String> roles
+    List<@NotBlank(message = "Role must not be blank") String> roles,
+
+    TeacherType teacherType
 ) {
 }

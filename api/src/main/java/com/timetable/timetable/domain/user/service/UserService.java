@@ -48,7 +48,15 @@ public class UserService {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .roles(roles)
+                .teacherType(request.teacherType())
                 .build();
+
+        boolean isTeacher = request.roles().stream()
+                .anyMatch(r -> r.equalsIgnoreCase("TEACHER"));
+
+        if (isTeacher && request.teacherType() == null) {
+            throw new IllegalArgumentException("teacherType is required for teachers");
+        }
 
         userRepository.save(user);
         log.info("Created new user '{}' with roles {}", user.getUsername(), roles);
@@ -127,6 +135,7 @@ public class UserService {
 
         updateBasicFields(user, payload.username(), payload.email());
         user.setRoles(newRoles);
+        user.setTeacherType(payload.teacherType());
 
         userRepository.save(user);
         log.info("Admin updated user '{}' with roles {}", id, newRoles);

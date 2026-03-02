@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.timetable.timetable.domain.schedule.entity.TeacherType;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
@@ -50,16 +52,17 @@ public class ApplicationUser implements UserDetails {
 
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<UserRoleEntity> roles = new HashSet<>();
 
     @Column(nullable = false)
     @Builder.Default
     private boolean simulationTeam = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    @Builder.Default
+    private TeacherType teacherType = null; // when not a teacher
 
     // ====== DOMAIN LOGIC ======
 
@@ -113,12 +116,12 @@ public class ApplicationUser implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return (status != null)? true : false;
+        return (status != null) ? true : false;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return (status != null)? true : false;
+        return (status != null) ? true : false;
     }
 
     @Override
@@ -147,8 +150,10 @@ public class ApplicationUser implements UserDetails {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ApplicationUser user)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ApplicationUser user))
+            return false;
         return Objects.equals(email, user.email);
     }
 
@@ -156,5 +161,14 @@ public class ApplicationUser implements UserDetails {
     public int hashCode() {
         return Objects.hash(email);
     }
-}
 
+    // ===== Helper ========
+    public int getWeeklyHoursLimit() {
+        if (teacherType == null)
+            return 0;
+        return switch (teacherType) {
+            case FULL_TIME -> 24;
+            case PART_TIME -> 8;
+        };
+    }
+}

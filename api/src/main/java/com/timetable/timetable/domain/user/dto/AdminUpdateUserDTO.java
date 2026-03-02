@@ -2,6 +2,8 @@ package com.timetable.timetable.domain.user.dto;
 
 import java.util.List;
 
+import com.timetable.timetable.domain.schedule.entity.TeacherType;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -17,5 +19,7 @@ public record AdminUpdateUserDTO(
     @Email(message = "Email should be valid")
     String email,
     
-    List<@NotBlank (message = "Role must not be blank") String> roles
+    List<@NotBlank (message = "Role must not be blank") String> roles,
+
+    TeacherType teacherType
 ) {}

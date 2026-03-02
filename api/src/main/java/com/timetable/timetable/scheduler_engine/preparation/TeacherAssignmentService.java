@@ -106,7 +106,8 @@ public class TeacherAssignmentService {
                 username,
                 "phantom+" + UUID.randomUUID() + "@placeholder.temp",
                 "phantom123",
-                List.of("user", "teacher"));
+                List.of("user", "teacher"),
+                TeacherType.PART_TIME);
         log.warn("Created phantom teacher {}", username);
         return userService.createUser(request);
     }
@@ -137,8 +138,8 @@ public class TeacherAssignmentService {
     }
 
     private boolean fitsWithinLimit(ApplicationUser teacher, Map<Long, Integer> workload, int hoursNeeded) {
-        return workload.getOrDefault(teacher.getId(), 0) + hoursNeeded
-                <= AcademicPolicy.WEEKLY_TEACHING_HOURS_LIMIT;
+        int limit = AcademicPolicy.getWeeklyHoursLimit(teacher);
+        return workload.getOrDefault(teacher.getId(), 0) + hoursNeeded <= limit;
     }
 
     /**

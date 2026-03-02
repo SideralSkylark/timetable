@@ -9,6 +9,11 @@
 - TimeSlot(lesson assignment): aula planeada para uma disciplina a ser lecionada por docente x as horas y na sala z ao cohort A
 - Timetable: entidade que agrega as aulas a serem lecionadas em um periodo academico(ex: 2026 ou 2026 1 semestre)
 
+32 horas
+18 + 8
+16 horas por semana obrigatorio tempo inteiro
+parciais 8h semanais
+
 estudo autonomo como e calculado? (funcao da carga horaria)
 atribuir horarios mesmo sem corpo de docente suficiente (docentes fantasma)
 
