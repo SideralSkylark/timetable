@@ -16,6 +16,7 @@ import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.exception.CohortNotFoundException;
 import com.timetable.timetable.domain.schedule.repository.CohortRepository;
 import com.timetable.timetable.domain.schedule.repository.RoomRepository;
+import com.timetable.timetable.domain.schedule.repository.ScheduledClassRepository;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.service.UserService;
@@ -28,9 +29,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CohortService {
     private final CohortRepository cohortRepository;
+    private final CohortSubjectService cohortSubjectService;
     private final CourseService courseService;
     private final UserService userService;
     private final RoomRepository roomRepository;
+    private final ScheduledClassRepository scheduledClassRepository;
 
     @Transactional
     public Cohort createCohort(CreateCohortRequest createRequest) {
@@ -189,13 +192,13 @@ public class CohortService {
 
     @Transactional
     public void deleteCohort(Long id) {
-        log.debug("Deleting cohort {}", id);
         if (!cohortRepository.existsById(id)) {
-            log.warn("Cohort {} not found", id);
-            throw new CohortNotFoundException(
-                    String.format("Cohort with id %d not found", id));
+            throw new CohortNotFoundException(String.format("Cohort with id %d not found", id));
         }
-        cohortRepository.deleteById(id);
+
+        scheduledClassRepository.deleteByCohortId(id); // 1. scheduled_classes
+        cohortSubjectService.deleteByCohort(id); // 2. cohort_subjects
+        cohortRepository.deleteById(id); // 3. cohort (cohort_students vai junto)
 
         log.info("Cohort {} deleted", id);
     }

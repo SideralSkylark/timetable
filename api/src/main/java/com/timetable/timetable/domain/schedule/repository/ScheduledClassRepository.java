@@ -125,4 +125,8 @@ public interface ScheduledClassRepository extends JpaRepository<ScheduledClass, 
     List<ScheduledClass> findAllWithDetailsByPeriod(
             @Param("year") int year,
             @Param("semester") int semester);
+
+    @Modifying
+    @Query("DELETE FROM ScheduledClass sc WHERE sc.cohortSubject.cohort.id = :cohortId")
+    void deleteByCohortId(@Param("cohortId") Long cohortId);
 }
