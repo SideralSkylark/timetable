@@ -93,12 +93,12 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const dashboardRoutes = [
-  { name: 'DashboardHome', label: 'Início', icon: Home, roles: ['USER', 'ADMIN'] },
-  { name: 'Rooms', label: 'Salas', icon: Building, roles: ['ADMIN'] },
-  { name: 'Courses', label: 'Cursos', icon: School, roles: ['ADMIN'] },
-  { name: 'Cohorts', label: 'Turmas', icon: Users, roles: ['ADMIN'] },
-  { name: 'Users', label: 'Utilizadores', icon: Users, roles: ['ADMIN'] },
-  { name: 'Timetable', label: 'Horários', icon: CalendarDays, roles: ['ADMIN', 'COORDINATOR'] },
+  { name: 'DashboardHome', label: 'Início', icon: Home, roles: ['USER'] },
+  { name: 'Rooms', label: 'Salas', icon: Building, roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'Courses', label: 'Cursos', icon: School, roles: ['ADMIN', 'COORDINATOR'] },
+  { name: 'Cohorts', label: 'Turmas', icon: Users, roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'Users', label: 'Utilizadores', icon: Users, roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'Timetable', label: 'Horários', icon: CalendarDays, roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
 ]
 
 const allowedRoutes = computed(() => {

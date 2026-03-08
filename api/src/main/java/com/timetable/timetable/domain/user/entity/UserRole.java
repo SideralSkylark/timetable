@@ -5,7 +5,9 @@ public enum UserRole {
     STUDENT(2),
     TEACHER(3),
     COORDINATOR(4),
-    ADMIN(5);
+    ASISTENT(5),
+    DIRECTOR(6),
+    ADMIN(7);
 
     private final int priority;
 

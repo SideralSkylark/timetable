@@ -11,10 +11,12 @@ export interface JobStatusResponse {
 }
 
 export interface TimetableSolution {
+  id: number
   lessonAssignments: LessonAssignment[]
   score: string
   academicYear: number
   semester: number
+  status: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'PUBLISHED'
   identifier: string
   unassignedLessons: number
   totalLessons: number

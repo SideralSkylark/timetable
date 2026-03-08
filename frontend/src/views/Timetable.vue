@@ -79,6 +79,39 @@
             <Zap v-else class="w-4 h-4" />
             {{ timetableStore.generating ? 'A gerar...' : 'Gerar Horário' }}
           </button>
+          <!-- Template — junto ao botão "Gerar Horário" existente -->
+
+<!-- Badge de status -->
+<div v-if="timetableStore.solution" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border"
+  :class="{
+    'bg-yellow-50 text-yellow-700 border-yellow-200': timetableStatus === 'PENDING_APPROVAL',
+    'bg-green-50 text-green-700 border-green-200':    timetableStatus === 'APPROVED',
+    'bg-blue-50 text-blue-700 border-blue-200':       timetableStatus === 'PUBLISHED',
+    'bg-gray-50 text-gray-600 border-gray-200':       timetableStatus === 'DRAFT',
+  }">
+  {{ { DRAFT: 'Rascunho', PENDING_APPROVAL: 'Aguarda aprovação',
+       APPROVED: 'Aprovado', REJECTED: 'Rejeitado', PUBLISHED: 'Publicado' }[timetableStatus ?? 'DRAFT'] }}
+</div>
+
+<button v-if="canSubmit"  @click="timetableStore.submitForApproval()"
+  class="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-500 transition">
+  <Send class="w-4 h-4" /> Submeter
+</button>
+
+<button v-if="canApprove" @click="timetableStore.approve()"
+  class="flex items-center gap-2 px-5 py-2.5 bg-green-700 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition">
+  <CheckCircle class="w-4 h-4" /> Aprovar
+</button>
+
+<button v-if="canReject"  @click="timetableStore.reject()"
+  class="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-500 transition">
+  <XCircle class="w-4 h-4" /> Rejeitar
+</button>
+
+<button v-if="canPublish" @click="timetableStore.publish()"
+  class="flex items-center gap-2 px-5 py-2.5 bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition">
+  <Globe class="w-4 h-4" /> Publicar
+</button>
 
         </div>
       </div>
@@ -451,6 +484,14 @@ const loadingCohortSwaps = ref(false)
 const cohortSwapsCalculated = ref(false)
 const pendingCohortSwap = ref<CohortSwapCandidate | null>(null)
 const applyingCohortSwap = ref(false)
+
+// Script — computed baseados no status
+const timetableStatus = computed(() => timetableStore.solution?.status)
+const canSubmit  = computed(() => isAdmin.value && timetableStatus.value === 'DRAFT')
+const canApprove = computed(() => isAdmin.value && timetableStatus.value === 'PENDING_APPROVAL')
+const canReject  = computed(() => isAdmin.value && timetableStatus.value === 'PENDING_APPROVAL')
+const canPublish = computed(() => isAdmin.value && timetableStatus.value === 'APPROVED')
+const isPublished = computed(() => timetableStatus.value === 'PUBLISHED')
 
 // Importar o tipo novo
 

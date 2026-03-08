@@ -1,6 +1,6 @@
 package com.timetable.timetable.domain.schedule.entity;
 
 public enum TimetableStatus {
-    DRAFT, UNDER_REVIEW, APPROVED, PUBLISHED, ARCHIVED
+    DRAFT, PENDING_APPROVAL, APPROVED, PUBLISHED, ARCHIVED
 }
 

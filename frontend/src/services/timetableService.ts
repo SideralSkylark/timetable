@@ -31,4 +31,21 @@ export const timetableService = {
     const res = await api.get<JobStatusResponse>(`/v1/solver/${jobId}/status`)
     return res.data
   },
+
+  async submitForApproval(id: number) {
+    const { data } = await api.post(`/v1/timetables/${id}/submit`)
+    return data
+  },
+  async approve(id: number) {
+    const { data } = await api.post(`/v1/timetables/${id}/approve`)
+    return data
+  },
+  async reject(id: number) {
+    const { data } = await api.post(`/v1/timetables/${id}/reject`)
+    return data
+  },
+  async publish(id: number) {
+    const { data } = await api.post(`/v1/timetables/${id}/publish`)
+    return data
+  },
 }
