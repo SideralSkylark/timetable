@@ -15,7 +15,6 @@
             </div>
           </div>
           <div class="flex items-center gap-3">
-            <!-- Confirmation progress pill -->
             <div v-if="confirmationProgress"
               class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-700 font-medium">
               <AlertCircle class="w-3.5 h-3.5" />
@@ -31,8 +30,114 @@
       </div>
     </div>
 
+    <!-- Filters -->
+    <div class="mb-5">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
+        <div class="flex flex-wrap items-end gap-4">
+
+          <!-- Turma name search -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Turma</label>
+            <div class="relative">
+              <input
+                v-model="filters.name"
+                type="text"
+                placeholder="Ex: 1º Ano · Turma A..."
+                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+                style="width: 200px;"
+              />
+              <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Course -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Curso</label>
+            <div class="relative">
+              <select
+                v-model="filters.courseId"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+                style="width: 180px;"
+              >
+                <option value="">Todos</option>
+                <option v-for="c in availableCourses" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Academic year -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ano lectivo</label>
+            <div class="relative">
+              <select
+                v-model="filters.academicYear"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              >
+                <option value="">Todos</option>
+                <option v-for="y in availableAcademicYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Semester -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Semestre</label>
+            <div class="flex items-center gap-1 h-8">
+              <button
+                v-for="opt in semesterOptions" :key="opt.value"
+                type="button"
+                @click="filters.semester = opt.value"
+                :class="filters.semester === opt.value
+                  ? 'bg-blue-900 text-white border-blue-900'
+                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
+                class="h-8 px-3 text-xs font-medium border rounded-lg transition"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Estado</label>
+            <div class="relative">
+              <select
+                v-model="filters.status"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              >
+                <option value="">Todos</option>
+                <option value="ESTIMATED">Estimado</option>
+                <option value="CONFIRMED">Confirmado</option>
+                <option value="ACTIVE">Activo</option>
+                <option value="ARCHIVED">Arquivado</option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Clear -->
+          <div class="flex-1 flex items-end justify-end">
+            <button
+              v-if="activeFilterCount > 0"
+              @click="clearFilters"
+              class="h-8 flex items-center gap-1.5 px-3 border border-gray-200 text-xs text-gray-500 rounded-lg hover:bg-gray-50 transition"
+            >
+              <X class="w-3.5 h-3.5" />
+              Limpar filtros
+              <span class="bg-blue-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium leading-none">
+                {{ activeFilterCount }}
+              </span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <!-- Table -->
-    <div class="">
+    <div>
       <!-- Delete confirmation banner -->
       <div v-if="confirmDeleteId !== null"
         class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
@@ -63,14 +168,14 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="mappedCohorts.length === 0">
+            <tr v-if="filteredCohorts.length === 0">
               <td colspan="7" class="text-center py-16 text-gray-400 text-sm">
                 <UsersIcon class="w-8 h-8 mx-auto mb-3 text-gray-300" />
-                Nenhuma turma encontrada
+                {{ activeFilterCount > 0 ? 'Nenhuma turma corresponde aos filtros' : 'Nenhuma turma encontrada' }}
               </td>
             </tr>
             <tr
-              v-for="cohort in mappedCohorts"
+              v-for="cohort in filteredCohorts"
               :key="cohort.id"
               class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors group"
               :class="cohort.status === 'ESTIMATED' ? 'bg-amber-50/20' : ''"
@@ -95,20 +200,17 @@
               </td>
               <td class="px-5 py-3.5">
                 <div class="flex items-center justify-end gap-2">
-                  <!-- Confirm enrolments (estimated cohorts) -->
                   <button v-if="cohort.status === 'ESTIMATED'"
                     @click="openConfirmModal(cohort)"
                     class="flex items-center gap-1 px-2.5 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 transition opacity-0 group-hover:opacity-100">
                     <CheckCircle class="w-3 h-3" />
                     Confirmar
                   </button>
-                  <!-- Edit (confirmed cohorts) -->
                   <button v-else
                     @click="openEditModal(cohort)"
                     class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition opacity-0 group-hover:opacity-100">
                     <Edit class="w-3.5 h-3.5" />
                   </button>
-                  <!-- Delete -->
                   <button
                     @click="confirmDeleteId = cohort.id"
                     class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition opacity-0 group-hover:opacity-100">
@@ -150,7 +252,6 @@
         </div>
 
         <div class="p-5 space-y-4">
-          <!-- Info banner -->
           <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
             <AlertCircle class="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
             <p class="text-xs text-amber-700">
@@ -159,7 +260,6 @@
             </p>
           </div>
 
-          <!-- Input -->
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <UsersIcon class="w-3.5 h-3.5" />
@@ -215,7 +315,6 @@
           </h2>
         </div>
 
-        <!-- Loading state -->
         <div v-if="loadingDetail" class="flex items-center justify-center py-12">
           <Loader2 class="w-5 h-5 animate-spin text-blue-900" />
         </div>
@@ -311,6 +410,8 @@ import {
   Loader2,
   X,
   Check,
+  Search,
+  ChevronDown,
 } from 'lucide-vue-next'
 
 const cohortStore = useCohortStore()
@@ -324,7 +425,6 @@ const isEditing = ref(false)
 const editingId = ref<number | null>(null)
 const loadingDetail = ref(false)
 const confirmDeleteId = ref<number | null>(null)
-
 const confirmingCohort = ref<(CohortListResponse & { turma: string }) | null>(null)
 const confirmForm = reactive({ studentCount: 35 })
 
@@ -337,7 +437,57 @@ const form = reactive({
   studentIds: [] as number[],
 })
 
-// ── Computed ─────────────────────────────────────────────────────────
+// ── Filters ───────────────────────────────────────────────────────
+const filters = reactive({
+  name: '',
+  courseId: '' as number | '',
+  academicYear: '' as number | '',
+  semester: null as number | null,
+  status: '',
+})
+
+const semesterOptions = [
+  { label: 'Todos', value: null },
+  { label: '1º sem.', value: 1 },
+  { label: '2º sem.', value: 2 },
+]
+
+const activeFilterCount = computed(() => [
+  filters.name.trim() !== '',
+  filters.courseId !== '',
+  filters.academicYear !== '',
+  filters.semester !== null,
+  filters.status !== '',
+].filter(Boolean).length)
+
+const clearFilters = () => {
+  filters.name = ''
+  filters.courseId = ''
+  filters.academicYear = ''
+  filters.semester = null
+  filters.status = ''
+}
+
+// Unique courses from loaded cohorts for the dropdown
+const availableCourses = computed(() => {
+  const map = new Map<number, string>()
+  for (const c of cohortStore.cohortsPage?.content ?? []) {
+    if (c.courseId && c.courseName) map.set(c.courseId, c.courseName)
+  }
+  return [...map.entries()]
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+})
+
+// Unique academic years from loaded cohorts
+const availableAcademicYears = computed(() => {
+  const years = new Set<number>()
+  for (const c of cohortStore.cohortsPage?.content ?? []) {
+    if (c.academicYear) years.add(c.academicYear)
+  }
+  return [...years].sort((a, b) => b - a)
+})
+
 const mappedCohorts = computed(() =>
   (cohortStore.cohortsPage?.content ?? []).map((c: CohortListResponse) => ({
     ...c,
@@ -345,6 +495,18 @@ const mappedCohorts = computed(() =>
   }))
 )
 
+const filteredCohorts = computed(() => {
+  return mappedCohorts.value.filter(cohort => {
+    if (filters.name.trim() && !cohort.turma.toLowerCase().includes(filters.name.trim().toLowerCase())) return false
+    if (filters.courseId !== '' && cohort.courseId !== filters.courseId) return false
+    if (filters.academicYear !== '' && cohort.academicYear !== filters.academicYear) return false
+    if (filters.semester !== null && cohort.semester !== filters.semester) return false
+    if (filters.status !== '' && cohort.status !== filters.status) return false
+    return true
+  })
+})
+
+// ── Derived ───────────────────────────────────────────────────────
 const confirmationProgress = computed(() => {
   const all = cohortStore.cohortsPage?.content ?? []
   if (all.length === 0) return null
@@ -366,7 +528,7 @@ const statusBadgeClass = (status: string) => ({
   ARCHIVED:  'bg-gray-100 text-gray-500',
 }[status] ?? 'bg-gray-100 text-gray-500')
 
-// ── Lifecycle ─────────────────────────────────────────────────────────
+// ── Lifecycle ─────────────────────────────────────────────────────
 onMounted(() => fetchCohorts())
 
 async function fetchCohorts(page = 0) {
@@ -374,7 +536,7 @@ async function fetchCohorts(page = 0) {
   await cohortStore.fetchCohorts(page, 10)
 }
 
-// ── Confirm enrolments ────────────────────────────────────────────────
+// ── Confirm enrolments ────────────────────────────────────────────
 async function openConfirmModal(cohort: CohortListResponse & { turma: string }) {
   confirmingCohort.value = cohort
   confirmForm.studentCount = cohort.studentCount
@@ -394,7 +556,7 @@ async function handleConfirm() {
   }
 }
 
-// ── Create / Edit modal ───────────────────────────────────────────────
+// ── Create / Edit modal ───────────────────────────────────────────
 async function openCreateModal() {
   isEditing.value = false
   editingId.value = null

@@ -23,6 +23,94 @@
       </div>
     </div>
 
+    <!-- Filters -->
+    <div class="mb-5">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
+        <div class="flex flex-wrap items-end gap-4">
+
+          <!-- Course name -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Nome</label>
+            <div class="relative">
+              <input
+                v-model="filters.name"
+                type="text"
+                placeholder="Pesquisar curso..."
+                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+                style="width: 200px;"
+              />
+              <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Coordinator -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Coordenador</label>
+            <div class="relative">
+              <select
+                v-model="filters.coordinatorId"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+                style="width: 180px;"
+              >
+                <option value="">Todos</option>
+                <option v-for="c in coordinators" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Duration -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Duração</label>
+            <div class="relative">
+              <select
+                v-model="filters.years"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              >
+                <option value="">Todos</option>
+                <option v-for="y in [1,2,3,4,5,6]" :key="y" :value="y">{{ y }} ano{{ y !== 1 ? 's' : '' }}</option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Business simulation toggle chips -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Sim. empresarial</label>
+            <div class="flex items-center gap-1 h-8">
+              <button
+                v-for="opt in bizSimOptions" :key="opt.value"
+                type="button"
+                @click="filters.hasBusinessSimulation = opt.value"
+                :class="filters.hasBusinessSimulation === opt.value
+                  ? 'bg-blue-900 text-white border-blue-900'
+                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
+                class="h-8 px-3 text-xs font-medium border rounded-lg transition"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Clear -->
+          <div class="flex-1 flex items-end justify-end">
+            <button
+              v-if="activeFilterCount > 0"
+              @click="clearFilters"
+              class="h-8 flex items-center gap-1.5 px-3 border border-gray-200 text-xs text-gray-500 rounded-lg hover:bg-gray-50 transition"
+            >
+              <X class="w-3.5 h-3.5" />
+              Limpar filtros
+              <span class="bg-blue-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium leading-none">
+                {{ activeFilterCount }}
+              </span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16 text-gray-400 text-sm gap-2">
       <Loader2 class="w-4 h-4 animate-spin" />
@@ -33,35 +121,34 @@
     <div v-else class="space-y-2">
 
       <!-- Empty state -->
-      <div v-if="courses.length === 0"
+      <div v-if="filteredCourses.length === 0"
         class="text-center py-16 bg-white rounded-xl border border-gray-100 shadow-sm">
         <BookOpen class="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p class="text-gray-500 text-sm font-medium">Nenhum curso registado</p>
-        <button @click="openCreateModal" class="mt-3 text-blue-900 hover:underline text-sm">
+        <p class="text-gray-500 text-sm font-medium">
+          {{ activeFilterCount > 0 ? 'Nenhum curso corresponde aos filtros' : 'Nenhum curso registado' }}
+        </p>
+        <button v-if="activeFilterCount === 0" @click="openCreateModal" class="mt-3 text-blue-900 hover:underline text-sm">
           Criar primeiro curso
+        </button>
+        <button v-else @click="clearFilters" class="mt-3 text-blue-900 hover:underline text-sm">
+          Limpar filtros
         </button>
       </div>
 
-      <div v-for="course in courses" :key="course.id"
+      <div v-for="course in filteredCourses" :key="course.id"
         class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
 
         <!-- Course row -->
         <div class="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition group">
           <div class="flex items-center gap-3 flex-1 min-w-0">
-
-            <!-- Expand toggle -->
             <button @click="toggleCourse(course)"
               class="text-gray-300 hover:text-blue-900 transition shrink-0">
               <ChevronDown v-if="course.expanded" class="w-4 h-4" />
               <ChevronRight v-else class="w-4 h-4" />
             </button>
-
-            <!-- Icon -->
             <div class="bg-blue-50 p-2 rounded-lg shrink-0">
               <BookOpen class="w-4 h-4 text-blue-900" />
             </div>
-
-            <!-- Info -->
             <div class="flex-1 min-w-0">
               <h3 class="font-semibold text-gray-800 text-sm">{{ course.name }}</h3>
               <div class="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -91,7 +178,6 @@
             </div>
           </div>
 
-          <!-- Actions (hover reveal) -->
           <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition shrink-0">
             <button @click="openEditModal(course)"
               class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition"
@@ -125,7 +211,6 @@
         <!-- Subjects panel -->
         <div v-if="course.expanded" class="border-t border-gray-100 bg-gray-50/60">
           <div class="px-5 py-4">
-
             <div class="flex items-center justify-between mb-3">
               <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Disciplinas</h4>
               <button @click="openDisciplineModal(course)"
@@ -135,19 +220,16 @@
               </button>
             </div>
 
-            <!-- Loading subjects -->
             <div v-if="course.loadingSubjects" class="text-gray-400 text-xs text-center py-6 flex items-center justify-center gap-1.5">
               <Loader2 class="w-3.5 h-3.5 animate-spin" />
               A carregar disciplinas...
             </div>
 
-            <!-- Empty subjects -->
             <div v-else-if="course.disciplines.length === 0"
               class="text-gray-400 text-xs text-center py-6">
               Nenhuma disciplina registada
             </div>
 
-            <!-- Subject cards -->
             <div v-else class="space-y-1.5">
               <div v-for="subject in course.disciplines" :key="subject.id"
                 class="bg-white rounded-lg border px-4 py-3 flex items-center justify-between hover:border-blue-100 transition"
@@ -242,7 +324,6 @@
 
         <form @submit.prevent="handleCourseSubmit" class="p-5 space-y-4">
 
-          <!-- Nome -->
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <Tag class="w-3.5 h-3.5" />
@@ -253,7 +334,6 @@
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300" />
           </div>
 
-          <!-- Coordenador -->
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <User class="w-3.5 h-3.5" />
@@ -269,7 +349,6 @@
             </div>
           </div>
 
-          <!-- Duração -->
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <Calendar class="w-3.5 h-3.5" />
@@ -280,7 +359,6 @@
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800" />
           </div>
 
-          <!-- Business simulation toggle -->
           <div class="flex items-center justify-between px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
             <div class="flex items-center gap-3">
               <div class="bg-amber-50 p-1.5 rounded-lg">
@@ -301,7 +379,6 @@
             </button>
           </div>
 
-          <!-- Expected cohorts per year -->
           <div>
             <div class="flex items-center justify-between mb-2">
               <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500">
@@ -375,7 +452,6 @@
 
         <div class="p-5 space-y-4">
 
-          <!-- Nome -->
           <div>
             <label class="text-xs font-medium text-gray-500 mb-1.5 block">
               Nome da disciplina <span class="text-blue-900">*</span>
@@ -384,7 +460,6 @@
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300" />
           </div>
 
-          <!-- Créditos -->
           <div>
             <label class="text-xs font-medium text-gray-500 mb-1.5 block">
               Créditos <span class="text-blue-900">*</span>
@@ -393,7 +468,6 @@
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300" />
           </div>
 
-          <!-- Ano / Semestre -->
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="text-xs font-medium text-gray-500 mb-1.5 block">
@@ -412,13 +486,11 @@
             </div>
           </div>
 
-          <!-- Teacher selection -->
           <div>
             <label class="text-xs font-medium text-gray-500 mb-1.5 block">
               Professores elegíveis <span class="text-blue-900">*</span>
             </label>
 
-            <!-- Selected teachers -->
             <div v-if="disciplineForm.selectedTeachers.length > 0" class="flex flex-wrap gap-1.5 mb-2">
               <div v-for="teacher in disciplineForm.selectedTeachers" :key="teacher.id"
                 class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-900 text-white rounded-lg text-xs">
@@ -431,14 +503,12 @@
               </div>
             </div>
 
-            <!-- Search -->
             <div class="relative mb-2">
               <input v-model="teacherSearchQuery" type="text" placeholder="Pesquisar professores..."
                 class="w-full px-3 py-2 pl-8 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300" />
               <Search class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
             </div>
 
-            <!-- Teacher list -->
             <div class="border border-gray-200 rounded-lg max-h-44 overflow-y-auto">
               <div v-if="loadingTeachers" class="p-4 text-center text-gray-400 text-xs flex items-center justify-center gap-1.5">
                 <Loader2 class="w-3.5 h-3.5 animate-spin" />
@@ -517,9 +587,47 @@ const teacherSearchQuery = ref('')
 const confirmDeleteCourseId = ref<number | null>(null)
 const confirmDeleteSubjectId = ref<number | null>(null)
 const confirmDeleteSubjectCourse = ref<any>(null)
-
 const cohortRows = ref<{ year: number; count: number }[]>([])
 
+// ── Filters ───────────────────────────────────────────────────────
+const filters = reactive({
+  name: '',
+  coordinatorId: '' as number | '',
+  years: '' as number | '',
+  hasBusinessSimulation: null as boolean | null,
+})
+
+const bizSimOptions = [
+  { label: 'Todos', value: null },
+  { label: 'Sim', value: true },
+  { label: 'Não', value: false },
+]
+
+const activeFilterCount = computed(() => [
+  filters.name.trim() !== '',
+  filters.coordinatorId !== '',
+  filters.years !== '',
+  filters.hasBusinessSimulation !== null,
+].filter(Boolean).length)
+
+const clearFilters = () => {
+  filters.name = ''
+  filters.coordinatorId = ''
+  filters.years = ''
+  filters.hasBusinessSimulation = null
+}
+
+const filteredCourses = computed(() => {
+  return courses.value.filter(course => {
+    if (filters.name.trim() && !course.name.toLowerCase().includes(filters.name.trim().toLowerCase())) return false
+    if (filters.coordinatorId !== '' && course.coordinatorId !== filters.coordinatorId) return false
+    if (filters.years !== '' && course.years !== filters.years) return false
+    if (filters.hasBusinessSimulation !== null && !!course.hasBusinessSimulation !== filters.hasBusinessSimulation) return false
+    return true
+  })
+})
+
+// ── Form state ────────────────────────────────────────────────────
 const courseForm = reactive({
   name: '',
   coordinatorId: '' as number | '',

@@ -1,7 +1,8 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+
     <!-- Header -->
-    <div class=" mb-6">
+    <div class="mb-6">
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -22,7 +23,103 @@
       </div>
     </div>
 
-    <div class="">
+    <!-- Filters -->
+    <div class="mb-5">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
+        <div class="flex flex-wrap items-end gap-4">
+
+          <!-- Search by name -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Nome</label>
+            <div class="relative">
+              <input
+                v-model="filters.name"
+                type="text"
+                placeholder="Pesquisar sala..."
+                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+                style="width: 180px;"
+              />
+              <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Capacity range -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Capacidade</label>
+            <div class="flex items-center gap-1.5">
+              <input
+                v-model.number="filters.capacityMin"
+                type="number"
+                min="0"
+                placeholder="Mín"
+                class="h-8 w-20 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              />
+              <span class="text-xs text-gray-300">—</span>
+              <input
+                v-model.number="filters.capacityMax"
+                type="number"
+                min="0"
+                placeholder="Máx"
+                class="h-8 w-20 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              />
+            </div>
+          </div>
+
+          <!-- Assigned course -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Curso</label>
+            <div class="relative">
+              <select
+                v-model="filters.courseId"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+                style="width: 180px;"
+              >
+                <option value="">Todos os cursos</option>
+                <option v-for="course in availableCourses" :key="course.id" :value="course.id">
+                  {{ course.name }}
+                </option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Restriction period -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Período</label>
+            <div class="relative">
+              <select
+                v-model="filters.period"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              >
+                <option value="">Todos os períodos</option>
+                <option value="MORNING">Manhã</option>
+                <option value="AFTERNOON">Tarde</option>
+                <option value="EVENING">Noite</option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Active filter count + clear -->
+          <div class="flex-1 flex items-end justify-end">
+            <button
+              v-if="activeFilterCount > 0"
+              @click="clearFilters"
+              class="h-8 flex items-center gap-1.5 px-3 border border-gray-200 text-xs text-gray-500 rounded-lg hover:bg-gray-50 transition"
+            >
+              <X class="w-3.5 h-3.5" />
+              Limpar filtros
+              <span class="bg-blue-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium leading-none">
+                {{ activeFilterCount }}
+              </span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div>
       <!-- Delete confirmation banner -->
       <div v-if="confirmDeleteId !== null"
         class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
@@ -42,25 +139,22 @@
       <!-- Table -->
       <CrudTable
         :columns="tableColumns"
-        :rows="mappedRooms"
+        :rows="filteredRooms"
         :currentPage="currentPage"
         :totalPages="pagedRooms?.page.totalPages ?? 0"
         @edit="openEditRoomModal"
         @delete="(id: number) => (confirmDeleteId = id)"
         @change-page="fetchRooms"
       >
-        <!-- Empty state -->
         <template #empty>
           <DoorOpen class="w-8 h-8 mx-auto mb-3 text-gray-300" />
-          <p>Nenhuma sala registada</p>
+          <p>{{ activeFilterCount > 0 ? 'Nenhuma sala corresponde aos filtros' : 'Nenhuma sala registada' }}</p>
         </template>
 
-        <!-- Name cell -->
         <template #cell-name="{ value }">
           <span class="font-medium text-gray-800">{{ value }}</span>
         </template>
 
-        <!-- Capacity badge -->
         <template #cell-capacity="{ value }">
           <span :class="capacityBadgeClass(value)"
             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
@@ -68,7 +162,6 @@
           </span>
         </template>
 
-        <!-- Assigned courses -->
         <template #cell-assignedCourses="{ value }">
           <span class="text-gray-500 text-sm">{{ value }}</span>
         </template>
@@ -80,7 +173,6 @@
       @click.self="closeModal">
       <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
 
-        <!-- Modal Header -->
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
           <div :class="editingRoom ? 'bg-amber-50' : 'bg-blue-50'" class="p-2 rounded-lg">
             <DoorOpen v-if="!editingRoom" class="w-4 h-4 text-blue-900" />
@@ -94,41 +186,28 @@
           </div>
         </div>
 
-        <!-- Form -->
         <form @submit.prevent="handleSubmit" class="p-5 space-y-5">
 
-          <!-- Nome -->
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <Tag class="w-3.5 h-3.5" />
               Nome da sala <span class="text-blue-900">*</span>
             </label>
-            <input
-              v-model="formData.name"
-              type="text"
-              required
+            <input v-model="formData.name" type="text" required
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
-              placeholder="Ex: Sala A101, Laboratório 3…"
-            />
+              placeholder="Ex: Sala A101, Laboratório 3…" />
           </div>
 
-          <!-- Capacidade -->
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <UsersIcon class="w-3.5 h-3.5" />
               Capacidade <span class="text-blue-900">*</span>
             </label>
-            <input
-              v-model.number="formData.capacity"
-              type="number"
-              required
-              min="1"
+            <input v-model.number="formData.capacity" type="number" required min="1"
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
-              placeholder="Número de lugares"
-            />
+              placeholder="Número de lugares" />
           </div>
 
-          <!-- Restrições -->
           <div>
             <div class="flex items-center justify-between mb-2">
               <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500">
@@ -146,11 +225,8 @@
             </div>
 
             <div v-else class="space-y-2 mb-2">
-              <div
-                v-for="(restriction, index) in formData.restrictions"
-                :key="index"
-                class="border border-gray-200 rounded-lg overflow-hidden"
-              >
+              <div v-for="(restriction, index) in formData.restrictions" :key="index"
+                class="border border-gray-200 rounded-lg overflow-hidden">
                 <div class="flex items-center justify-between px-3 py-1.5 bg-gray-50 border-b border-gray-100">
                   <span class="text-xs text-gray-400 font-medium">Restrição {{ index + 1 }}</span>
                   <button type="button" @click="formData.restrictions.splice(index, 1)"
@@ -191,7 +267,6 @@
             </button>
           </div>
 
-          <!-- Footer -->
           <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
               class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
@@ -218,15 +293,9 @@ import { useToast } from '@/composables/useToast'
 import type { RoomResponse } from '@/services/dto/room'
 import CrudTable from '@/component/ui/CrudTable.vue'
 import {
-  Building,
-  Plus,
-  DoorOpen,
-  Edit,
-  Tag,
-  Users as UsersIcon,
-  X,
-  Check,
-  ShieldAlert,
+  Building, Plus, DoorOpen, Edit, Tag,
+  Users as UsersIcon, X, Check, ShieldAlert,
+  Search, ChevronDown,
 } from 'lucide-vue-next'
 
 const roomStore = useRoomStore()
@@ -238,6 +307,75 @@ const confirmDeleteId = ref<number | null>(null)
 const pagedRooms = computed(() => roomStore.pagedRooms)
 const currentPage = ref(0)
 
+// ── Filters ───────────────────────────────────────────────────────
+const filters = reactive({
+  name: '',
+  capacityMin: null as number | null,
+  capacityMax: null as number | null,
+  courseId: '' as number | '',
+  period: '',
+})
+
+const activeFilterCount = computed(() => [
+  filters.name.trim() !== '',
+  filters.capacityMin !== null,
+  filters.capacityMax !== null,
+  filters.courseId !== '',
+  filters.period !== '',
+].filter(Boolean).length)
+
+const clearFilters = () => {
+  filters.name = ''
+  filters.capacityMin = null
+  filters.capacityMax = null
+  filters.courseId = ''
+  filters.period = ''
+}
+
+// Unique courses extracted from current page's rooms
+const availableCourses = computed(() => {
+  const map = new Map<number, string>()
+  for (const room of pagedRooms.value?.content ?? []) {
+    for (const r of room.restrictions) {
+      if (r.courseId && r.courseName) map.set(r.courseId, r.courseName)
+    }
+  }
+  return [...map.entries()].map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+})
+
+const mappedRooms = computed(() =>
+  (pagedRooms.value?.content ?? []).map(room => ({
+    ...room,
+    assignedCourses: [
+      ...new Map(room.restrictions.map(r => [r.courseId, r.courseName])).values()
+    ].join(', ') || '—',
+  }))
+)
+
+const filteredRooms = computed(() => {
+  return mappedRooms.value.filter(room => {
+    // Name
+    if (filters.name.trim() && !room.name.toLowerCase().includes(filters.name.trim().toLowerCase())) return false
+    // Capacity min
+    if (filters.capacityMin !== null && room.capacity < filters.capacityMin) return false
+    // Capacity max
+    if (filters.capacityMax !== null && room.capacity > filters.capacityMax) return false
+    // Assigned course
+    if (filters.courseId !== '') {
+      const hasCourse = room.restrictions.some((r: any) => r.courseId === filters.courseId)
+      if (!hasCourse) return false
+    }
+    // Restriction period
+    if (filters.period !== '') {
+      const hasPeriod = room.restrictions.some((r: any) => r.period === filters.period)
+      if (!hasPeriod) return false
+    }
+    return true
+  })
+})
+
+// ── Form ──────────────────────────────────────────────────────────
 const formData = reactive({
   name: '',
   capacity: null as number | null,
@@ -255,15 +393,6 @@ const capacityBadgeClass = (capacity: number) => {
   if (capacity <= 60) return 'bg-blue-100 text-blue-800'
   return 'bg-blue-200 text-blue-900'
 }
-
-const mappedRooms = computed(() =>
-  (pagedRooms.value?.content ?? []).map(room => ({
-    ...room,
-    assignedCourses: [
-      ...new Map(room.restrictions.map(r => [r.courseId, r.courseName])).values()
-    ].join(', ') || '—',
-  }))
-)
 
 const fetchRooms = async (page = 0) => {
   currentPage.value = page

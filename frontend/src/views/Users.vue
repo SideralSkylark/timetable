@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+
     <!-- Header -->
     <div class="mb-6">
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
@@ -22,7 +23,100 @@
       </div>
     </div>
 
-    <div class="">
+    <!-- Filters -->
+    <div class="mb-5">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
+        <div class="flex flex-wrap items-end gap-4">
+
+          <!-- Username -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Username</label>
+            <div class="relative">
+              <input
+                v-model="filters.username"
+                type="text"
+                placeholder="Pesquisar utilizador..."
+                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+                style="width: 180px;"
+              />
+              <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Email</label>
+            <div class="relative">
+              <input
+                v-model="filters.email"
+                type="text"
+                placeholder="Pesquisar email..."
+                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+                style="width: 180px;"
+              />
+              <Mail class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Role -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Permissão</label>
+            <div class="relative">
+              <select
+                v-model="filters.role"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+                style="width: 160px;"
+              >
+                <option value="">Todas</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="COORDINATOR">COORDINATOR</option>
+                <option value="TEACHER">TEACHER</option>
+                <option value="STUDENT">STUDENT</option>
+                <option value="USER">USER</option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Teacher type — only shown when role is TEACHER or unfiltered -->
+          <Transition name="fade">
+            <div v-if="filters.role === '' || filters.role === 'TEACHER'" class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo de docente</label>
+              <div class="relative">
+                <select
+                  v-model="filters.teacherType"
+                  class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+                  style="width: 160px;"
+                >
+                  <option value="">Todos</option>
+                  <option value="FULL_TIME">Tempo inteiro</option>
+                  <option value="PART_TIME">Tempo parcial</option>
+                </select>
+                <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+          </Transition>
+
+          <!-- Clear button -->
+          <div class="flex-1 flex items-end justify-end">
+            <button
+              v-if="activeFilterCount > 0"
+              @click="clearFilters"
+              class="h-8 flex items-center gap-1.5 px-3 border border-gray-200 text-xs text-gray-500 rounded-lg hover:bg-gray-50 transition"
+            >
+              <X class="w-3.5 h-3.5" />
+              Limpar filtros
+              <span class="bg-blue-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium leading-none">
+                {{ activeFilterCount }}
+              </span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div>
       <!-- Delete confirmation banner -->
       <div v-if="confirmDeleteId !== null"
         class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
@@ -42,30 +136,26 @@
       <!-- Table -->
       <CrudTable
         :columns="tableColumns"
-        :rows="mappedUsers"
+        :rows="filteredUsers"
         :currentPage="currentPage"
         :totalPages="pagedUsers?.page.totalPages ?? 0"
         @edit="openEdit"
         @delete="(id: number) => (confirmDeleteId = id)"
         @change-page="fetchUsers"
       >
-        <!-- Empty state -->
         <template #empty>
           <UsersIcon class="w-8 h-8 mx-auto mb-3 text-gray-300" />
-          <p>Nenhum utilizador registado</p>
+          <p>{{ activeFilterCount > 0 ? 'Nenhum utilizador corresponde aos filtros' : 'Nenhum utilizador registado' }}</p>
         </template>
 
-        <!-- Username cell -->
         <template #cell-username="{ value }">
           <span class="font-medium text-gray-800">{{ value }}</span>
         </template>
 
-        <!-- Email cell -->
         <template #cell-email="{ value }">
           <span class="text-gray-500">{{ value }}</span>
         </template>
 
-        <!-- Roles badges -->
         <template #cell-roles="{ value }">
           <div class="flex flex-wrap gap-1">
             <span
@@ -85,7 +175,6 @@
       @click.self="closeModal">
       <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
 
-        <!-- Modal Header -->
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
           <div :class="editingUser ? 'bg-amber-50' : 'bg-blue-50'" class="p-2 rounded-lg">
             <UserPlus v-if="!editingUser" class="w-4 h-4 text-blue-900" />
@@ -99,10 +188,8 @@
           </div>
         </div>
 
-        <!-- Form -->
         <form @submit.prevent="handleSubmit" class="p-5 space-y-5">
 
-          <!-- Username -->
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <User class="w-3.5 h-3.5" />
@@ -113,7 +200,6 @@
               placeholder="Digite o username" />
           </div>
 
-          <!-- Email -->
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <Mail class="w-3.5 h-3.5" />
@@ -124,7 +210,6 @@
               placeholder="Digite o email" />
           </div>
 
-          <!-- Password (apenas na criação) -->
           <div v-if="!editingUser">
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <Lock class="w-3.5 h-3.5" />
@@ -135,7 +220,6 @@
               placeholder="Digite a password" />
           </div>
 
-          <!-- Permissões -->
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-2">
               <Shield class="w-3.5 h-3.5" />
@@ -171,7 +255,6 @@
             <p class="text-xs text-gray-400 mt-1.5">USER é sempre atribuído por padrão.</p>
           </div>
 
-          <!-- Tipo de docente -->
           <div v-if="formData.selectedRoles.includes('TEACHER')">
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-2">
               <BookOpen class="w-3.5 h-3.5" />
@@ -198,7 +281,6 @@
             </div>
           </div>
 
-          <!-- Footer -->
           <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
               class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
@@ -218,7 +300,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useToast } from '@/composables/useToast'
 import type { UserResponse, TeacherType } from '@/services/dto/user'
@@ -235,6 +317,8 @@ import {
   BookOpen,
   X,
   Check,
+  Search,
+  ChevronDown,
 } from 'lucide-vue-next'
 
 const userStore = useUserStore()
@@ -245,6 +329,44 @@ const confirmDeleteId = ref<number | null>(null)
 const pagedUsers = computed(() => userStore.pagedUsers)
 const currentPage = ref(0)
 
+// ── Filters ───────────────────────────────────────────────────────
+const filters = reactive({
+  username: '',
+  email: '',
+  role: '',
+  teacherType: '',
+})
+
+// Auto-clear teacher type when switching to a non-TEACHER role
+watch(() => filters.role, (val) => {
+  if (val !== '' && val !== 'TEACHER') filters.teacherType = ''
+})
+
+const activeFilterCount = computed(() => [
+  filters.username.trim() !== '',
+  filters.email.trim() !== '',
+  filters.role !== '',
+  filters.teacherType !== '',
+].filter(Boolean).length)
+
+const clearFilters = () => {
+  filters.username = ''
+  filters.email = ''
+  filters.role = ''
+  filters.teacherType = ''
+}
+
+const filteredUsers = computed(() => {
+  return (pagedUsers.value?.content ?? []).filter(user => {
+    if (filters.username.trim() && !user.username.toLowerCase().includes(filters.username.trim().toLowerCase())) return false
+    if (filters.email.trim() && !user.email.toLowerCase().includes(filters.email.trim().toLowerCase())) return false
+    if (filters.role !== '' && !user.roles.includes(filters.role)) return false
+    if (filters.teacherType !== '' && user.teacherType !== filters.teacherType) return false
+    return true
+  })
+})
+
+// ── Form ──────────────────────────────────────────────────────────
 const formData = reactive({
   username: '',
   email: '',
@@ -281,9 +403,6 @@ const roleBadgeClass = (role: string) => {
   }
   return map[role] ?? 'bg-gray-100 text-gray-500'
 }
-
-// Pass rows directly — roles is already an array, slot handles rendering
-const mappedUsers = computed(() => pagedUsers.value?.content ?? [])
 
 const fetchUsers = async (page = 0) => {
   currentPage.value = page
@@ -352,3 +471,8 @@ const closeModal = () => {
 
 onMounted(fetchUsers)
 </script>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>
