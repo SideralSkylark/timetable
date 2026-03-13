@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
+  <div class="min-h-screen bg-gray-50">
 
-    <div class="max-w-7xl mx-auto mb-8">
+    <div class=" mb-6">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex items-center gap-3">
           <div class="bg-blue-900 p-3 rounded-lg">
@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto mb-6">
+    <div class="mb-5">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex flex-wrap items-end gap-4">
 
@@ -117,7 +117,7 @@
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto flex gap-4 items-start">
+    <div class="">
 
       <div class="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden min-w-0">
 

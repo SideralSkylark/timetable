@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
+  <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <div class="max-w-6xl mx-auto mb-6">
+    <div class=" mb-6">
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -22,7 +22,7 @@
       </div>
     </div>
 
-    <div class="max-w-6xl mx-auto">
+    <div class="">
       <!-- Delete confirmation banner -->
       <div v-if="confirmDeleteId !== null"
         class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">

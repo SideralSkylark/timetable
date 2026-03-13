@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
+  <div class="min-h-screen bg-gray-50">
 
     <!-- Header -->
-    <div class="max-w-6xl mx-auto mb-8">
+    <div class="mb-6">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -29,7 +29,7 @@
     </div>
 
     <!-- Course list -->
-    <div v-else class="max-w-6xl mx-auto space-y-4">
+    <div v-else class=" mx-auto space-y-2">
       <div v-for="course in courses" :key="course.id"
         class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <!-- Course row -->
