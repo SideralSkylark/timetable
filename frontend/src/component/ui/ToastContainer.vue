@@ -1,26 +1,26 @@
 <template>
-  <div class="fixed top-4 right-4 z-50 space-y-3 max-w-md">
+  <div class="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full">
     <TransitionGroup name="toast">
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        :class="[
-          'rounded-lg shadow-lg p-4 flex items-start gap-3 border',
-          getToastClasses(toast.type)
-        ]"
+        :class="['bg-white rounded-xl shadow-lg border flex items-start gap-3 px-4 py-3', borderClass(toast.type)]"
       >
-        <component
-          :is="getIcon(toast.type)"
-          :class="['w-5 h-5 flex-shrink-0 mt-0.5', getIconColor(toast.type)]"
-        />
-        <p :class="['flex-1 text-sm font-medium', getTextColor(toast.type)]">
-          {{ toast.message }}
-        </p>
+        <!-- Coloured left accent -->
+        <div :class="['w-1 self-stretch rounded-full shrink-0 -ml-1 mr-0.5', accentClass(toast.type)]" />
+
+        <!-- Icon -->
+        <component :is="iconFor(toast.type)" :class="['w-4 h-4 shrink-0 mt-0.5', iconClass(toast.type)]" />
+
+        <!-- Message -->
+        <p class="flex-1 text-sm text-gray-700 font-medium leading-snug">{{ toast.message }}</p>
+
+        <!-- Dismiss -->
         <button
           @click="remove(toast.id)"
-          :class="['hover:opacity-70 transition flex-shrink-0', getIconColor(toast.type)]"
+          class="text-gray-300 hover:text-gray-500 transition shrink-0 mt-0.5"
         >
-          <X class="w-4 h-4" />
+          <X class="w-3.5 h-3.5" />
         </button>
       </div>
     </TransitionGroup>
@@ -33,75 +33,45 @@ import { useToast } from '@/composables/useToast'
 
 const { toasts, remove } = useToast()
 
-const getToastClasses = (type: string) => {
-  const classes = {
-    success: 'bg-green-50 border-green-200',
-    error: 'bg-red-50 border-red-200',
-    warning: 'bg-yellow-50 border-yellow-200',
-    info: 'bg-blue-50 border-blue-200',
-  }
-  return classes[type as keyof typeof classes] || classes.info
-}
+const borderClass = (type: string) => ({
+  success: 'border-green-100',
+  error:   'border-red-100',
+  warning: 'border-amber-100',
+  info:    'border-blue-100',
+}[type] ?? 'border-gray-100')
 
-const getIconColor = (type: string) => {
-  const colors = {
-    success: 'text-green-600',
-    error: 'text-red-600',
-    warning: 'text-yellow-600',
-    info: 'text-blue-600',
-  }
-  return colors[type as keyof typeof colors] || colors.info
-}
+const accentClass = (type: string) => ({
+  success: 'bg-green-400',
+  error:   'bg-red-400',
+  warning: 'bg-amber-400',
+  info:    'bg-blue-900',
+}[type] ?? 'bg-gray-300')
 
-const getTextColor = (type: string) => {
-  const colors = {
-    success: 'text-green-800',
-    error: 'text-red-800',
-    warning: 'text-yellow-800',
-    info: 'text-blue-800',
-  }
-  return colors[type as keyof typeof colors] || colors.info
-}
+const iconClass = (type: string) => ({
+  success: 'text-green-500',
+  error:   'text-red-500',
+  warning: 'text-amber-500',
+  info:    'text-blue-900',
+}[type] ?? 'text-gray-400')
 
-const getIcon = (type: string) => {
-  const icons = {
-    success: CheckCircle,
-    error: XCircle,
-    warning: AlertCircle,
-    info: Info,
-  }
-  return icons[type as keyof typeof icons] || Info
-}
+const iconFor = (type: string) => ({
+  success: CheckCircle,
+  error:   XCircle,
+  warning: AlertCircle,
+  info:    Info,
+}[type] ?? Info)
 </script>
 
 <style scoped>
-.toast-enter-active {
-  animation: slideIn 0.3s ease-out;
-}
-
-.toast-leave-active {
-  animation: slideOut 0.3s ease-in;
-}
+.toast-enter-active { animation: slideIn 0.25s ease-out; }
+.toast-leave-active { animation: slideOut 0.2s ease-in; }
 
 @keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
-
 @keyframes slideOut {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(110%); opacity: 0; }
 }
 </style>

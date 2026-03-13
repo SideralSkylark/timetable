@@ -1,25 +1,36 @@
 <template>
-  <main class="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
-    <div class="text-center">
-      <p class="text-4xl font-semibold text-red-600">403</p>
-      <h1 class="mt-4 text-5xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-        Acesso negado
-      </h1>
-      <p class="mt-6 text-lg font-medium text-gray-500 sm:text-xl">
-        Desculpe, não tem autorização para aceder a esta página.
-      </p>
-      <div class="mt-10 flex items-center justify-center gap-x-6">
-        <RouterLink
-          to="/dashboard"
-          class="rounded-md bg-red-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-        >
-          Voltar ao painel
-        </RouterLink>
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div class="w-full max-w-sm text-center">
+
+      <!-- Icon -->
+      <div class="flex justify-center mb-6">
+        <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+          <ShieldOff class="w-10 h-10 text-red-500" />
+        </div>
       </div>
+
+      <!-- Code + message -->
+      <p class="text-xs font-semibold text-red-400 uppercase tracking-widest mb-2">Erro 403</p>
+      <h1 class="text-2xl font-semibold text-gray-900 mb-3">Acesso negado</h1>
+      <p class="text-sm text-gray-400 leading-relaxed mb-8">
+        Não tem autorização para aceder a esta página.<br />
+        Contacte o administrador se julgar que isto é um erro.
+      </p>
+
+      <!-- Action -->
+      <RouterLink
+        to="/dashboard"
+        class="inline-flex items-center gap-2 bg-blue-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition"
+      >
+        <LayoutDashboard class="w-4 h-4" />
+        Voltar ao painel
+      </RouterLink>
+
     </div>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { ShieldOff, LayoutDashboard } from 'lucide-vue-next'
 </script>

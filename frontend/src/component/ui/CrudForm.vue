@@ -1,65 +1,50 @@
 <template>
   <form
     @submit.prevent="handleSubmit"
-    class="bg-white rounded-lg border border-gray-200 overflow-hidden"
+    class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
   >
     <!-- Header -->
-    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-      <h2 class="text-lg font-semibold text-gray-900">{{ title }}</h2>
-      <p v-if="subtitle" class="text-sm text-gray-500 mt-1">{{ subtitle }}</p>
+    <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
+      <div :class="isCreate ? 'bg-blue-50' : 'bg-amber-50'" class="p-2 rounded-lg shrink-0">
+        <Plus v-if="isCreate" class="w-4 h-4 text-blue-900" />
+        <Save v-else class="w-4 h-4 text-amber-600" />
+      </div>
+      <div>
+        <h2 class="text-base font-semibold text-gray-900">{{ title }}</h2>
+        <p v-if="subtitle" class="text-xs text-gray-400 mt-0.5">{{ subtitle }}</p>
+      </div>
     </div>
 
-    <!-- Form Fields -->
-    <div class="p-6 space-y-5">
+    <!-- Form fields -->
+    <div class="p-5 space-y-4">
       <div v-for="field in fields" :key="field.name">
-        <label
-          :for="field.name"
-          class="block text-sm font-medium text-gray-700 mb-2"
-        >
+        <label :for="field.name" class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
           {{ field.label || field.placeholder }}
+          <span v-if="field.required" class="text-blue-900">*</span>
         </label>
 
-        <!-- Select/Dropdown Field -->
+        <!-- Select -->
         <div v-if="field.type === 'select'" class="relative">
           <select
             :id="field.name"
             v-model="form[field.name]"
             :required="field.required"
-            class="w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg
-                   appearance-none bg-white
-                   focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent
-                   transition cursor-pointer"
+            class="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
           >
-            <option 
-              v-if="field.placeholder && !field.required" 
-              :value="null"
-              class="text-gray-400"
-            >
+            <option v-if="field.placeholder && !field.required" :value="null" class="text-gray-400">
               {{ field.placeholder }}
             </option>
-            <option
-              v-if="field.placeholder && field.required"
-              value=""
-              disabled
-              selected
-              class="text-gray-400"
-            >
+            <option v-if="field.placeholder && field.required" value="" disabled selected class="text-gray-400">
               {{ field.placeholder }}
             </option>
-            <option
-              v-for="option in field.options"
-              :key="option.value"
-              :value="option.value"
-              class="text-gray-900"
-            >
+            <option v-for="option in field.options" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
           </select>
-          <!-- Dropdown Icon -->
-          <ChevronDown class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
-        <!-- Regular Input Fields -->
+        <!-- Input -->
         <input
           v-else
           :id="field.name"
@@ -67,32 +52,28 @@
           :type="field.type"
           :placeholder="field.placeholder"
           :required="field.required"
-          class="w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg
-                 placeholder:text-gray-400
-                 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent
-                 transition"
+          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
         />
       </div>
     </div>
 
-    <!-- Footer Actions -->
-    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+    <!-- Footer -->
+    <div class="px-5 py-4 border-t border-gray-100 flex justify-end gap-2">
       <button
         type="button"
         @click="$emit('cancel')"
-        class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg
-               hover:bg-gray-50 transition"
+        class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center gap-1.5"
       >
+        <X class="w-3.5 h-3.5" />
         Cancelar
       </button>
       <button
         type="submit"
-        class="px-5 py-2.5 text-sm font-medium text-white bg-blue-900 rounded-lg
-               hover:bg-blue-800 transition flex items-center gap-2"
+        class="px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition flex items-center gap-1.5"
       >
-        <Save v-if="!isCreate" class="w-4 h-4" />
-        <Plus v-else class="w-4 h-4" />
-        {{ isCreate ? 'Criar' : 'Guardar' }}
+        <Save v-if="!isCreate" class="w-3.5 h-3.5" />
+        <Plus v-else class="w-3.5 h-3.5" />
+        {{ isCreate ? 'Criar' : 'Guardar alterações' }}
       </button>
     </div>
   </form>
@@ -100,7 +81,7 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { Save, Plus, ChevronDown } from 'lucide-vue-next'
+import { Save, Plus, ChevronDown, X } from 'lucide-vue-next'
 
 interface FieldOption {
   label: string
@@ -131,18 +112,13 @@ const emit = defineEmits<{
 
 const form = reactive<Record<string, any>>({})
 
-// Inicializar campos do formulário
 const initializeForm = () => {
-  // Limpar formulário primeiro
   Object.keys(form).forEach(key => delete form[key])
-  
-  // Se há dados, popular com eles
   if (props.data) {
     for (const key of Object.keys(props.data)) {
       form[key] = props.data[key]
     }
   } else {
-    // Se não há dados (modo criação), inicializar campos vazios
     props.fields.forEach(field => {
       if (field.type === 'select') {
         form[field.name] = field.required ? '' : null
@@ -155,12 +131,9 @@ const initializeForm = () => {
   }
 }
 
-// Watch para mudanças nos dados ou campos
 watch(
   () => [props.data, props.fields],
-  () => {
-    initializeForm()
-  },
+  () => { initializeForm() },
   { immediate: true, deep: true }
 )
 
