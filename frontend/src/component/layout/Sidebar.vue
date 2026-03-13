@@ -80,7 +80,7 @@ import {
   Home,
   Building,
   School,
-  Users,
+  Users as UsersIcon,
   LogOut,
   GraduationCap,
   User,
@@ -93,12 +93,12 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const dashboardRoutes = [
-  { name: 'DashboardHome', label: 'Início', icon: Home, roles: ['USER'] },
-  { name: 'Rooms', label: 'Salas', icon: Building, roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
-  { name: 'Courses', label: 'Cursos', icon: School, roles: ['ADMIN', 'COORDINATOR'] },
-  { name: 'Cohorts', label: 'Turmas', icon: Users, roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
-  { name: 'Users', label: 'Utilizadores', icon: Users, roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
-  { name: 'Timetable', label: 'Horários', icon: CalendarDays, roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'DashboardHome', label: 'Início',         icon: Home,         roles: ['USER'] },
+  { name: 'Rooms',         label: 'Salas',           icon: Building,     roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'Courses',       label: 'Cursos',          icon: School,       roles: ['ADMIN', 'COORDINATOR'] },
+  { name: 'Cohorts',       label: 'Turmas',          icon: UsersIcon,    roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'Users',         label: 'Utilizadores',    icon: UsersIcon,    roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'Timetable',     label: 'Horários',        icon: CalendarDays, roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
 ]
 
 const allowedRoutes = computed(() => {

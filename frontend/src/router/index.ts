@@ -76,11 +76,11 @@ router.beforeEach((to) => {
     return { name: 'DashboardHome' }
   }
 
-  if (to.meta.roles) {
+  if (to.meta.roles && auth.isAuthenticated) {
     const roles = auth.user?.roles ?? []
     const allowed = (to.meta.roles as string[]).some((r) => roles.includes(r))
     if (!allowed) {
-      return { name: 'Forbidden' }
+      return { name: 'Forbidden', replace: true }
     }
   }
 

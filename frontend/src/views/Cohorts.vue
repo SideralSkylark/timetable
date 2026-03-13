@@ -2,253 +2,287 @@
   <div class="min-h-screen bg-gray-50 p-6">
 
     <!-- Header -->
-    <div class="max-w-6xl mx-auto mb-8">
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="max-w-6xl mx-auto mb-6">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="bg-blue-900 p-3 rounded-lg">
-              <Users class="w-6 h-6 text-white" />
+            <div class="bg-blue-900 p-2.5 rounded-lg">
+              <UsersIcon class="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 class="text-2xl font-bold text-gray-900">Turmas</h1>
-              <p class="text-gray-500 text-sm">
-                Confirmar ingressos e gerir turmas
-              </p>
+              <h1 class="text-xl font-semibold text-gray-900">Turmas</h1>
+              <p class="text-gray-400 text-sm">Confirmar ingressos e gerir turmas</p>
             </div>
           </div>
-          <div class="flex gap-2">
-            <!-- Banner de progresso de confirmação -->
+          <div class="flex items-center gap-3">
+            <!-- Confirmation progress pill -->
             <div v-if="confirmationProgress"
-              class="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
-              <AlertCircle class="w-4 h-4" />
-              {{ confirmationProgress.confirmed }}/{{ confirmationProgress.total }} turmas confirmadas
+              class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-700 font-medium">
+              <AlertCircle class="w-3.5 h-3.5" />
+              {{ confirmationProgress.confirmed }}/{{ confirmationProgress.total }} confirmadas
             </div>
-            <button
-              @click="openCreateModal"
-              class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition"
-            >
-              <Plus class="w-5 h-5" />
-              Nova Turma
+            <button @click="openCreateModal"
+              class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
+              <Plus class="w-4 h-4" />
+              Nova turma
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Tabela -->
+    <!-- Table -->
     <div class="max-w-6xl mx-auto">
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <table class="w-full">
-          <thead class="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Turma</th>
-              <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Curso</th>
-              <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Ano Lectivo</th>
-              <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Semestre</th>
-              <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Alunos</th>
-              <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-              <th class="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Acções</th>
+      <!-- Delete confirmation banner -->
+      <div v-if="confirmDeleteId !== null"
+        class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+        <span class="text-sm text-red-700">Tem a certeza que quer eliminar esta turma?</span>
+        <div class="flex gap-2">
+          <button @click="confirmDeleteId = null"
+            class="px-3 py-1.5 text-xs border border-gray-200 text-gray-500 rounded-md hover:bg-white transition">
+            Cancelar
+          </button>
+          <button @click="handleDelete(confirmDeleteId!)"
+            class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium">
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100">
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Turma</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Curso</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Ano lectivo</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Semestre</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Alunos</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Estado</th>
+              <th class="px-5 py-3" />
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr v-for="cohort in mappedCohorts" :key="cohort.id"
-              :class="cohort.status === 'ESTIMATED' ? 'bg-amber-50/30' : 'bg-white'">
-              <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ cohort.turma }}</td>
-              <td class="px-6 py-4 text-sm text-gray-600">{{ cohort.courseName }}</td>
-              <td class="px-6 py-4 text-sm text-gray-600">{{ cohort.academicYear }}</td>
-              <td class="px-6 py-4 text-sm text-gray-600">{{ cohort.semester }}º Semestre</td>
-              <td class="px-6 py-4 text-sm text-gray-600">
-                <span :class="cohort.status === 'ESTIMATED' ? 'text-amber-600 italic' : 'text-gray-900'">
+          <tbody>
+            <tr v-if="mappedCohorts.length === 0">
+              <td colspan="7" class="text-center py-16 text-gray-400 text-sm">
+                <UsersIcon class="w-8 h-8 mx-auto mb-3 text-gray-300" />
+                Nenhuma turma encontrada
+              </td>
+            </tr>
+            <tr
+              v-for="cohort in mappedCohorts"
+              :key="cohort.id"
+              class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors group"
+              :class="cohort.status === 'ESTIMATED' ? 'bg-amber-50/20' : ''"
+            >
+              <td class="px-5 py-3.5 font-medium text-gray-800">{{ cohort.turma }}</td>
+              <td class="px-5 py-3.5 text-gray-500">{{ cohort.courseName }}</td>
+              <td class="px-5 py-3.5 text-gray-500">{{ cohort.academicYear }}</td>
+              <td class="px-5 py-3.5 text-gray-500">{{ cohort.semester }}º sem.</td>
+              <td class="px-5 py-3.5">
+                <span :class="cohort.status === 'ESTIMATED' ? 'text-amber-600 italic' : 'text-gray-700'">
                   {{ cohort.studentCount }}
-                  <span v-if="cohort.status === 'ESTIMATED'" class="text-xs">(est.)</span>
+                  <span v-if="cohort.status === 'ESTIMATED'" class="text-xs not-italic text-amber-500">(est.)</span>
                 </span>
               </td>
-              <td class="px-6 py-4">
+              <td class="px-5 py-3.5">
                 <span :class="statusBadgeClass(cohort.status)"
-                  class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium">
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium">
                   <Clock v-if="cohort.status === 'ESTIMATED'" class="w-3 h-3" />
                   <CheckCircle v-else-if="cohort.status === 'CONFIRMED'" class="w-3 h-3" />
                   {{ statusLabels[cohort.status] ?? cohort.status }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-right">
+              <td class="px-5 py-3.5">
                 <div class="flex items-center justify-end gap-2">
-                  <!-- Confirmar ingressos (turmas estimadas) -->
+                  <!-- Confirm enrolments (estimated cohorts) -->
                   <button v-if="cohort.status === 'ESTIMATED'"
                     @click="openConfirmModal(cohort)"
-                    class="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition">
-                    <CheckCircle class="w-3.5 h-3.5" />
+                    class="flex items-center gap-1 px-2.5 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 transition opacity-0 group-hover:opacity-100">
+                    <CheckCircle class="w-3 h-3" />
                     Confirmar
                   </button>
-                  <!-- Editar (turmas confirmadas) -->
+                  <!-- Edit (confirmed cohorts) -->
                   <button v-else
                     @click="openEditModal(cohort)"
-                    class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded transition">
-                    <Edit class="w-4 h-4" />
+                    class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition opacity-0 group-hover:opacity-100">
+                    <Edit class="w-3.5 h-3.5" />
                   </button>
-                  <!-- Eliminar -->
+                  <!-- Delete -->
                   <button
-                    @click="handleDelete(cohort.id)"
-                    class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
-                    <Trash2 class="w-4 h-4" />
+                    @click="confirmDeleteId = cohort.id"
+                    class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition opacity-0 group-hover:opacity-100">
+                    <Trash2 class="w-3.5 h-3.5" />
                   </button>
                 </div>
-              </td>
-            </tr>
-            <tr v-if="mappedCohorts.length === 0">
-              <td colspan="7" class="px-6 py-12 text-center text-gray-400 text-sm">
-                Nenhuma turma encontrada
               </td>
             </tr>
           </tbody>
         </table>
 
-        <!-- Paginação -->
-        <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <p class="text-sm text-gray-500">
-            Página {{ currentPage + 1 }} de {{ cohortStore.cohortsPage?.page.totalPages ?? 1 }}
-          </p>
-          <div class="flex gap-2">
-            <button :disabled="currentPage === 0"
-              @click="fetchCohorts(currentPage - 1)"
-              class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 transition">
-              Anterior
-            </button>
-            <button :disabled="currentPage + 1 >= (cohortStore.cohortsPage?.page.totalPages ?? 1)"
-              @click="fetchCohorts(currentPage + 1)"
-              class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 transition">
-              Seguinte
-            </button>
-          </div>
+        <!-- Pagination -->
+        <div class="border-t border-gray-100">
+          <Pagination
+            :page="currentPage"
+            :totalPages="cohortStore.cohortsPage?.page.totalPages ?? 1"
+            @update:page="fetchCohorts"
+          />
         </div>
       </div>
     </div>
 
-    <!-- Modal: Confirmar Ingressos -->
+    <!-- Modal: Confirm enrolments -->
     <div v-if="showConfirmModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
       @click.self="showConfirmModal = false">
-      <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-        <div class="border-b border-gray-200 p-6">
-          <div class="flex items-center gap-3">
-            <div class="bg-green-100 p-2 rounded-lg">
-              <CheckCircle class="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <h2 class="text-xl font-semibold text-gray-900">Confirmar Ingressos</h2>
-              <p class="text-sm text-gray-500 mt-0.5">{{ confirmingCohort?.turma }} · {{ confirmingCohort?.courseName }}</p>
-            </div>
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-100">
+
+        <div class="p-5 border-b border-gray-100 flex items-center gap-3">
+          <div class="bg-green-50 p-2 rounded-lg">
+            <CheckCircle class="w-4 h-4 text-green-600" />
+          </div>
+          <div>
+            <h2 class="text-base font-semibold text-gray-900">Confirmar ingressos</h2>
+            <p class="text-xs text-gray-400 mt-0.5">
+              {{ confirmingCohort?.turma }} · {{ confirmingCohort?.courseName }}
+            </p>
           </div>
         </div>
 
-        <div class="p-6 space-y-4">
-          <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
-            Estimativa inicial: <strong>{{ confirmingCohort?.studentCount }} alunos</strong>.
-            Insira o número real de ingressos confirmados.
+        <div class="p-5 space-y-4">
+          <!-- Info banner -->
+          <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+            <AlertCircle class="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+            <p class="text-xs text-amber-700">
+              Estimativa inicial: <strong>{{ confirmingCohort?.studentCount }} alunos</strong>.
+              Insira o número real de ingressos confirmados.
+            </p>
           </div>
 
-<input
-  v-model.number="confirmForm.studentCount"
-  type="number"
-  min="1"
-  :max="cohortStore.maxRoomCapacity ?? 200"
-/>
-<p v-if="cohortStore.maxRoomCapacity && confirmForm.studentCount > cohortStore.maxRoomCapacity"
-   class="text-xs text-red-500 mt-1 flex items-center gap-1">
-  <AlertCircle class="w-3 h-3" />
-  Excede a capacidade máxima das salas ({{ cohortStore.maxRoomCapacity }} alunos).
-  Considere criar uma turma adicional.
-</p>
-<p v-else class="text-xs text-gray-400 mt-1">
-  Capacidade máxima das salas: {{ cohortStore.maxRoomCapacity }} alunos
-</p>
+          <!-- Input -->
+          <div>
+            <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
+              <UsersIcon class="w-3.5 h-3.5" />
+              Número de ingressos <span class="text-blue-900">*</span>
+            </label>
+            <input
+              v-model.number="confirmForm.studentCount"
+              type="number"
+              min="1"
+              :max="cohortStore.maxRoomCapacity ?? 200"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800"
+            />
+            <p v-if="cohortStore.maxRoomCapacity && confirmForm.studentCount > cohortStore.maxRoomCapacity"
+              class="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+              <AlertCircle class="w-3 h-3" />
+              Excede a capacidade máxima das salas ({{ cohortStore.maxRoomCapacity }} alunos).
+              Considere criar uma turma adicional.
+            </p>
+            <p v-else class="text-xs text-gray-400 mt-1.5">
+              Capacidade máxima das salas: {{ cohortStore.maxRoomCapacity }} alunos
+            </p>
+          </div>
 
-          <div class="flex gap-3 pt-2">
+          <div class="flex gap-2 pt-1">
             <button type="button" @click="showConfirmModal = false"
-              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button @click="handleConfirm"
-              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
-              <CheckCircle class="w-4 h-4" />
-              Confirmar Ingressos
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition flex items-center justify-center gap-1.5 font-medium">
+              <CheckCircle class="w-3.5 h-3.5" />
+              Confirmar ingressos
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal: Criar / Editar -->
+    <!-- Modal: Create / Edit -->
     <div v-if="showModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
       @click.self="closeModal">
-      <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div class="border-b border-gray-200 p-6">
-          <div class="flex items-center gap-3">
-            <div :class="isEditing ? 'bg-amber-100' : 'bg-blue-100'" class="p-2 rounded-lg">
-              <Edit v-if="isEditing" class="w-5 h-5 text-amber-600" />
-              <UserPlus v-else class="w-5 h-5 text-blue-600" />
-            </div>
-            <h2 class="text-xl font-semibold text-gray-900">
-              {{ isEditing ? 'Editar Turma' : 'Nova Turma' }}
-            </h2>
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
+
+        <div class="p-5 border-b border-gray-100 flex items-center gap-3">
+          <div :class="isEditing ? 'bg-amber-50' : 'bg-blue-50'" class="p-2 rounded-lg">
+            <Edit v-if="isEditing" class="w-4 h-4 text-amber-600" />
+            <UserPlus v-else class="w-4 h-4 text-blue-900" />
           </div>
+          <h2 class="text-base font-semibold text-gray-900">
+            {{ isEditing ? 'Editar turma' : 'Nova turma' }}
+          </h2>
         </div>
 
+        <!-- Loading state -->
         <div v-if="loadingDetail" class="flex items-center justify-center py-12">
-          <Loader2 class="w-6 h-6 animate-spin text-blue-900" />
+          <Loader2 class="w-5 h-5 animate-spin text-blue-900" />
         </div>
 
-        <form v-else @submit.prevent="handleSubmit" class="p-6 space-y-5">
-          <div class="grid grid-cols-2 gap-4">
+        <form v-else @submit.prevent="handleSubmit" class="p-5 space-y-4">
+
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Ano Curricular *</label>
+              <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+                Ano curricular <span class="text-blue-900">*</span>
+              </label>
               <input v-model.number="form.year" type="number" min="1" max="5" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent transition" />
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Secção *</label>
+              <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+                Secção <span class="text-blue-900">*</span>
+              </label>
               <input v-model="form.section" type="text" required maxlength="2"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent transition uppercase" />
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 uppercase" />
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Ano Lectivo *</label>
+              <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+                Ano lectivo <span class="text-blue-900">*</span>
+              </label>
               <input v-model.number="form.academicYear" type="number" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent transition" />
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Semestre *</label>
+              <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+                Semestre <span class="text-blue-900">*</span>
+              </label>
               <select v-model.number="form.semester" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent transition">
-                <option value="" disabled>Seleccionar</option>
-                <option :value="1">1º Semestre</option>
-                <option :value="2">2º Semestre</option>
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800">
+                <option value="" disabled>Selecionar</option>
+                <option :value="1">1º semestre</option>
+                <option :value="2">2º semestre</option>
               </select>
             </div>
           </div>
 
           <div v-if="!isEditing">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Curso *</label>
+            <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+              Curso <span class="text-blue-900">*</span>
+            </label>
             <select v-model.number="form.courseId" required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent transition">
-              <option value="" disabled>Seleccionar curso</option>
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800">
+              <option value="" disabled>Selecionar curso</option>
               <option v-for="course in courseStore.courses" :key="course.id" :value="course.id">
                 {{ course.name }}
               </option>
             </select>
           </div>
 
-          <div class="flex gap-3 pt-2">
+          <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
-              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button type="submit"
-              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition flex items-center justify-center gap-2">
-              {{ isEditing ? 'Guardar' : 'Criar' }}
+              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
+              <Check class="w-3.5 h-3.5" />
+              {{ isEditing ? 'Guardar alterações' : 'Criar turma' }}
             </button>
           </div>
         </form>
@@ -264,9 +298,19 @@ import { useCohortStore } from '@/stores/cohorts'
 import { useCourseStore } from '@/stores/course'
 import { useToast } from '@/composables/useToast'
 import type { CohortListResponse } from '@/services/dto/cohort'
+import Pagination from '@/component/ui/Pagination.vue'
 import {
-  Users, Plus, Edit, UserPlus, CheckCircle, Clock,
-  AlertCircle, Trash2, Loader2, X
+  Users as UsersIcon,
+  Plus,
+  Edit,
+  UserPlus,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Trash2,
+  Loader2,
+  X,
+  Check,
 } from 'lucide-vue-next'
 
 const cohortStore = useCohortStore()
@@ -279,8 +323,8 @@ const showConfirmModal = ref(false)
 const isEditing = ref(false)
 const editingId = ref<number | null>(null)
 const loadingDetail = ref(false)
+const confirmDeleteId = ref<number | null>(null)
 
-// Turma a confirmar
 const confirmingCohort = ref<(CohortListResponse & { turma: string }) | null>(null)
 const confirmForm = reactive({ studentCount: 35 })
 
@@ -293,7 +337,7 @@ const form = reactive({
   studentIds: [] as number[],
 })
 
-// ── Computed ────────────────────────────────────────────────────────
+// ── Computed ─────────────────────────────────────────────────────────
 const mappedCohorts = computed(() =>
   (cohortStore.cohortsPage?.content ?? []).map((c: CohortListResponse) => ({
     ...c,
@@ -311,20 +355,18 @@ const confirmationProgress = computed(() => {
 const statusLabels: Record<string, string> = {
   ESTIMATED: 'Estimado',
   CONFIRMED: 'Confirmado',
-  ACTIVE: 'Activo',
-  ARCHIVED: 'Arquivado',
+  ACTIVE:    'Activo',
+  ARCHIVED:  'Arquivado',
 }
 
-function statusBadgeClass(status: string) {
-  return {
-    'ESTIMATED': 'bg-amber-100 text-amber-700',
-    'CONFIRMED': 'bg-green-100 text-green-700',
-    'ACTIVE':    'bg-blue-100 text-blue-700',
-    'ARCHIVED':  'bg-gray-100 text-gray-500',
-  }[status] ?? 'bg-gray-100 text-gray-500'
-}
+const statusBadgeClass = (status: string) => ({
+  ESTIMATED: 'bg-amber-100 text-amber-700',
+  CONFIRMED: 'bg-green-100 text-green-700',
+  ACTIVE:    'bg-blue-100 text-blue-700',
+  ARCHIVED:  'bg-gray-100 text-gray-500',
+}[status] ?? 'bg-gray-100 text-gray-500')
 
-// ── Lifecycle ───────────────────────────────────────────────────────
+// ── Lifecycle ─────────────────────────────────────────────────────────
 onMounted(() => fetchCohorts())
 
 async function fetchCohorts(page = 0) {
@@ -332,10 +374,10 @@ async function fetchCohorts(page = 0) {
   await cohortStore.fetchCohorts(page, 10)
 }
 
-// ── Confirmar ingressos ─────────────────────────────────────────────
+// ── Confirm enrolments ────────────────────────────────────────────────
 async function openConfirmModal(cohort: CohortListResponse & { turma: string }) {
   confirmingCohort.value = cohort
-  confirmForm.studentCount = cohort.studentCount // pré-preenche com estimativa
+  confirmForm.studentCount = cohort.studentCount
   await cohortStore.fetchMaxRoomCapacity()
   showConfirmModal.value = true
 }
@@ -352,7 +394,7 @@ async function handleConfirm() {
   }
 }
 
-// ── Modal criar/editar ──────────────────────────────────────────────
+// ── Create / Edit modal ───────────────────────────────────────────────
 async function openCreateModal() {
   isEditing.value = false
   editingId.value = null
@@ -371,10 +413,8 @@ async function openEditModal(row: CohortListResponse) {
   editingId.value = row.id
   showModal.value = true
   loadingDetail.value = true
-
   await cohortStore.fetchCohort(row.id)
   const detail = cohortStore.selectedCohort
-
   if (detail) {
     form.year = detail.year
     form.section = detail.section
@@ -383,7 +423,6 @@ async function openEditModal(row: CohortListResponse) {
     form.courseId = detail.courseId
     form.studentIds = detail.studentIds ?? []
   }
-
   loadingDetail.value = false
 }
 
@@ -434,9 +473,9 @@ async function handleUpdate() {
 }
 
 async function handleDelete(id: number) {
-  if (!confirm('Tem a certeza que deseja eliminar esta turma?')) return
   try {
     await cohortStore.deleteCohort(id)
+    confirmDeleteId.value = null
     toast.success('Turma eliminada com sucesso!')
     fetchCohorts(currentPage.value)
   } catch {

@@ -1,64 +1,62 @@
 <template>
-  <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-    <table class="min-w-full">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <table class="w-full text-sm">
       <thead>
-        <tr class="bg-gray-50 border-b border-gray-200">
+        <tr class="border-b border-gray-100">
           <th
             v-for="col in columns"
             :key="col.key"
-            class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide"
           >
             {{ col.label }}
           </th>
-          <th class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-            Ações
-          </th>
+          <th class="px-5 py-3" />
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
+      <tbody>
+        <tr v-if="rows.length === 0">
+          <td :colspan="columns.length + 1" class="text-center py-16 text-gray-400 text-sm">
+            <slot name="empty">Nenhum registo encontrado</slot>
+          </td>
+        </tr>
         <tr
           v-for="row in rows"
           :key="row.id"
-          class="hover:bg-gray-50 transition"
+          class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors group"
         >
           <td
             v-for="col in columns"
             :key="col.key"
-            class="px-6 py-4 text-sm text-gray-900"
+            class="px-5 py-3.5"
           >
-            {{ row[col.key] }}
+            <!-- Custom cell slot: name pattern is `cell-{key}` -->
+            <slot :name="`cell-${col.key}`" :row="row" :value="row[col.key]">
+              <span class="text-gray-700">{{ row[col.key] }}</span>
+            </slot>
           </td>
-          <td class="px-6 py-4">
-            <div class="flex items-center justify-end gap-2">
+          <td class="px-5 py-3.5">
+            <div class="flex gap-2 justify-end">
               <button
                 @click="$emit('edit', row)"
-                class="p-2 text-gray-400 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition"
+                class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-blue-900 hover:border-blue-200 hover:bg-blue-50 transition opacity-0 group-hover:opacity-100"
                 title="Editar"
               >
-                <Edit2 class="w-4 h-4" />
+                <Edit2 class="w-3.5 h-3.5" />
               </button>
               <button
                 @click="$emit('delete', row.id)"
-                class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                title="Apagar"
+                class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition opacity-0 group-hover:opacity-100"
+                title="Eliminar"
               >
-                <Trash2 class="w-4 h-4" />
+                <Trash2 class="w-3.5 h-3.5" />
               </button>
             </div>
-          </td>
-        </tr>
-        <tr v-if="rows.length === 0">
-          <td
-            :colspan="columns.length + 1"
-            class="px-6 py-12 text-center text-gray-500"
-          >
-            Nenhum registo encontrado
           </td>
         </tr>
       </tbody>
     </table>
 
-    <div class="border-t border-gray-200">
+    <div class="border-t border-gray-100">
       <Pagination
         :page="currentPage"
         :totalPages="totalPages"

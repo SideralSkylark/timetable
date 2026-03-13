@@ -1,42 +1,47 @@
 <template>
-  <div class="flex items-center justify-between py-4 px-6 bg-white rounded-lg border border-gray-200">
+  <div class="flex items-center justify-between px-5 py-3">
+
+    <!-- Prev -->
     <button
-      class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition
-             enabled:hover:bg-blue-900 enabled:hover:text-white
-             disabled:opacity-40 disabled:cursor-not-allowed
-             text-gray-700 border border-gray-300"
       :disabled="page === 0"
       @click="$emit('update:page', page - 1)"
+      class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition"
+      :class="page === 0
+        ? 'border-gray-100 text-gray-300 cursor-not-allowed'
+        : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300'"
     >
-      <ChevronLeft class="w-4 h-4" />
+      <ChevronLeft class="w-3.5 h-3.5" />
       Anterior
     </button>
 
-    <div class="flex items-center gap-2">
+    <!-- Page numbers -->
+    <div class="flex items-center gap-1">
       <button
         v-for="pageNum in visiblePages"
         :key="pageNum"
-        class="w-10 h-10 text-sm font-medium rounded-lg transition"
+        @click="$emit('update:page', pageNum - 1)"
+        class="w-7 h-7 text-xs font-medium rounded-md transition flex items-center justify-center"
         :class="pageNum === page + 1
           ? 'bg-blue-900 text-white'
-          : 'text-gray-600 hover:bg-gray-100'"
-        @click="$emit('update:page', pageNum - 1)"
+          : 'text-gray-500 hover:bg-gray-100'"
       >
         {{ pageNum }}
       </button>
     </div>
 
+    <!-- Next -->
     <button
-      class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition
-             enabled:hover:bg-blue-900 enabled:hover:text-white
-             disabled:opacity-40 disabled:cursor-not-allowed
-             text-gray-700 border border-gray-300"
       :disabled="page + 1 >= totalPages"
       @click="$emit('update:page', page + 1)"
+      class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition"
+      :class="page + 1 >= totalPages
+        ? 'border-gray-100 text-gray-300 cursor-not-allowed'
+        : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300'"
     >
       Próximo
-      <ChevronRight class="w-4 h-4" />
+      <ChevronRight class="w-3.5 h-3.5" />
     </button>
+
   </div>
 </template>
 
@@ -54,22 +59,12 @@ defineEmits(['update:page'])
 const visiblePages = computed(() => {
   const current = props.page + 1
   const total = props.totalPages
-  const pages: number[] = []
-
   let start = Math.max(1, current - 2)
   let end = Math.min(total, current + 2)
-
-  if (current <= 3) {
-    end = Math.min(5, total)
-  }
-  if (current >= total - 2) {
-    start = Math.max(1, total - 4)
-  }
-
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-
+  if (current <= 3) end = Math.min(5, total)
+  if (current >= total - 2) start = Math.max(1, total - 4)
+  const pages: number[] = []
+  for (let i = start; i <= end; i++) pages.push(i)
   return pages
 })
 </script>
