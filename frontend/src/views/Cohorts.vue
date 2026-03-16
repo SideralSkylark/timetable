@@ -211,6 +211,12 @@
                     class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition opacity-0 group-hover:opacity-100">
                     <Edit class="w-3.5 h-3.5" />
                   </button>
+<button
+  @click="openStudentsModal(cohort)"
+  class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-blue-900 hover:border-blue-200 hover:bg-blue-50 transition opacity-0 group-hover:opacity-100"
+  title="Gerir estudantes">
+  <UsersIcon class="w-3.5 h-3.5" />
+</button>
                   <button
                     @click="confirmDeleteId = cohort.id"
                     class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition opacity-0 group-hover:opacity-100">
@@ -387,13 +393,87 @@
         </form>
       </div>
     </div>
+<!-- Modal: Gerir estudantes -->
+<div v-if="showStudentsModal"
+  class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+  @click.self="showStudentsModal = false">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col border border-gray-100">
 
+    <div class="p-5 border-b border-gray-100 flex items-center gap-3 shrink-0">
+      <div class="bg-blue-50 p-2 rounded-lg">
+        <UsersIcon class="w-4 h-4 text-blue-900" />
+      </div>
+      <div>
+        <h2 class="text-base font-semibold text-gray-900">Gerir estudantes</h2>
+        <p class="text-xs text-gray-400 mt-0.5">{{ studentsModalCohort?.turma }}</p>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="px-5 pt-4 shrink-0">
+      <div class="relative">
+        <input
+          v-model="studentSearch"
+          type="text"
+          placeholder="Pesquisar estudante..."
+          class="w-full h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+        />
+        <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      </div>
+      <p class="text-xs text-gray-400 mt-2">
+        {{ selectedStudentIds.length }} estudante(s) seleccionado(s)
+      </p>
+    </div>
+
+    <!-- Student list -->
+    <div class="flex-1 overflow-y-auto px-5 py-3 space-y-1 min-h-0">
+      <div v-if="loadingStudents" class="flex justify-center py-8">
+        <Loader2 class="w-5 h-5 animate-spin text-blue-900" />
+      </div>
+      <template v-else>
+        <label
+          v-for="student in filteredStudentList"
+          :key="student.id"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-50 transition"
+          :class="selectedStudentIds.includes(student.id) ? 'bg-blue-50' : ''">
+          <input
+            type="checkbox"
+            :value="student.id"
+            v-model="selectedStudentIds"
+            class="w-4 h-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
+          />
+          <div>
+            <span class="text-sm font-medium text-gray-800">{{ student.username }}</span>
+            <span class="text-xs text-gray-400 ml-2">{{ student.email }}</span>
+          </div>
+        </label>
+        <div v-if="filteredStudentList.length === 0" class="text-center py-8 text-gray-400 text-sm">
+          Nenhum estudante encontrado
+        </div>
+      </template>
+    </div>
+
+    <div class="p-5 border-t border-gray-100 flex gap-2 shrink-0">
+      <button type="button" @click="showStudentsModal = false"
+        class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+        <X class="w-3.5 h-3.5" />
+        Cancelar
+      </button>
+      <button @click="handleSaveStudents"
+        class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
+        <Check class="w-3.5 h-3.5" />
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useCohortStore } from '@/stores/cohorts'
+import { useUserStore } from '@/stores/user'
 import { useCourseStore } from '@/stores/course'
 import { useToast } from '@/composables/useToast'
 import type { CohortListResponse } from '@/services/dto/cohort'
@@ -416,6 +496,7 @@ import {
 
 const cohortStore = useCohortStore()
 const courseStore = useCourseStore()
+const userStore = useUserStore()
 const toast = useToast()
 
 const currentPage = ref(0)
@@ -436,6 +517,56 @@ const form = reactive({
   courseId: '' as number | '',
   studentIds: [] as number[],
 })
+
+// ── Students modal ────────────────────────────────────────────────
+const showStudentsModal = ref(false)
+const studentsModalCohort = ref<(CohortListResponse & { turma: string }) | null>(null)
+const selectedStudentIds = ref<number[]>([])
+const studentSearch = ref('')
+const loadingStudents = ref(false)
+const allStudents = ref<{ id: number; username: string; email: string }[]>([])
+
+const filteredStudentList = computed(() => {
+  const q = studentSearch.value.trim().toLowerCase()
+  if (!q) return allStudents.value
+  return allStudents.value.filter(s =>
+    s.username.toLowerCase().includes(q) ||
+    s.email.toLowerCase().includes(q)
+  )
+})
+
+async function openStudentsModal(cohort: CohortListResponse & { turma: string }) {
+  studentsModalCohort.value = cohort
+  studentSearch.value = ''
+  loadingStudents.value = true
+  showStudentsModal.value = true
+
+  try {
+    const [students, detail] = await Promise.all([
+      userStore.fetchStudents(),
+      cohortStore.fetchCohort(cohort.id),
+    ])
+    allStudents.value = students
+    selectedStudentIds.value = cohortStore.selectedCohort?.studentIds ?? []
+  } finally {
+    loadingStudents.value = false
+  }
+}
+
+async function handleSaveStudents() {
+  if (!studentsModalCohort.value) return
+  try {
+    await cohortStore.updateCohortStudents(
+      studentsModalCohort.value.id,
+      selectedStudentIds.value
+    )
+    toast.success('Estudantes actualizados com sucesso!')
+    showStudentsModal.value = false
+    fetchCohorts(currentPage.value)
+  } catch {
+    toast.error('Erro ao actualizar estudantes.')
+  }
+}
 
 // ── Filters ───────────────────────────────────────────────────────
 const filters = reactive({

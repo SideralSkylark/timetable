@@ -190,6 +190,19 @@ public class CohortService {
     }
 
     @Transactional
+    public Cohort updateStudents(Long cohortId, List<Long> studentIds) {
+        Cohort cohort = getById(cohortId);
+
+        Set<ApplicationUser> students = studentIds.stream()
+                .map(userService::getUserById)
+                .filter(u -> u.hasRole(UserRole.STUDENT))
+                .collect(Collectors.toSet());
+
+        cohort.setStudents(students);
+        return cohortRepository.save(cohort);
+    }
+
+    @Transactional
     public void deleteCohort(Long id) {
         if (!cohortRepository.existsById(id)) {
             throw new CohortNotFoundException(String.format("Cohort with id %d not found", id));

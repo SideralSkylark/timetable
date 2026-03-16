@@ -4,6 +4,9 @@ import com.timetable.timetable.domain.schedule.entity.ScheduledClass;
 import com.timetable.timetable.domain.schedule.entity.Timetable;
 import com.timetable.timetable.domain.schedule.repository.ScheduledClassRepository;
 import com.timetable.timetable.domain.schedule.repository.TimetableRepository;
+import com.timetable.timetable.domain.user.entity.ApplicationUser;
+import com.timetable.timetable.domain.user.service.UserService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +29,7 @@ public class TimetableLoadController {
 
     private final TimetableRepository timetableRepository;
     private final ScheduledClassRepository scheduledClassRepository;
+    private final UserService userService;
 
     @GetMapping("/{year}/{semester}")
     @Transactional
@@ -96,5 +100,88 @@ public class TimetableLoadController {
                         "email", sc.getTeacher().getEmail()),
                 "studentCount", sc.getCohort().getStudentCount(),
                 "courseId", sc.getCohort().getCourse().getId());
+    }
+
+    @GetMapping("/me/student")
+    @Transactional
+    public ResponseEntity<?> getMyStudentTimetable(
+            @RequestParam int year,
+            @RequestParam int semester) {
+
+        ApplicationUser user = userService.getAuthenticatedUserProfile();
+
+        // Encontra a turma do estudante para o período
+        List<ScheduledClass> classes = scheduledClassRepository
+                .findAllWithDetailsByPeriod(year, semester)
+                .stream()
+                .filter(sc -> sc.getCohort().getStudents().contains(user))
+                .toList();
+
+        if (classes.isEmpty())
+            return ResponseEntity.ok(Map.of(
+                    "lessonAssignments", List.of(),
+                    "feasible", true,
+                    "score", "0hard/0soft",
+                    "status", "PUBLISHED",
+                    "totalLessons", 0,
+                    "unassignedLessons", 0));
+
+        Timetable timetable = timetableRepository
+                .findByAcademicYearAndSemester(year, semester)
+                .orElseThrow();
+
+        return ResponseEntity.ok(Map.of(
+                "id", timetable.getId(),
+                "academicYear", timetable.getAcademicYear(),
+                "semester", timetable.getSemester(),
+                "status", timetable.getStatus().name(),
+                "feasible", true,
+                "score", "0hard/0soft",
+                "totalLessons", classes.size(),
+                "unassignedLessons", 0,
+                "lessonAssignments", classes.stream()
+                        .map(TimetableLoadController::toLessonAssignment)
+                        .toList()));
+    }
+
+    @GetMapping("/me/teacher")
+    @Transactional
+    public ResponseEntity<?> getMyTeacherTimetable(
+            @RequestParam int year,
+            @RequestParam int semester) {
+
+        ApplicationUser user = userService.getAuthenticatedUserProfile();
+
+        List<ScheduledClass> classes = scheduledClassRepository
+                .findAllWithDetailsByPeriod(year, semester)
+                .stream()
+                .filter(sc -> sc.getTeacher().getId().equals(user.getId()))
+                .toList();
+
+        if (classes.isEmpty())
+            return ResponseEntity.ok(Map.of(
+                    "lessonAssignments", List.of(),
+                    "feasible", true,
+                    "score", "0hard/0soft",
+                    "status", "PUBLISHED",
+                    "totalLessons", 0,
+                    "unassignedLessons", 0));
+
+        Timetable timetable = timetableRepository
+                .findByAcademicYearAndSemester(year, semester)
+                .orElseThrow();
+
+        return ResponseEntity.ok(Map.of(
+                "id", timetable.getId(),
+                "academicYear", timetable.getAcademicYear(),
+                "semester", timetable.getSemester(),
+                "status", timetable.getStatus().name(),
+                "feasible", true,
+                "score", "0hard/0soft",
+                "totalLessons", classes.size(),
+                "unassignedLessons", 0,
+                "lessonAssignments", classes.stream()
+                        .map(TimetableLoadController::toLessonAssignment)
+                        .toList()));
     }
 }

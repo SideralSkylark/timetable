@@ -20,6 +20,28 @@ export const useUserStore = defineStore('user', {
     error: null,
   }),
 
+  getters: {
+    myHighestRole(state): string {
+      const hierarchy: Record<string, number> = {
+        USER: 1, STUDENT: 2, TEACHER: 3,
+        COORDINATOR: 4, ASISTENT: 5, DIRECTOR: 6, ADMIN: 7,
+      }
+      if (!state.currentUser) return 'USER'
+      return state.currentUser.roles.reduce((best, role) => {
+        return (hierarchy[role] ?? 0) > (hierarchy[best] ?? 0) ? role : best
+      }, 'USER')
+    },
+
+    myPriority(state): number {
+      const hierarchy: Record<string, number> = {
+        USER: 1, STUDENT: 2, TEACHER: 3,
+        COORDINATOR: 4, ASISTENT: 5, DIRECTOR: 6, ADMIN: 7,
+      }
+      if (!state.currentUser) return 0
+      return Math.max(...state.currentUser.roles.map(r => hierarchy[r] ?? 0))
+    },
+  },
+
   actions: {
     // ===============================
     // Authenticated user actions
@@ -76,6 +98,11 @@ export const useUserStore = defineStore('user', {
       } finally {
         this.loading = false
       }
+    },
+
+    async fetchStudents(): Promise<UserResponse[]> {
+      const students = await userService.admin.getStudents()
+      return students
     },
 
     async createUser(data: CreateUserRequest) {

@@ -54,6 +54,14 @@ export const cohortService = {
     return res.data.data
   },
 
+  async updateStudents(id: number, studentIds: number[]) {
+    const res = await api.put<ApiResponse<CohortResponse>>(
+      `${BASE_URL}/${id}/students`,
+      { studentIds }
+    )
+    return res.data.data
+  },
+
   async delete(id: number) {
     await api.delete(`${BASE_URL}/${id}`)
   },

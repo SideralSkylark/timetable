@@ -97,6 +97,7 @@ const dashboardRoutes = [
   { name: 'Cohorts',       label: 'Turmas',       icon: UsersIcon,    roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
   { name: 'Users',         label: 'Utilizadores', icon: UsersIcon,    roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
   { name: 'Timetable',     label: 'Horários',     icon: CalendarDays, roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'MyTimetableView',     label: 'Meu Horário',     icon: CalendarDays, roles: ['STUDENT', 'TEACHER'] },
 ]
 
 const allowedRoutes = computed(() => {

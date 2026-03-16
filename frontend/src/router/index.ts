@@ -10,6 +10,7 @@ import Timetable from '@/views/Timetable.vue'
 import Forbidden from '@/views/Forbidden.vue'
 import Rooms from '@/views/Rooms.vue'
 import Courses from '@/views/Courses.vue'
+import MyTimetableView from '@/views/MyTimetableView.vue'
 
 const routes = [
   {
@@ -52,8 +53,15 @@ const routes = [
         path: 'timetable',
         name: 'Timetable',
         component: Timetable,
-        meta: { roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'], label: 'Horarios'},
+        meta: { roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'], label: 'Horarios' },
       },
+      {
+        path: 'my-timetable',
+        name: 'MyTimetableView',
+        component: MyTimetableView,
+        meta: { roles: ['STUDENT', 'TEACHER'], label: 'Meu Horario' },
+      },
+
     ],
   },
   { path: '/forbidden', name: 'Forbidden', component: Forbidden },

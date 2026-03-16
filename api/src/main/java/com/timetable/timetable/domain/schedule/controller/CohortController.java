@@ -7,6 +7,7 @@ import com.timetable.timetable.domain.schedule.dto.CohortResponse;
 import com.timetable.timetable.domain.schedule.dto.ConfirmCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
+import com.timetable.timetable.domain.schedule.dto.UpdateCohortStudentsRequest;
 import com.timetable.timetable.domain.schedule.query.CohortQueryService;
 import com.timetable.timetable.domain.schedule.service.CohortService;
 
@@ -70,6 +71,15 @@ public class CohortController {
         return ResponseFactory.ok(
                 CohortResponse.from(cohortService.updateCohort(id, request)),
                 "Cohort updated successfully.");
+    }
+
+    @PutMapping("/{id}/students")
+    public ResponseEntity<ApiResponse<CohortResponse>> updateStudents(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateCohortStudentsRequest request) {
+        return ResponseFactory.ok(
+                CohortResponse.from(cohortService.updateStudents(id, request.studentIds())),
+                "Students updated successfully.");
     }
 
     @DeleteMapping("/{id}")

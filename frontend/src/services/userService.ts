@@ -37,13 +37,17 @@ export const userService = {
       const res = await api.get<ApiResponse<UserResponse>>(`/v1/admins/${id}`)
       return res.data.data
     },
+    getStudents: async (): Promise<UserResponse[]> => {
+      const res = await api.get<ApiResponse<UserResponse[]>>('/v1/admins/students')
+      return res.data.data
+    },
     update: async (id: number, data: UpdateUserRequest) => {
       const res = await api.put<ApiResponse<UserResponse>>(`/v1/admins/${id}`, data)
       return res.data.data
     },
     delete: async (id: number) => {
       await api.delete(`/v1/admins/${id}`)
-    }, 
+    },
   },
 }
 

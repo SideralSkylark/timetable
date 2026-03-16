@@ -90,6 +90,19 @@ export const useCohortStore = defineStore('cohorts', {
       }
     },
 
+    async updateCohortStudents(id: number, studentIds: number[]) {
+      this.loading = true
+      this.error = null
+      try {
+        return await cohortService.updateStudents(id, studentIds)
+      } catch (err: any) {
+        this.error = err.response?.data?.message || 'Erro ao atribuir estudantes'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
     async deleteCohort(id: number) {
       this.loading = true
       this.error = null

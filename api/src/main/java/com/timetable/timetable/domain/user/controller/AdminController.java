@@ -1,10 +1,13 @@
 package com.timetable.timetable.domain.user.controller;
 
+import java.util.List;
+
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.user.dto.AdminUpdateUserDTO;
 import com.timetable.timetable.domain.user.dto.CreateUser;
 import com.timetable.timetable.domain.user.dto.UserResponse;
+import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.mapper.UserMapper;
 import com.timetable.timetable.domain.user.service.UserService;
 
@@ -28,39 +31,43 @@ public class AdminController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
-        @Valid 
-        @RequestBody CreateUser createUser) {
+            @Valid @RequestBody CreateUser createUser) {
         return ResponseFactory.ok(
-            userMapper.toDTO(userService.createUser(createUser)),
-            "User created sucessfully."
-        );
+                userMapper.toDTO(userService.createUser(createUser)),
+                "User created sucessfully.");
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<UserResponse>>> getUsers(Pageable pageable) {
         return ResponseFactory.ok(
-            new PagedModel<>(userService.getAllUsers(pageable).map(userMapper::toDTO)),
-            "Users fetched sucessfully."
-        );
+                new PagedModel<>(userService.getAllUsers(pageable).map(userMapper::toDTO)),
+                "Users fetched sucessfully.");
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
         return ResponseFactory.ok(
-            userMapper.toDTO(userService.getUserById(id)),
-            "User fetched sucessfully."
-        );
+                userMapper.toDTO(userService.getUserById(id)),
+                "User fetched sucessfully.");
+    }
+
+    @GetMapping("/students")
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getStudents() {
+        return ResponseFactory.ok(
+                userService.getUsersByRole(UserRole.STUDENT)
+                        .stream()
+                        .map(userMapper::toDTO)
+                        .toList(),
+                "Students fetched successfully.");
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
-        @PathVariable Long id,
-        @RequestBody AdminUpdateUserDTO updateRequest
-    ) {
+            @PathVariable Long id,
+            @RequestBody AdminUpdateUserDTO updateRequest) {
         return ResponseFactory.ok(
-            userMapper.toDTO(userService.updateUserById(id, updateRequest)),
-            "User updated sucessfully."
-        );
+                userMapper.toDTO(userService.updateUserById(id, updateRequest)),
+                "User updated sucessfully.");
     }
 
     @DeleteMapping("/{id}")
@@ -69,4 +76,3 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 }
-

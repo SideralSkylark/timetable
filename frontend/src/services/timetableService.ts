@@ -27,6 +27,26 @@ export const timetableService = {
     }
   },
 
+  loadMyStudentTimetable: async (academicYear: number, semester: number): Promise<TimetableSolution | null> => {
+    try {
+      const res = await api.get(`/v1/timetables/me/student`, { params: { year: academicYear, semester } })
+      return res.data as TimetableSolution
+    } catch (e: any) {
+      if (e?.response?.status === 404) return null
+      throw e
+    }
+  },
+
+  loadMyTeacherTimetable: async (academicYear: number, semester: number): Promise<TimetableSolution | null> => {
+    try {
+      const res = await api.get(`/v1/timetables/me/teacher`, { params: { year: academicYear, semester } })
+      return res.data as TimetableSolution
+    } catch (e: any) {
+      if (e?.response?.status === 404) return null
+      throw e
+    }
+  },
+
   getStatus: async (jobId: string): Promise<JobStatusResponse> => {
     const res = await api.get<JobStatusResponse>(`/v1/solver/${jobId}/status`)
     return res.data

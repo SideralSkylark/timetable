@@ -329,6 +329,43 @@ const confirmDeleteId = ref<number | null>(null)
 const pagedUsers = computed(() => userStore.pagedUsers)
 const currentPage = ref(0)
 
+// ── Hierarquia ────────────────────────────────────────────────────
+const ROLE_HIERARCHY: Record<string, number> = {
+  USER: 1, STUDENT: 2, TEACHER: 3,
+  COORDINATOR: 4, ASISTENT: 5, DIRECTOR: 6, ADMIN: 7,
+}
+
+const ALL_ROLES = [
+  { value: 'STUDENT',     description: 'Acesso de estudante' },
+  { value: 'TEACHER',     description: 'Acesso de professor' },
+  { value: 'COORDINATOR', description: 'Acesso de coordenador' },
+  { value: 'ASISTENT',    description: 'Acesso de assistente' },
+  { value: 'DIRECTOR',    description: 'Acesso de director' },
+  { value: 'ADMIN',       description: 'Acesso administrativo completo' },
+]
+
+// Prioridade máxima do utilizador autenticado
+const myPriority = computed(() => {
+  const roles = userStore.currentUser?.roles ?? []
+  return Math.max(...roles.map(r => ROLE_HIERARCHY[r] ?? 0), 0)
+})
+
+// Roles que pode atribuir (estritamente abaixo de si)
+const assignableRoles = computed(() =>
+  ALL_ROLES.filter(r => (ROLE_HIERARCHY[r.value] ?? 0) < myPriority.value)
+)
+
+// Roles visíveis no filtro (mesma lógica)
+const visibleRoles = computed(() =>
+  ALL_ROLES.filter(r => (ROLE_HIERARCHY[r.value] ?? 0) < myPriority.value)
+)
+
+// Pode gerir um utilizador se a prioridade máxima do target for menor que a sua
+const canManageUser = (user: UserResponse): boolean => {
+  const targetMax = Math.max(...(user.roles ?? []).map(r => ROLE_HIERARCHY[r] ?? 0), 0)
+  return myPriority.value > targetMax
+}
+
 // ── Filters ───────────────────────────────────────────────────────
 const filters = reactive({
   username: '',
@@ -396,6 +433,8 @@ const teacherTypes = [
 const roleBadgeClass = (role: string) => {
   const map: Record<string, string> = {
     ADMIN:       'bg-blue-900 text-white',
+    DIRECTOR:    'bg-purple-100 text-purple-800',
+    ASISTENT:    'bg-indigo-100 text-indigo-800',
     COORDINATOR: 'bg-blue-100 text-blue-800',
     TEACHER:     'bg-blue-50 text-blue-700',
     STUDENT:     'bg-gray-100 text-gray-600',
