@@ -12,7 +12,7 @@ services:
       TZ: UTC
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy   # ← changed
     networks:
       - api-network
 
@@ -29,6 +29,11 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - api-network
+    healthcheck:                          # ← added
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db-data:
@@ -36,4 +41,3 @@ volumes:
 networks:
   api-network:
     driver: bridge
-

@@ -2,6 +2,7 @@ package com.timetable.timetable.domain.schedule.repository;
 
 import com.timetable.timetable.domain.schedule.entity.Cohort;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -48,6 +49,17 @@ public interface CohortRepository extends JpaRepository<Cohort, Long> {
     List<Cohort> findByYear(int year);
 
     List<Cohort> findBySemester(int semester);
+
+    @Query("SELECT c FROM Cohort c JOIN FETCH c.course WHERE c.id = :id")
+    Cohort findByIdWithCourse(@Param("id") Long id);
+
+    @EntityGraph(attributePaths = { "students" })
+    @Query("SELECT c FROM Cohort c WHERE c.id = :id")
+    Cohort findByIdWithStudents(@Param("id") Long id);
+
+    @EntityGraph(attributePaths = { "students", "course" })
+    @Query("SELECT c FROM Cohort c WHERE c.id = :id")
+    Cohort findByIdWithStudentsAndCourse(@Param("id") Long id);
 
     @Query("SELECT c FROM Cohort c WHERE " +
             "(:year IS NULL OR c.year = :year) AND " +

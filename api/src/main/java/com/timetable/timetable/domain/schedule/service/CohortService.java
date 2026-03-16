@@ -109,6 +109,7 @@ public class CohortService {
 
     @Transactional
     public Cohort confirmCohort(Long id, int studentCount) {
+        log.debug("starting confirmation");
         Cohort cohort = getById(id);
 
         if (cohort.getStatus() == CohortStatus.CONFIRMED) {
@@ -131,12 +132,10 @@ public class CohortService {
         return saved;
     }
 
+    @Transactional
     public Cohort getById(Long id) {
         log.debug("Looking for cohort {}", id);
-        Cohort cohort = cohortRepository.findById(id)
-                .orElseThrow(() -> new CohortNotFoundException(
-                        String.format("Cohort with id %d not found", id)));
-
+        Cohort cohort = cohortRepository.findByIdWithStudentsAndCourse(id); // garante fetch do course
         log.info("Cohort {} found: {}", id, cohort.getDisplayName());
         return cohort;
     }

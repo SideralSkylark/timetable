@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +28,7 @@ public class TimetableLoadController {
     private final ScheduledClassRepository scheduledClassRepository;
 
     @GetMapping("/{year}/{semester}")
+    @Transactional
     public ResponseEntity<?> getTimetable(
             @PathVariable int year,
             @PathVariable int semester) {
