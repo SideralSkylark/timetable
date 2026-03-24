@@ -3,6 +3,7 @@ package com.timetable.timetable.scheduler_engine.solver;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 import com.timetable.timetable.domain.schedule.entity.TimePeriod;
@@ -15,6 +16,9 @@ import com.timetable.timetable.scheduler_engine.domain.LessonAssignment;
  */
 public class TimetableConstraintProvider implements ConstraintProvider {
 
+    private static final LocalTime MASS_START = LocalTime.of(8, 50);
+    private static final LocalTime MASS_END = LocalTime.of(9, 40);
+
     @Override
     public Constraint[] defineConstraints(ConstraintFactory factory) {
         return new Constraint[] {
@@ -26,6 +30,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 roomCourseRestriction(factory),
                 YearPeriodRestriction(factory),
                 sameSubjectConsecutiveSameDay(factory),
+                massBlockedTimeslot(factory),
 
                 // SOFT CONSTRAINTS (preferences to optimize)
                 // minimizeTeacherGaps(factory),
@@ -40,18 +45,17 @@ public class TimetableConstraintProvider implements ConstraintProvider {
     /**
      * HC1: A teacher cannot teach two lessons at the same time.
      */
-private Constraint teacherConflict(ConstraintFactory factory) {
-    return factory.forEachUniquePair(
-            LessonAssignment.class,
-            Joiners.equal(LessonAssignment::getTeacher),
-            Joiners.equal(LessonAssignment::getTimeslot))
-            .filter((l1, l2) ->
-                    l1.getTimeslot() != null &&
-                    l1.getTeacher() != null &&
-                    !l1.isSimulationTeam())  // ← "A Equipa" pode estar em paralelo
-            .penalize(HardSoftScore.ONE_HARD)
-            .asConstraint("Teacher conflict");
-}
+    private Constraint teacherConflict(ConstraintFactory factory) {
+        return factory.forEachUniquePair(
+                LessonAssignment.class,
+                Joiners.equal(LessonAssignment::getTeacher),
+                Joiners.equal(LessonAssignment::getTimeslot))
+                .filter((l1, l2) -> l1.getTimeslot() != null &&
+                        l1.getTeacher() != null &&
+                        !l1.isSimulationTeam()) // ← "A Equipa" pode estar em paralelo
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Teacher conflict");
+    }
 
     /**
      * HC2: A room cannot host two lessons at the same time.
@@ -141,6 +145,24 @@ private Constraint teacherConflict(ConstraintFactory factory) {
                 .asConstraint("Same subject consecutive lessons same day");
     }
 
+    /**
+     * HC8: No lesson can be assigned on fridays
+     * in slots that overlap with "missa" (8:50-9:40).
+     *
+     * since timeblock are >= 50m any slot starting
+     * before 9:40 and ends at 8:50 is blocked
+     */
+    private Constraint massBlockedTimeslot(ConstraintFactory factory) {
+        return factory.forEach(LessonAssignment.class)
+                .filter(lesson -> lesson.getTimeslot() != null &&
+                        lesson.getTimeslot().getDayOfWeek() == DayOfWeek.FRIDAY &&
+                        overlapsWithMass(
+                                lesson.getTimeslot().getStartTime(),
+                                lesson.getTimeslot().getEndTime()))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Mass timeslot blocked on Friday");
+    }
+
     // ========================================
     // SOFT CONSTRAINTS (commented out for now)
     // ========================================
@@ -210,5 +232,9 @@ private Constraint teacherConflict(ConstraintFactory factory) {
         long gap2 = java.time.Duration.between(end2, start1).toMinutes();
 
         return (gap1 >= 0 && gap1 <= 10) || (gap2 >= 0 && gap2 <= 10);
+    }
+
+    private boolean overlapsWithMass(LocalTime start, LocalTime end) {
+        return start.isBefore(MASS_END) && end.isAfter(MASS_START);
     }
 }
