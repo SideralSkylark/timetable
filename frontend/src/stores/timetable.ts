@@ -27,7 +27,7 @@ export const useTimetableStore = defineStore('timetable', () => {
   async function generate(
     academicYear: number,
     semester: number,
-    onTick?: (attempt: number) => void,
+    onTick?: (attempt: number, elapsedSeconds: number) => void,
   ) {
     generating.value = true
     error.value = null
@@ -46,19 +46,35 @@ export const useTimetableStore = defineStore('timetable', () => {
 
   async function pollUntilReady(
     jobId: string,
-    onTick?: (attempt: number) => void,
-    maxAttempts = 20,
-    intervalMs = 3500,
+    onTick?: (attempt: number, elapsedSeconds: number) => void,
   ) {
-    for (let i = 1; i <= maxAttempts; i++) {
-      await new Promise(r => setTimeout(r, intervalMs))
-      onTick?.(i)
+    const getInterval = (elapsedMs: number): number => {
+      if (elapsedMs < 30_000) return 3_000
+      if (elapsedMs < 120_000) return 6_000
+      return 10_000
+    }
+    const MAX_WAIT_MS = 360_000 // 6 minutos (margem sobre os 5min do solver)
+    const startedAt = Date.now()
+
+    let attempt = 0
+    while (true) {
+      const elapsed = Date.now() - startedAt
+
+      if (elapsed >= MAX_WAIT_MS) {
+        throw new Error('Tempo limite de geração excedido. Tente novamente.')
+      }
+
+      await new Promise(r => setTimeout(r, getInterval(elapsed)))
+      attempt++
+      onTick?.(attempt, Math.floor(elapsed / 1000))
+
       try {
         const result = await timetableService.getSolution(jobId)
         if (result !== null) return
-      } catch { /* keep polling */ }
+      } catch {
+        /* rede instável — continua a tentar */
+      }
     }
-    throw new Error('Tempo limite de geração excedido. Tente novamente.')
   }
 
   function clear() {

@@ -35,9 +35,9 @@ public class TimefoldConfig {
                 .withConstraintProviderClass(TimetableConstraintProvider.class)
                 // Global termination: solver stops after 60 seconds max
                 .withTerminationConfig(new TerminationConfig()
-                        .withSecondsSpentLimit(60L)
+                        .withSecondsSpentLimit(300L)
                         // Stop early if no improvement for 15 seconds
-                        .withUnimprovedSecondsSpentLimit(15L))
+                        .withUnimprovedSecondsSpentLimit(60L))
 
                 .withPhases(
                         // Phase 1: Build initial solution (first 10 seconds)
@@ -46,13 +46,13 @@ public class TimefoldConfig {
                         new ConstructionHeuristicPhaseConfig()
                                 .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT_DECREASING)
                                 .withTerminationConfig(new TerminationConfig()
-                                        .withSecondsSpentLimit(10L)),
+                                        .withSecondsSpentLimit(30L)),
 
                         // Phase 2: Improve solution (remaining 50 seconds)
                         // Uses hill climbing, tabu search, simulated annealing, etc.
                         new LocalSearchPhaseConfig()
                                 .withTerminationConfig(new TerminationConfig()
-                                        .withSecondsSpentLimit(50L)));
+                                        .withSecondsSpentLimit(270L)));
     }
 
     @Bean
@@ -66,7 +66,7 @@ public class TimefoldConfig {
 
         // Configure parallel solving if needed
         SolverManagerConfig config = new SolverManagerConfig();
-        // config.setParallelSolverCount("AUTO"); // Use all CPU cores
+        config.setParallelSolverCount("AUTO"); 
 
         return SolverManager.create(solverFactory, config);
     }

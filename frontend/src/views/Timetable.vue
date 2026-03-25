@@ -26,8 +26,7 @@
             </div>
 
             <div v-if="timetableStore.solution && !timetableStore.loading"
-              class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border"
-              :class="timetableStore.solution.feasible
+              class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border" :class="timetableStore.solution.feasible
                 ? 'bg-green-50 text-green-700 border-green-100'
                 : 'bg-red-50 text-red-700 border-red-100'">
               <CheckCircle v-if="timetableStore.solution.feasible" class="w-3.5 h-3.5" />
@@ -37,16 +36,16 @@
             </div>
 
             <div v-if="timetableStore.solution"
-              class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border"
-              :class="{
+              class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border" :class="{
                 'bg-amber-50 text-amber-700 border-amber-100': timetableStatus === 'PENDING_APPROVAL',
                 'bg-green-50 text-green-700 border-green-100': timetableStatus === 'APPROVED',
-                'bg-blue-50  text-blue-700  border-blue-100':  timetableStatus === 'PUBLISHED',
-                'bg-gray-50  text-gray-500  border-gray-100':  !timetableStatus || timetableStatus === 'DRAFT',
+                'bg-blue-50  text-blue-700  border-blue-100': timetableStatus === 'PUBLISHED',
+                'bg-gray-50  text-gray-500  border-gray-100': !timetableStatus || timetableStatus === 'DRAFT',
               }">
-              {{ { DRAFT: 'Rascunho', PENDING_APPROVAL: 'Aguarda aprovação',
-                   APPROVED: 'Aprovado', REJECTED: 'Rejeitado', PUBLISHED: 'Publicado',
-                 }[timetableStatus ?? 'DRAFT'] ?? 'Rascunho' }}
+              {{ {
+                DRAFT: 'Rascunho', PENDING_APPROVAL: 'Aguarda aprovação',
+                APPROVED: 'Aprovado', REJECTED: 'Rejeitado', PUBLISHED: 'Publicado',
+              }[timetableStatus ?? 'DRAFT'] ?? 'Rascunho' }}
             </div>
 
             <!-- Divider before action buttons -->
@@ -70,8 +69,7 @@
               <Globe class="w-3.5 h-3.5" /> Publicar
             </button>
 
-            <button v-if="isAdmin"
-              :disabled="timetableStore.generating || timetableStore.loading"
+            <button v-if="isAdmin" :disabled="timetableStore.generating || timetableStore.loading"
               @click="showConfirmModal = true"
               class="h-8 flex items-center gap-1.5 px-3 bg-blue-900 text-white text-xs font-medium rounded-lg hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
               <Loader2 v-if="timetableStore.generating" class="w-3.5 h-3.5 animate-spin" />
@@ -95,7 +93,8 @@
                 class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
                 <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
               </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown
+                class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
@@ -107,7 +106,8 @@
                 <option :value="1">1º semestre</option>
                 <option :value="2">2º semestre</option>
               </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown
+                class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
@@ -119,7 +119,8 @@
                 <option value="">Todas as turmas</option>
                 <option v-for="c in availableCohorts" :key="c.id" :value="c.id">{{ c.displayName }}</option>
               </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown
+                class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
@@ -142,7 +143,10 @@
         <div v-if="timetableStore.generating" class="flex flex-col items-center justify-center py-24 gap-3">
           <Loader2 class="w-7 h-7 animate-spin text-blue-900" />
           <p class="text-sm font-medium text-gray-600">A gerar horário...</p>
-          <p class="text-xs text-gray-400">Tentativa {{ pollAttempt }} de 20</p>
+          <p class="text-xs text-gray-400"> {{ pollElapsed < 60
+      ? `${pollElapsed}s decorridos`
+      : `${Math.floor(pollElapsed / 60)}m ${pollElapsed % 60}s decorridos`
+  }}</p>
         </div>
 
         <div v-else-if="timetableStore.loading" class="flex flex-col items-center justify-center py-24 gap-3">
@@ -156,7 +160,9 @@
           </div>
           <p class="text-sm font-semibold text-gray-600">Nenhum horário gerado</p>
           <p class="text-xs text-gray-400">
-            {{ isAdmin ? 'Seleccione o ano e semestre e clique em "Gerar horário".' : 'Aguarde a geração pelo administrador.' }}
+            {{ isAdmin
+              ? 'Seleccione o ano e semestre e clique em "Gerar horário".' :
+              'Aguarde a geração pelo' }}
           </p>
         </div>
 
@@ -164,7 +170,9 @@
           <table class="min-w-full border-collapse">
             <thead>
               <tr>
-                <th class="w-24 bg-gray-50 border-b border-r border-gray-100 px-3 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide text-center">Bloco</th>
+                <th
+                  class="w-24 bg-gray-50 border-b border-r border-gray-100 px-3 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide text-center">
+                  Bloco</th>
                 <th v-for="day in days" :key="day.value"
                   class="bg-gray-50 border-b border-r border-gray-100 px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide text-center last:border-r-0">
                   {{ day.label }}
@@ -185,8 +193,7 @@
                 </td>
                 <td v-for="day in days" :key="`${block.id}-${day.value}`"
                   class="border-r border-gray-100 last:border-r-0 p-1.5 align-top transition-colors"
-                  :class="cellClass(day.value, block.startTime)"
-                  style="min-width: 130px; min-height: 76px;"
+                  :class="cellClass(day.value, block.startTime)" style="min-width: 130px; min-height: 76px;"
                   @click="handleCellClick(day.value, block.startTime)">
                   <div v-if="hasEmptySlot(day.value, block.startTime)"
                     class="h-full flex items-center justify-center py-4">
@@ -195,16 +202,14 @@
                     </div>
                   </div>
                   <div v-for="lesson in getCellLessons(day.value, block.startTime)" :key="lesson.id"
-                    class="rounded-md px-2 py-1.5 mb-1 transition-all relative text-xs"
-                    :class="[
+                    class="rounded-md px-2 py-1.5 mb-1 transition-all relative text-xs" :class="[
                       yearColorClass(lesson.cohort.year),
                       selectedLesson?.id === lesson.id
                         ? 'ring-2 ring-blue-500 shadow-md scale-[1.02]'
                         : canSelectLesson
                           ? 'cursor-pointer hover:shadow-sm hover:scale-[1.02]'
                           : 'cursor-default hover:shadow-sm',
-                    ]"
-                    @click.stop="canSelectLesson && selectLesson(lesson)"
+                    ]" @click.stop="canSelectLesson && selectLesson(lesson)"
                     @mouseenter="!selectedLesson && (hoveredLesson = lesson)"
                     @mouseleave="!selectedLesson && (hoveredLesson = null)">
                     <p class="font-semibold leading-tight line-clamp-2">{{ lesson.subject.name }}</p>
@@ -239,7 +244,8 @@
             <div class="bg-gray-50 rounded-lg p-3 space-y-0.5">
               <p class="font-semibold text-gray-800 text-sm">{{ selectedLesson.subject.name }}</p>
               <p class="text-xs text-gray-400">{{ selectedLesson.cohort.displayName }}</p>
-              <p class="text-xs text-gray-400">{{ dayLabel(selectedLesson.timeslot?.dayOfWeek) }} · {{ selectedLesson.timeslot?.startTime?.substring(0, 5) }}</p>
+              <p class="text-xs text-gray-400">{{ dayLabel(selectedLesson.timeslot?.dayOfWeek) }} · {{
+                selectedLesson.timeslot?.startTime?.substring(0, 5) }}</p>
               <p class="text-xs text-gray-400">{{ selectedLesson.room?.name }}</p>
             </div>
 
@@ -263,10 +269,12 @@
                   <button v-for="c in cohortSwapCandidates" :key="c.scheduledClassId" @click="pendingCohortSwap = c"
                     class="w-full text-left px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition text-xs border border-gray-100">
                     <p class="font-semibold text-gray-800 truncate">{{ c.subjectName }}</p>
-                    <p class="text-gray-400 mt-0.5">{{ dayLabel(c.dayOfWeek) }} · {{ c.startTime.substring(0, 5) }} · {{ c.roomName }}</p>
+                    <p class="text-gray-400 mt-0.5">{{ dayLabel(c.dayOfWeek) }} · {{ c.startTime.substring(0, 5) }} · {{
+                      c.roomName }}</p>
                   </button>
                 </div>
-                <p v-else class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2.5 text-center">
+                <p v-else
+                  class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2.5 text-center">
                   Nenhuma troca válida.
                 </p>
               </template>
@@ -274,7 +282,8 @@
 
             <template v-if="slotsCalculated">
               <p v-if="validSlots.length > 0" class="text-xs text-gray-400 text-center">
-                {{ validSlots.filter(s => !s.isSwap).length }} livre(s) · {{ validSlots.filter(s => s.isSwap).length }} permuta(ções)
+                {{validSlots.filter(s => !s.isSwap).length}} livre(s) · {{validSlots.filter(s => s.isSwap).length}}
+                permuta(ções)
               </p>
               <p v-else class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2.5 text-center">
                 Nenhuma permutação válida.
@@ -295,12 +304,18 @@
       <Transition name="tooltip">
         <div v-if="hoveredLesson && !selectedLesson"
           class="fixed bottom-6 right-6 bg-gray-900 text-white rounded-xl shadow-2xl p-4 w-52 z-50 pointer-events-none">
-          <p class="font-semibold text-sm mb-3 pb-2 border-b border-white/10 leading-snug">{{ hoveredLesson.subject.name }}</p>
+          <p class="font-semibold text-sm mb-3 pb-2 border-b border-white/10 leading-snug">{{ hoveredLesson.subject.name
+            }}
+          </p>
           <div class="space-y-1.5">
-            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Turma</span><span class="text-right">{{ hoveredLesson.cohort.displayName }}</span></div>
-            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Professor</span><span class="text-right">{{ hoveredLesson.teacher?.fullName ?? '—' }}</span></div>
-            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Sala</span><span class="text-right">{{ hoveredLesson.room?.name ?? '—' }}</span></div>
-            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Créditos</span><span>{{ hoveredLesson.subject.credits }}</span></div>
+            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Turma</span><span
+                class="text-right">{{ hoveredLesson.cohort.displayName }}</span></div>
+            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Professor</span><span
+                class="text-right">{{ hoveredLesson.teacher?.fullName ?? '—' }}</span></div>
+            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Sala</span><span
+                class="text-right">{{ hoveredLesson.room?.name ?? '—' }}</span></div>
+            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Créditos</span><span>{{
+              hoveredLesson.subject.credits }}</span></div>
           </div>
         </div>
       </Transition>
@@ -311,14 +326,18 @@
       @click.self="showConfirmModal = false">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-gray-100">
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
-          <div class="bg-blue-50 p-2 rounded-lg"><Zap class="w-4 h-4 text-blue-900" /></div>
+          <div class="bg-blue-50 p-2 rounded-lg">
+            <Zap class="w-4 h-4 text-blue-900" />
+          </div>
           <h2 class="text-base font-semibold text-gray-900">Gerar horário</h2>
         </div>
         <div class="p-5">
           <p class="text-sm text-gray-500 leading-relaxed">
-            Vai gerar o horário para <strong class="text-gray-700">{{ selectedYear }} · {{ selectedSemester }}º semestre</strong>.
-            <template v-if="timetableStore.solution"><br /><span class="text-amber-600 font-medium">O horário existente será substituído.</span></template>
-            A operação pode demorar até 60 segundos.
+            Vai gerar o horário para <strong class="text-gray-700">{{ selectedYear }} · {{ selectedSemester }}º
+              semestre</strong>.
+            <template v-if="timetableStore.solution"><br /><span class="text-amber-600 font-medium">O horário existente
+                será substituído.</span></template>
+            A operação pode demorar até 5 minutos.
           </p>
           <div class="flex gap-2 mt-5">
             <button @click="showConfirmModal = false"
@@ -342,18 +361,24 @@
           <div class="p-2 rounded-lg" :class="pendingSwap.isSwap ? 'bg-orange-50' : 'bg-green-50'">
             <ArrowRightLeft class="w-4 h-4" :class="pendingSwap.isSwap ? 'text-orange-600' : 'text-green-600'" />
           </div>
-          <h2 class="text-base font-semibold text-gray-900">{{ pendingSwap.isSwap ? 'Trocar aulas' : 'Mover aula' }}</h2>
+          <h2 class="text-base font-semibold text-gray-900">{{ pendingSwap.isSwap ? 'Trocar aulas' : 'Mover aula' }}
+          </h2>
         </div>
         <div class="p-5 space-y-3">
           <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs">
             <p class="font-medium text-blue-600 mb-1 uppercase tracking-wide">A mover</p>
             <p class="font-semibold text-gray-800">{{ selectedLesson?.subject.name }}</p>
-            <p class="text-gray-500 mt-0.5">{{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0, 5) }} → {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0, 5) }} · {{ pendingSwap.roomName }}</p>
+            <p class="text-gray-500 mt-0.5">{{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{
+              selectedLesson?.timeslot?.startTime?.substring(0, 5) }} → {{ dayLabel(pendingSwap.dayOfWeek) }} · {{
+                pendingSwap.startTime.substring(0, 5) }} · {{ pendingSwap.roomName }}</p>
           </div>
           <div v-if="pendingSwap.isSwap" class="bg-orange-50 border border-orange-100 rounded-lg p-3 text-xs">
             <p class="font-medium text-orange-600 mb-1 uppercase tracking-wide">Deslocada</p>
             <p class="font-semibold text-gray-800">{{ pendingSwap.swapWithSubject }}</p>
-            <p class="text-gray-500 mt-0.5">{{ pendingSwap.swapWithCohort }} · {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0, 5) }} → {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0, 5) }}</p>
+            <p class="text-gray-500 mt-0.5">{{ pendingSwap.swapWithCohort }} · {{ dayLabel(pendingSwap.dayOfWeek) }} ·
+              {{
+                pendingSwap.startTime.substring(0, 5) }} → {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{
+                selectedLesson?.timeslot?.startTime?.substring(0, 5) }}</p>
           </div>
           <div class="flex gap-2 pt-1">
             <button @click="pendingSwap = null"
@@ -377,19 +402,25 @@
       @click.self="pendingCohortSwap = null">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-gray-100">
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
-          <div class="bg-gray-100 p-2 rounded-lg"><ArrowRightLeft class="w-4 h-4 text-gray-600" /></div>
+          <div class="bg-gray-100 p-2 rounded-lg">
+            <ArrowRightLeft class="w-4 h-4 text-gray-600" />
+          </div>
           <h2 class="text-base font-semibold text-gray-900">Trocar aulas da turma</h2>
         </div>
         <div class="p-5 space-y-3">
           <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs">
             <p class="font-medium text-blue-600 mb-1 uppercase tracking-wide">Aula A</p>
             <p class="font-semibold text-gray-800">{{ selectedLesson?.subject.name }}</p>
-            <p class="text-gray-500 mt-0.5">{{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0, 5) }} → {{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{ pendingCohortSwap.startTime.substring(0, 5) }}</p>
+            <p class="text-gray-500 mt-0.5">{{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{
+              selectedLesson?.timeslot?.startTime?.substring(0, 5) }} → {{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{
+                pendingCohortSwap.startTime.substring(0, 5) }}</p>
           </div>
           <div class="bg-gray-50 border border-gray-100 rounded-lg p-3 text-xs">
             <p class="font-medium text-gray-400 mb-1 uppercase tracking-wide">Aula B</p>
             <p class="font-semibold text-gray-800">{{ pendingCohortSwap.subjectName }}</p>
-            <p class="text-gray-500 mt-0.5">{{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{ pendingCohortSwap.startTime.substring(0, 5) }} → {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0, 5) }}</p>
+            <p class="text-gray-500 mt-0.5">{{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{
+              pendingCohortSwap.startTime.substring(0, 5) }} → {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{
+                selectedLesson?.timeslot?.startTime?.substring(0, 5) }}</p>
           </div>
           <div class="flex gap-2 pt-1">
             <button @click="pendingCohortSwap = null"
@@ -433,6 +464,7 @@ const selectedCohort = ref<number | ''>('')
 const showConfirmModal = ref(false)
 const hoveredLesson = ref<LessonAssignment | null>(null)
 const pollAttempt = ref(0)
+const pollElapsed = ref(0)
 
 const selectedLesson = ref<LessonAssignment | null>(null)
 const validSlots = ref<ValidSlot[]>([])
@@ -448,9 +480,9 @@ const pendingCohortSwap = ref<CohortSwapCandidate | null>(null)
 const applyingCohortSwap = ref(false)
 
 const timetableStatus = computed(() => timetableStore.solution?.status)
-const canSubmit  = computed(() => isAdmin.value && timetableStatus.value === 'DRAFT')
+const canSubmit = computed(() => isAdmin.value && timetableStatus.value === 'DRAFT')
 const canApprove = computed(() => isAdmin.value && timetableStatus.value === 'PENDING_APPROVAL')
-const canReject  = computed(() => isAdmin.value && timetableStatus.value === 'PENDING_APPROVAL')
+const canReject = computed(() => isAdmin.value && timetableStatus.value === 'PENDING_APPROVAL')
 const canPublish = computed(() => isAdmin.value && timetableStatus.value === 'APPROVED')
 
 const days = [
@@ -598,19 +630,47 @@ async function handleApplyCohortSwap() {
   finally { applyingCohortSwap.value = false }
 }
 async function handleGenerate() {
-  showConfirmModal.value = false; selectedCohort.value = ''; clearSelection(); pollAttempt.value = 0
-  toast.info('A gerar horário, pode demorar até 60 segundos...')
+  showConfirmModal.value = false;
+  selectedCohort.value = '';
+  clearSelection();
+  pollAttempt.value = 0
+  pollElapsed.value = 0
+  toast.info('A gerar horário, pode demorar até 5 minutos...')
   try {
-    await timetableStore.generate(selectedYear.value, selectedSemester.value, (a) => { pollAttempt.value = a })
+    await timetableStore.generate(selectedYear.value, selectedSemester.value, (attempt, elapsed) => {
+      pollAttempt.value = attempt, pollElapsed.value = elapsed })
     toast.success('Horário gerado com sucesso!')
   } catch { toast.error(timetableStore.error ?? 'Erro ao gerar horário.') }
 }
 </script>
 
 <style scoped>
-.tooltip-enter-active, .tooltip-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
-.tooltip-enter-from, .tooltip-leave-to { opacity: 0; transform: translateY(6px); }
-.slide-panel-enter-active, .slide-panel-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
-.slide-panel-enter-from, .slide-panel-leave-to { opacity: 0; transform: translateX(16px); }
-.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tooltip-enter-active,
+.tooltip-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.tooltip-enter-from,
+.tooltip-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.slide-panel-enter-active,
+.slide-panel-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.slide-panel-enter-from,
+.slide-panel-leave-to {
+  opacity: 0;
+  transform: translateX(16px);
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 </style>

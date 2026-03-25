@@ -22,6 +22,9 @@ atribuir horarios mesmo sem corpo de docente suficiente (docentes fantasma)
 9 horas sexta feira missa.
 surpluss de turmas antes de gerar.
 
+solver(optimize it)
+given the data voluma can the solver handle it?
+
 
 ## Solver
 ### entidades
