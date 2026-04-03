@@ -33,14 +33,12 @@ public class TimefoldConfig {
                 .withSolutionClass(TimetableSolution.class)
                 .withEntityClasses(LessonAssignment.class)
                 .withConstraintProviderClass(TimetableConstraintProvider.class)
-                // Global termination: solver stops after 60 seconds max
                 .withTerminationConfig(new TerminationConfig()
                         .withSecondsSpentLimit(300L)
-                        // Stop early if no improvement for 15 seconds
                         .withUnimprovedSecondsSpentLimit(60L))
 
                 .withPhases(
-                        // Phase 1: Build initial solution (first 10 seconds)
+                        // Phase 1: Build initial solution 
                         // FIRST_FIT_DECREASING sorts entities by difficulty before assigning
                         // (now works because LessonAssignment has difficultyComparatorClass)
                         new ConstructionHeuristicPhaseConfig()
@@ -48,7 +46,7 @@ public class TimefoldConfig {
                                 .withTerminationConfig(new TerminationConfig()
                                         .withSecondsSpentLimit(30L)),
 
-                        // Phase 2: Improve solution (remaining 50 seconds)
+                        // Phase 2: Improve solution 
                         // Uses hill climbing, tabu search, simulated annealing, etc.
                         new LocalSearchPhaseConfig()
                                 .withTerminationConfig(new TerminationConfig()

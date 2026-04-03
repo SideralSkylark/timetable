@@ -1,5 +1,6 @@
 ## Dominio
 
+redacaoi projeto
 
 ### entidades
 - Cohort: Turma de estudantes de um curso. Usada para separa-los de modo a caberem nas salas.
