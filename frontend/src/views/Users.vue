@@ -218,6 +218,9 @@
             <input v-model="formData.password" type="password" required
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
               placeholder="Digite a password" />
+            <p v-if="formData.password && !isPasswordValid" class="text-red-500 text-xs mt-1">
+              Password deve ter entre 8 e 100 caracteres.
+            </p>
           </div>
 
           <div>
@@ -288,7 +291,12 @@
               Cancelar
             </button>
             <button type="submit"
-              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
+              :disabled="!isFormValid"
+              :class="!isFormValid
+                ? 'flex-1 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg text-sm cursor-not-allowed'
+                : 'flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800'"
+              class="transition flex items-center justify-center gap-1.5 font-medium"
+            >
               <Check class="w-3.5 h-3.5" />
               {{ editingUser ? 'Atualizar utilizador' : 'Criar utilizador' }}
             </button>
@@ -449,6 +457,10 @@ const fetchUsers = async (page = 0) => {
 }
 
 const handleSubmit = async () => {
+  if (!isFormValid.value) {
+    toast.error('Por favor corrija o formulário antes de submeter.')
+    return
+  }
   const roles = ['USER', ...formData.selectedRoles]
   const isTeacher = formData.selectedRoles.includes('TEACHER')
   const data = {
@@ -502,6 +514,19 @@ const openUserModal = () => {
   formData.teacherType = null
   showUserModal.value = true
 }
+
+const isPasswordValid = computed(() => {
+  if (editingUser.value) return true
+  const pwd = formData.password ?? ''
+  return pwd.length >= 8 && pwd.length <= 100
+})
+
+const isFormValid = computed(() => {
+  if (!formData.username?.trim()) return false
+  if (!formData.email?.trim()) return false
+  if (!editingUser.value && !isPasswordValid.value) return false
+  return true
+})
 
 const closeModal = () => {
   showUserModal.value = false

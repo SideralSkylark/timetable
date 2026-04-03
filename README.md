@@ -60,4 +60,6 @@ mvn test -Dtest="*ServiceTest"
 
 ---
 TODO:
-field validation on user creation
+field validations
+password reset logic(by admin or someone else) -> creates a random pass.
+
