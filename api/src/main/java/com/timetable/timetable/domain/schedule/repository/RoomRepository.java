@@ -14,8 +14,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @EntityGraph(attributePaths = "restrictions")
     boolean existsByName(String name);
 
-    @EntityGraph(attributePaths = "restrictions")
+    @EntityGraph(attributePaths = {"restrictions", "restrictions.course"})
     Page<Room> findAll(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"restrictions", "restrictions.course"})
+    java.util.Optional<Room> findById(Long id);
 
     @Query("SELECT MAX(r.capacity) FROM Room r")
     int findMaxCapacity();

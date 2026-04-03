@@ -31,12 +31,15 @@ public class UserService {
     private final UserRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // ============================================================
-    // CREATE USER
-    // ============================================================
     @Transactional
     public ApplicationUser createUser(CreateUser request) {
         log.debug("Creating user");
+        boolean isTeacher = request.roles().stream().anyMatch(r -> r.equalsIgnoreCase("TEACHER"));
+
+        if (isTeacher && request.teacherType() == null) {
+            throw new IllegalArgumentException("Teacher type is required for teachers");
+        }
+
         validateUniqueUser(request);
         Set<UserRoleEntity> roles = resolveRoles(request.roles());
 
@@ -51,13 +54,6 @@ public class UserService {
                 .teacherType(request.teacherType())
                 .build();
 
-        boolean isTeacher = request.roles().stream()
-                .anyMatch(r -> r.equalsIgnoreCase("TEACHER"));
-
-        if (isTeacher && request.teacherType() == null) {
-            throw new IllegalArgumentException("teacherType is required for teachers");
-        }
-
         userRepository.save(user);
         log.info("Created new user '{}' with roles {}", user.getUsername(), roles);
         return user;
@@ -70,16 +66,8 @@ public class UserService {
         return getByUsernameOrThrow(SecurityUtil.getAuthenticatedUsername());
     }
 
-    public List<ApplicationUser> getAllUsers() {
-        return userRepository.findAll();
-    }
-
     public Page<ApplicationUser> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
-    }
-
-    public List<ApplicationUser> getUsersByRole(UserRole role) {
-        return userRepository.findAllByRole(role);
     }
 
     public Page<ApplicationUser> getUsersByRole(UserRole role, Pageable pageable) {
@@ -91,12 +79,9 @@ public class UserService {
     }
 
     public ApplicationUser getUserByRoleAndId(UserRole role, Long id) {
-        ApplicationUser user = getByIdOrThrow(id);
-        if (!user.hasRole(role)) {
-            throw new UserNotFoundException("requested user is not a teacher");
-        }
-
-        return user;
+        return userRepository.findByIdAndRole(id, role)
+                .orElseThrow(() -> new UserNotFoundException(
+                        "No user with id %d and role %s".formatted(id, role)));
     }
 
     public ApplicationUser getUserByUsername(String username) {
@@ -225,42 +210,30 @@ public class UserService {
     // ============================================================
     // VALIDATION HELPERS
     // ============================================================
+    private void validateUsernameAvailable(String username, Long excludeId) {
+        boolean taken = (excludeId == null)
+                ? userRepository.existsByUsername(username)
+                : userRepository.existsByUsernameAndIdNot(username, excludeId);
+        if (taken)
+            throw new UserAlreadyExistsException("Username is already taken");
+    }
+
+    private void validateEmailAvailable(String email, Long excludeId) {
+        boolean taken = (excludeId == null)
+                ? userRepository.existsByEmail(email)
+                : userRepository.existsByEmailAndIdNot(email, excludeId);
+        if (taken)
+            throw new UserAlreadyExistsException("Email is already in use");
+    }
+
     private void validateUniqueUser(CreateUser request) {
-        validateUsernameAvailable(request.username());
-        validateEmailAvailable(request.email());
+        validateUsernameAvailable(request.username(), null);
+        validateEmailAvailable(request.email(), null);
     }
 
     private void validateUniqueUpdate(Long id, String username, String email) {
         validateUsernameAvailable(username, id);
         validateEmailAvailable(email, id);
-    }
-
-    private void validateUsernameAvailable(String username) {
-        if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistsException("Username is already taken");
-        }
-    }
-
-    private void validateEmailAvailable(String email) {
-        if (userRepository.existsByEmail(email)) {
-            throw new UserAlreadyExistsException("Email is already in use");
-        }
-    }
-
-    private void validateUsernameAvailable(String username, Long userId) {
-        userRepository.findByUsername(username)
-                .filter(u -> !u.getId().equals(userId))
-                .ifPresent(u -> {
-                    throw new UserAlreadyExistsException("Username is already taken");
-                });
-    }
-
-    private void validateEmailAvailable(String email, Long userId) {
-        userRepository.findByEmail(email)
-                .filter(u -> !u.getId().equals(userId))
-                .ifPresent(u -> {
-                    throw new UserAlreadyExistsException("Email is already in use");
-                });
     }
 
     private void validateAdminRemoval(ApplicationUser user, Set<UserRoleEntity> newRoles) {

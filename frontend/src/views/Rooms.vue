@@ -382,6 +382,23 @@ const formData = reactive({
   restrictions: [] as Array<{ courseId: number | null; period: string | null }>
 })
 
+function buildPeriodRestrictions() {
+  const periodMap: Record<string, number[]> = {}
+  for (const restriction of formData.restrictions) {
+    if (!restriction.courseId || !restriction.period) continue
+    let courseIds = periodMap[restriction.period]
+    if (!courseIds) {
+      courseIds = []
+      periodMap[restriction.period] = courseIds
+    }
+    // prevent duplicate restriction entries
+    if (!courseIds.includes(restriction.courseId)) {
+      courseIds.push(restriction.courseId)
+    }
+  }
+  return periodMap
+}
+
 const tableColumns = [
   { key: 'name', label: 'Nome' },
   { key: 'capacity', label: 'Capacidade' },
@@ -400,7 +417,14 @@ const fetchRooms = async (page = 0) => {
 }
 
 const handleSubmit = async () => {
-  const data = { name: formData.name, capacity: formData.capacity, restrictions: formData.restrictions }
+  const data: any = {
+    name: formData.name,
+    capacity: formData.capacity,
+  }
+  const periodRestrictions = buildPeriodRestrictions()
+  if (Object.keys(periodRestrictions).length > 0) {
+    data.periodRestrictions = periodRestrictions
+  }
   editingRoom.value ? await updateRoom(data) : await createRoom(data)
 }
 

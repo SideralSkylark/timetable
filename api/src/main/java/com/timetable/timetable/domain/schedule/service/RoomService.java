@@ -114,15 +114,21 @@ public class RoomService {
                 Set<Long> courseIds = entry.getValue();
                 
                 for (Long courseId : courseIds) {
-                    Course course = courseService.getById(courseId);
+                    // Check if restriction already exists to avoid duplicates
+                    boolean alreadyExists = room.getRestrictions().stream()
+                        .anyMatch(r -> r.getCourse().getId().equals(courseId) && r.getPeriod() == period);
                     
-                    RoomCourseRestriction restriction = RoomCourseRestriction.builder()
-                        .room(room)
-                        .course(course)
-                        .period(period)
-                        .build();
-                    
-                    room.getRestrictions().add(restriction);
+                    if (!alreadyExists) {
+                        Course course = courseService.getById(courseId);
+                        
+                        RoomCourseRestriction restriction = RoomCourseRestriction.builder()
+                            .room(room)
+                            .course(course)
+                            .period(period)
+                            .build();
+                        
+                        room.getRestrictions().add(restriction);
+                    }
                 }
             }
             log.debug("Added {} granular restrictions", room.getRestrictions().size());

@@ -1,7 +1,5 @@
 package com.timetable.timetable.domain.user.controller;
 
-import java.util.List;
-
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.user.dto.AdminUpdateUserDTO;
@@ -52,12 +50,10 @@ public class AdminController {
     }
 
     @GetMapping("/students")
-    public ResponseEntity<ApiResponse<List<UserResponse>>> getStudents() {
+    public ResponseEntity<ApiResponse<PagedModel<UserResponse>>> getStudents(Pageable pageable) {
         return ResponseFactory.ok(
-                userService.getUsersByRole(UserRole.STUDENT)
-                        .stream()
-                        .map(userMapper::toDTO)
-                        .toList(),
+                new PagedModel<>(userService.getUsersByRole(UserRole.STUDENT, pageable)
+                        .map(userMapper::toDTO)),
                 "Students fetched successfully.");
     }
 

@@ -58,3 +58,6 @@ mvn test -Dtest="*ServiceTest"
 ```
 **make sure you have maven installed for it**
 
+---
+TODO:
+field validation on user creation
