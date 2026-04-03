@@ -79,7 +79,7 @@
             <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Sim. empresarial</label>
             <div class="flex items-center gap-1 h-8">
               <button
-                v-for="opt in bizSimOptions" :key="opt.value"
+                v-for="opt in bizSimOptions" :key="String(opt.value)"
                 type="button"
                 @click="filters.hasBusinessSimulation = opt.value"
                 :class="filters.hasBusinessSimulation === opt.value
@@ -856,8 +856,11 @@ async function submitDiscipline() {
       if (idx !== -1) courses.value[idx].subjectCount++
       toast.success('Disciplina criada!')
     }
+    const courseToReload = selectedCourse.value
     closeDisciplineModal()
-    await loadSubjects(selectedCourse.value, true)
+    if (courseToReload) {
+      await loadSubjects(courseToReload, true)
+    }
   } catch {
     toast.error('Erro ao guardar disciplina.')
   }
