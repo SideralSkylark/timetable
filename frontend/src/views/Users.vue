@@ -163,7 +163,7 @@
               :key="role"
               :class="roleBadgeClass(role)"
               class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium">
-              {{ role }}
+              {{ roleLabel(role) }}
             </span>
           </div>
         </template>
@@ -449,6 +449,19 @@ const roleBadgeClass = (role: string) => {
     USER:        'bg-gray-50 text-gray-400',
   }
   return map[role] ?? 'bg-gray-100 text-gray-500'
+}
+
+const roleLabel = (role: string) => {
+  const labels: Record<string, string> = {
+    ADMIN: 'Administrador',
+    DIRECTOR: 'Diretor',
+    ASISTENT: 'Assistente',
+    COORDINATOR: 'Coordenador',
+    TEACHER: 'Professor',
+    STUDENT: 'Estudante',
+    USER: 'Utilizador',
+  }
+  return labels[role] ?? role
 }
 
 const fetchUsers = async (page = 0) => {
