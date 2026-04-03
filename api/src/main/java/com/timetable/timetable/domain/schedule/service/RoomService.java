@@ -81,7 +81,13 @@ public class RoomService {
 
         room.setName(updateRequest.name());
         room.setCapacity(updateRequest.capacity());
+        // Clear existing restrictions first to avoid duplicate unique-key conflicts on re-insert
         room.getRestrictions().clear();
+        roomRepository.save(room);
+        roomRepository.flush();
+
+        // refresh reference so we have a managed collection after flush
+        room = getById(id);
         addRestrictions(room, updateRequest.restrictedToCourseId(), updateRequest.periodRestrictions());
 
         Room saved = roomRepository.save(room);
