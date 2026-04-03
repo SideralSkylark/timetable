@@ -4,7 +4,9 @@ import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.user.dto.AdminUpdateUserDTO;
 import com.timetable.timetable.domain.user.dto.CreateUser;
+import com.timetable.timetable.domain.user.dto.UserFilterParams;
 import com.timetable.timetable.domain.user.dto.UserResponse;
+import com.timetable.timetable.domain.user.entity.AccountStatus;
 import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.mapper.UserMapper;
 import com.timetable.timetable.domain.user.service.UserService;
@@ -36,9 +38,21 @@ public class AdminController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedModel<UserResponse>>> getUsers(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<UserResponse>>> getUsers(Pageable pageable,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) UserRole role,
+            @RequestParam(required = false) AccountStatus status) {
+
+        UserFilterParams filter = new UserFilterParams();
+        filter.setUsername(username);
+        filter.setEmail(email);
+        filter.setRole(role);
+        filter.setStatus(status);
+        log.info("params: {}", filter.toString());
+
         return ResponseFactory.ok(
-                new PagedModel<>(userService.getAllUsers(pageable).map(userMapper::toDTO)),
+                new PagedModel<>(userService.getAllUsers(pageable, filter).map(userMapper::toDTO)),
                 "Users fetched sucessfully.");
     }
 
@@ -50,9 +64,17 @@ public class AdminController {
     }
 
     @GetMapping("/students")
-    public ResponseEntity<ApiResponse<PagedModel<UserResponse>>> getStudents(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<UserResponse>>> getStudents(
+            Pageable pageable,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) AccountStatus status) {
+        UserFilterParams filter = new UserFilterParams();
+        filter.setUsername(username);
+        filter.setEmail(email);
+        filter.setStatus(status);
         return ResponseFactory.ok(
-                new PagedModel<>(userService.getUsersByRole(UserRole.STUDENT, pageable)
+                new PagedModel<>(userService.getUsersByRole(UserRole.STUDENT, pageable, filter)
                         .map(userMapper::toDTO)),
                 "Students fetched successfully.");
     }

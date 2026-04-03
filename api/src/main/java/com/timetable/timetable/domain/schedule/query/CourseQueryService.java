@@ -12,6 +12,7 @@ import com.timetable.timetable.domain.schedule.exception.CourseNotFoundException
 import com.timetable.timetable.domain.schedule.repository.CourseRepository;
 import com.timetable.timetable.domain.schedule.repository.SubjectRepository;
 import com.timetable.timetable.domain.user.entity.UserRole;
+import com.timetable.timetable.domain.user.repository.UserRepository;
 import com.timetable.timetable.domain.user.service.UserService;
 
 import org.springframework.data.domain.Page;
@@ -30,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CourseQueryService {
     private final CourseRepository courseRepository;
     private final SubjectRepository subjectRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     public Page<Course> getAll(Pageable pageable) {
         return courseRepository.findAll(pageable);
@@ -72,6 +73,6 @@ public class CourseQueryService {
     }
 
     public Page<CoordinatorOption> getAvailableCoordinators(Pageable pageable) {
-        return userService.getUsersByRole(UserRole.COORDINATOR, pageable).map(CoordinatorOption::from);
+        return userRepository.findAllByRole(UserRole.COORDINATOR, pageable).map(CoordinatorOption::from);
     }
 }

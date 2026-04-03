@@ -17,6 +17,7 @@ import com.timetable.timetable.domain.user.entity.*;
 import com.timetable.timetable.domain.user.exception.UserNotFoundException;
 import com.timetable.timetable.domain.user.repository.UserRepository;
 import com.timetable.timetable.domain.user.repository.UserRoleRepository;
+import com.timetable.timetable.domain.user.specification.UserSpecifications;
 import com.timetable.timetable.security.SecurityUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -66,12 +67,16 @@ public class UserService {
         return getByUsernameOrThrow(SecurityUtil.getAuthenticatedUsername());
     }
 
-    public Page<ApplicationUser> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    public Page<ApplicationUser> getAllUsers(Pageable pageable, UserFilterParams filter) {
+        log.info("Filter received: {}", filter);
+        return userRepository.findAll(UserSpecifications.withFilters(filter), pageable);
     }
 
-    public Page<ApplicationUser> getUsersByRole(UserRole role, Pageable pageable) {
-        return userRepository.findAllByRole(role, pageable);
+    public Page<ApplicationUser> getUsersByRole(UserRole role, Pageable pageable, UserFilterParams filter) {
+        return userRepository.findAll(
+                UserSpecifications.withFilters(filter)
+                        .and(UserSpecifications.hasRole(role)),
+                pageable);
     }
 
     public ApplicationUser getUserById(Long id) {
