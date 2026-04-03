@@ -8,6 +8,7 @@ import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.entity.Subject;
 import com.timetable.timetable.domain.schedule.repository.CourseRepository;
 import com.timetable.timetable.domain.schedule.repository.SubjectRepository;
+import com.timetable.timetable.domain.user.entity.AccountStatus;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
 import com.timetable.timetable.domain.user.entity.UserRole;
 import com.timetable.timetable.domain.user.entity.UserRoleEntity;
@@ -64,6 +65,7 @@ public class BusinessSimulationInitializer implements CommandLineRunner {
                                     .email("equipa@simulacao.com")
                                     .password(passwordEncoder.encode("equipa123"))
                                     .roles(Set.of(userRole, teacherRole))
+                                    .status(AccountStatus.ACTIVE)
                                     .simulationTeam(true)
                                     .build());
                 });

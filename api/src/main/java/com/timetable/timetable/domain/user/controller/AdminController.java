@@ -2,6 +2,7 @@ package com.timetable.timetable.domain.user.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
+import com.timetable.timetable.domain.schedule.entity.TeacherType;
 import com.timetable.timetable.domain.user.dto.AdminUpdateUserDTO;
 import com.timetable.timetable.domain.user.dto.CreateUser;
 import com.timetable.timetable.domain.user.dto.UserFilterParams;
@@ -42,13 +43,15 @@ public class AdminController {
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) UserRole role,
-            @RequestParam(required = false) AccountStatus status) {
+            @RequestParam(required = false) AccountStatus status,
+            @RequestParam(required = false) TeacherType teacherType) {
 
         UserFilterParams filter = new UserFilterParams();
         filter.setUsername(username);
         filter.setEmail(email);
         filter.setRole(role);
         filter.setStatus(status);
+        filter.setTeacherType(teacherType);
         log.info("params: {}", filter.toString());
 
         return ResponseFactory.ok(

@@ -86,10 +86,10 @@ export const useUserStore = defineStore('user', {
     // ===============================
     // Admin actions
     // ===============================
-    async fetchUsers(page = 0, size = 20) {
+    async fetchUsers(page = 0, size = 20, filters?: { username?: string; email?: string; role?: string; status?: string; teacherType?: string }) {
       this.loading = true
       try {
-        const paged = await userService.admin.getAll(page, size)
+        const paged = await userService.admin.getAll(page, size, filters)
         this.pagedUsers = paged
         this.users = paged.content
         this.error = null

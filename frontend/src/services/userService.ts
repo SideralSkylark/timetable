@@ -27,10 +27,14 @@ export const userService = {
       const res = await api.post<ApiResponse<UserResponse>>('/v1/admins', data)
       return res.data.data
     },
-    getAll: async (page = 0, size = 10) => {
-      const res = await api.get<ApiResponse<Page<UserResponse>>>('/v1/admins', {
-        params: { page, size },
-      })
+    getAll: async (page = 0, size = 10, filters?: { username?: string; email?: string; role?: string; status?: string; teacherType?: string}) => {
+      const params: any = { page, size }
+      if (filters?.username) params.username = filters.username
+      if (filters?.email) params.email = filters.email
+      if (filters?.role) params.role = filters.role
+      if (filters?.status) params.status = filters.status
+      if (filters?.teacherType) params.teacherType = filters.teacherType
+      const res = await api.get<ApiResponse<Page<UserResponse>>>('/v1/admins', { params })
       return res.data.data
     },
     getById: async (id: number) => {

@@ -68,11 +68,28 @@
                 style="width: 160px;"
               >
                 <option value="">Todas</option>
-                <option value="ADMIN">ADMIN</option>
-                <option value="COORDINATOR">COORDINATOR</option>
-                <option value="TEACHER">TEACHER</option>
-                <option value="STUDENT">STUDENT</option>
-                <option value="USER">USER</option>
+                <option value="ADMIN">Administrador</option>
+                <option value="COORDINATOR">Coordenador</option>
+                <option value="TEACHER">Professor</option>
+                <option value="STUDENT">Estudante</option>
+                <option value="USER">Utilizador</option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Estado</label>
+            <div class="relative">
+              <select
+                v-model="filters.status"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+                style="width: 140px;"
+              >
+                <option value="">Todos</option>
+                <option value="ACTIVE">Ativo</option>
+                <option value="INACTIVE">Inativo</option>
               </select>
               <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -379,6 +396,7 @@ const filters = reactive({
   username: '',
   email: '',
   role: '',
+  status: '',
   teacherType: '',
 })
 
@@ -387,10 +405,17 @@ watch(() => filters.role, (val) => {
   if (val !== '' && val !== 'TEACHER') filters.teacherType = ''
 })
 
+// Refetch users when backend filters change
+watch([() => filters.username, () => filters.email, () => filters.role, () => filters.status, () =>
+filters.teacherType], () => {
+  fetchUsers(0) // Reset to first page when filters change
+})
+
 const activeFilterCount = computed(() => [
   filters.username.trim() !== '',
   filters.email.trim() !== '',
   filters.role !== '',
+  filters.status !== '',
   filters.teacherType !== '',
 ].filter(Boolean).length)
 
@@ -398,18 +423,11 @@ const clearFilters = () => {
   filters.username = ''
   filters.email = ''
   filters.role = ''
+  filters.status = ''
   filters.teacherType = ''
 }
 
-const filteredUsers = computed(() => {
-  return (pagedUsers.value?.content ?? []).filter(user => {
-    if (filters.username.trim() && !user.username.toLowerCase().includes(filters.username.trim().toLowerCase())) return false
-    if (filters.email.trim() && !user.email.toLowerCase().includes(filters.email.trim().toLowerCase())) return false
-    if (filters.role !== '' && !user.roles.includes(filters.role)) return false
-    if (filters.teacherType !== '' && user.teacherType !== filters.teacherType) return false
-    return true
-  })
-})
+const filteredUsers = computed(() => pagedUsers.value?.content ?? [])
 
 // ── Form ──────────────────────────────────────────────────────────
 const formData = reactive({
@@ -466,7 +484,14 @@ const roleLabel = (role: string) => {
 
 const fetchUsers = async (page = 0) => {
   currentPage.value = page
-  await userStore.fetchUsers(page, 10)
+  const backendFilters = {
+    username: filters.username.trim() || undefined,
+    email: filters.email.trim() || undefined,
+    role: filters.role || undefined,
+    status: filters.status || undefined,
+    teacherType: filters.teacherType || undefined,
+  }
+  await userStore.fetchUsers(page, 10, backendFilters)
 }
 
 const handleSubmit = async () => {

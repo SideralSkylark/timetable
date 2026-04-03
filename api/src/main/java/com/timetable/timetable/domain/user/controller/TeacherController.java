@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
+import com.timetable.timetable.domain.schedule.entity.TeacherType;
 import com.timetable.timetable.domain.user.dto.UserFilterParams;
 import com.timetable.timetable.domain.user.dto.UserResponse;
 import com.timetable.timetable.domain.user.entity.AccountStatus;
@@ -30,11 +31,13 @@ public class TeacherController {
         Pageable pageable, 
         @RequestParam(required = false) String username,
         @RequestParam(required = false) String email,
-        @RequestParam(required = false) AccountStatus status) {
+        @RequestParam(required = false) AccountStatus status,
+        @RequestParam(required = false) TeacherType teacherType) {
         UserFilterParams filter = new UserFilterParams();
         filter.setUsername(username);
         filter.setEmail(email);
         filter.setStatus(status);
+        filter.setTeacherType(teacherType);
         return ResponseFactory.ok(
             new PagedModel<>(userService.getUsersByRole(UserRole.TEACHER, pageable, filter).map(userMapper::toDTO)),
             "teachers fetched sucessfully"

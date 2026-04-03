@@ -1,5 +1,6 @@
 package com.timetable.timetable.domain.user.specification;
 
+import com.timetable.timetable.domain.schedule.entity.TeacherType;
 import com.timetable.timetable.domain.user.dto.UserFilterParams;
 import com.timetable.timetable.domain.user.entity.AccountStatus;
 import com.timetable.timetable.domain.user.entity.ApplicationUser;
@@ -15,7 +16,8 @@ public class UserSpecifications {
             usernameLike(f.getUsername()),
             emailLike(f.getEmail()),
             hasRole(f.getRole()),
-            hasStatus(f.getStatus())
+            hasStatus(f.getStatus()),
+            hasTeacherType(f.getTeacherType())
         );
     }
 
@@ -41,5 +43,10 @@ public class UserSpecifications {
     private static Specification<ApplicationUser> hasStatus(AccountStatus status) {
         return (root, query, cb) -> status == null ? null
             : cb.equal(root.get("status"), status);
+    }
+
+    private static Specification<ApplicationUser> hasTeacherType(TeacherType type) {
+        return (root, query, cb) -> type == null ? null
+            : cb.equal(root.get("teacherType"), type);
     }
 }

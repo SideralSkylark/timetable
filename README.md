@@ -61,5 +61,6 @@ mvn test -Dtest="*ServiceTest"
 ---
 TODO:
 field validations
+filter in the api level(in the frontend to match the params so pagination dosent bug out)
 password reset logic(by admin or someone else) -> creates a random pass.
 

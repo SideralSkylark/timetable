@@ -1,5 +1,6 @@
 package com.timetable.timetable.domain.user.dto;
 
+import com.timetable.timetable.domain.schedule.entity.TeacherType;
 import com.timetable.timetable.domain.user.entity.AccountStatus;
 import com.timetable.timetable.domain.user.entity.UserRole;
 
@@ -13,4 +14,5 @@ public class UserFilterParams {
     private String email;
     private UserRole role;
     private AccountStatus status;
+    private TeacherType teacherType;
 }
