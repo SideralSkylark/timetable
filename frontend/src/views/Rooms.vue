@@ -123,9 +123,9 @@
       <!-- Delete confirmation banner -->
       <div v-if="confirmDeleteId !== null"
         class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
-        <span class="text-sm text-red-700">Tem a certeza que quer eliminar esta sala?</span>
+        <span class="text-sm text-red-700">Tem certeza que deseja deletar a sala "<strong class="text-red-700">{{ roomToDelete?.name }}</strong>"?</span>
         <div class="flex gap-2">
-          <button @click="confirmDeleteId = null"
+          <button @click="confirmDeleteId = null; roomToDelete = null"
             class="px-3 py-1.5 text-xs border border-gray-200 text-gray-500 rounded-md hover:bg-white transition">
             Cancelar
           </button>
@@ -143,7 +143,7 @@
         :currentPage="currentPage"
         :totalPages="pagedRooms?.page.totalPages ?? 0"
         @edit="openEditRoomModal"
-        @delete="(id: number) => (confirmDeleteId = id)"
+        @delete="(id: number) => { confirmDeleteId = id; roomToDelete = filteredRooms.find(r => r.id === id) || null }"
         @change-page="fetchRooms"
       >
         <template #empty>
@@ -278,9 +278,17 @@
               Cancelar
             </button>
             <button type="submit"
+              :disabled="isSubmitting"
+              :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }"
               class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
-              <Check class="w-3.5 h-3.5" />
-              {{ editingRoom ? 'Atualizar sala' : 'Criar sala' }}
+              <template v-if="isSubmitting">
+                <Loader2 class="w-3.5 h-3.5 animate-spin" />
+                <span>{{ editingRoom ? 'Updating...' : 'Creating...' }}</span>
+              </template>
+              <template v-else>
+                <Check class="w-3.5 h-3.5" />
+                <span>{{ editingRoom ? 'Update Room' : 'Create Room' }}</span>
+              </template>
             </button>
           </div>
         </form>
@@ -299,7 +307,7 @@ import CrudTable from '@/component/ui/CrudTable.vue'
 import {
   Building, Plus, DoorOpen, Edit, Tag,
   Users as UsersIcon, X, Check, ShieldAlert,
-  Search, ChevronDown,
+  Search, ChevronDown, Loader2
 } from 'lucide-vue-next'
 
 const roomStore = useRoomStore()
@@ -308,6 +316,8 @@ const toast = useToast()
 const editingRoom = ref<RoomResponse | null>(null)
 const showRoomModal = ref(false)
 const confirmDeleteId = ref<number | null>(null)
+const roomToDelete = ref<RoomResponse | null>(null)
+const isSubmitting = ref(false)
 const pagedRooms = computed(() => roomStore.pagedRooms)
 const currentPage = ref(0)
 
@@ -418,15 +428,20 @@ const handleSubmit = async () => {
     return
   }
 
-  const data: any = {
-    name: formData.name,
-    capacity: formData.capacity,
+  isSubmitting.value = true
+  try {
+    const data: any = {
+      name: formData.name,
+      capacity: formData.capacity,
+    }
+    const periodRestrictions = buildPeriodRestrictions()
+    if (Object.keys(periodRestrictions).length > 0) {
+      data.periodRestrictions = periodRestrictions
+    }
+    editingRoom.value ? await updateRoom(data) : await createRoom(data)
+  } finally {
+    isSubmitting.value = false
   }
-  const periodRestrictions = buildPeriodRestrictions()
-  if (Object.keys(periodRestrictions).length > 0) {
-    data.periodRestrictions = periodRestrictions
-  }
-  editingRoom.value ? await updateRoom(data) : await createRoom(data)
 }
 
 const createRoom = async (data: any) => {
@@ -458,6 +473,7 @@ const updateRoom = async (data: any) => {
 const confirmDelete = async (id: number) => {
   await roomStore.deleteRoom(id)
   confirmDeleteId.value = null
+  roomToDelete.value = null
   toast.success('Sala removida com sucesso')
   fetchRooms(currentPage.value)
 }

@@ -1,6 +1,5 @@
 <template>
   <aside class="w-60 bg-white border-r border-gray-100 flex flex-col">
-
     <!-- Brand -->
     <div class="px-5 py-5 border-b border-gray-100">
       <div class="flex items-center gap-3">
@@ -16,8 +15,6 @@
 
     <!-- Navigation -->
     <nav class="flex-1 px-3 py-4 space-y-0.5">
-      <p class="px-2 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Menu</p>
-
       <RouterLink
         v-for="item in allowedRoutes"
         :key="item.name"
@@ -45,18 +42,17 @@
       <!-- User info -->
       <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg mb-0.5">
         <div class="w-7 h-7 rounded-full bg-blue-900 flex items-center justify-center shrink-0">
-          <User class="w-3.5 h-3.5 text-white" />
+          <span class="text-xs font-medium text-white leading-none">{{ userInitials }}</span>
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-xs font-medium text-gray-800 truncate">
             {{ auth.user?.username ?? 'Utilizador' }}
           </p>
           <p class="text-xs text-gray-400 truncate">
-            {{ auth.user?.roles?.[0] ?? 'USER' }}
+            {{ userRoleLabel }}
           </p>
         </div>
       </div>
-
       <!-- Logout -->
       <button
         @click="logout"
@@ -66,7 +62,6 @@
         <span class="font-medium">Terminar sessão</span>
       </button>
     </div>
-
   </aside>
 </template>
 
@@ -79,9 +74,9 @@ import {
   Building,
   School,
   Users as UsersIcon,
+  GraduationCap as CohortIcon,
   LogOut,
   GraduationCap,
-  User,
   ChevronRight,
   CalendarDays,
 } from 'lucide-vue-next'
@@ -90,14 +85,34 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
+const roleLabels: Record<string, string> = {
+  ADMIN:       'Administrador',
+  COORDINATOR: 'Coordenador',
+  DIRECTOR:    'Diretor',
+  ASISTENT:    'Assistente',
+  STUDENT:     'Estudante',
+  TEACHER:     'Docente',
+  USER:        'Utilizador',
+}
+
+const userInitials = computed(() => {
+  const name = auth.user?.username ?? ''
+  return name.slice(0, 2).toUpperCase()
+})
+
+const userRoleLabel = computed(() => {
+  const role = auth.user?.roles?.[0] ?? 'USER'
+  return roleLabels[role] ?? role
+})
+
 const dashboardRoutes = [
-  { name: 'DashboardHome', label: 'Início',      icon: Home,         roles: ['USER'] },
-  { name: 'Rooms',         label: 'Salas',        icon: Building,     roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
-  { name: 'Courses',       label: 'Cursos',       icon: School,       roles: ['ADMIN', 'COORDINATOR'] },
-  { name: 'Cohorts',       label: 'Turmas',       icon: UsersIcon,    roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
-  { name: 'Users',         label: 'Utilizadores', icon: UsersIcon,    roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
-  { name: 'Timetable',     label: 'Horários',     icon: CalendarDays, roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
-  { name: 'MyTimetableView',     label: 'Meu Horário',     icon: CalendarDays, roles: ['STUDENT', 'TEACHER'] },
+  { name: 'DashboardHome',  label: 'Início',       icon: Home,        roles: ['USER'] },
+  { name: 'Rooms',          label: 'Salas',         icon: Building,    roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'Courses',        label: 'Cursos',        icon: School,      roles: ['ADMIN', 'COORDINATOR'] },
+  { name: 'Cohorts',        label: 'Turmas',        icon: CohortIcon,  roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'Users',          label: 'Utilizadores',  icon: UsersIcon,   roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'Timetable',      label: 'Horários',      icon: CalendarDays, roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'MyTimetableView', label: 'Meu Horário',  icon: CalendarDays, roles: ['STUDENT', 'TEACHER'] },
 ]
 
 const allowedRoutes = computed(() => {
