@@ -205,16 +205,18 @@
           </div>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="p-5 space-y-5">
+        <form @submit.prevent="handleSubmit" novalidate class="p-5 space-y-5">
 
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <User class="w-3.5 h-3.5" />
               Username <span class="text-blue-900">*</span>
             </label>
-            <input v-model="formData.username" type="text" required
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
+            <input v-model="formData.username" type="text"
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              :class="formErrors.username ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Digite o username" />
+            <p v-if="formErrors.username" class="text-red-500 text-[10px] mt-1">O username é obrigatório</p>
           </div>
 
           <div>
@@ -222,9 +224,11 @@
               <Mail class="w-3.5 h-3.5" />
               Email <span class="text-blue-900">*</span>
             </label>
-            <input v-model="formData.email" type="email" required
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
+            <input v-model="formData.email" type="email"
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              :class="formErrors.email ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Digite o email" />
+            <p v-if="formErrors.email" class="text-red-500 text-[10px] mt-1">Introduza um email válido</p>
           </div>
 
           <div v-if="!editingUser">
@@ -232,12 +236,11 @@
               <Lock class="w-3.5 h-3.5" />
               Password <span class="text-blue-900">*</span>
             </label>
-            <input v-model="formData.password" type="password" required
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
+            <input v-model="formData.password" type="password"
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              :class="formErrors.password ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Digite a password" />
-            <p v-if="formData.password && !isPasswordValid" class="text-red-500 text-xs mt-1">
-              Password deve ter entre 8 e 100 caracteres.
-            </p>
+            <p v-if="formErrors.password" class="text-red-500 text-[10px] mt-1">Password deve ter entre 8 e 100 caracteres</p>
           </div>
 
           <div>
@@ -280,7 +283,8 @@
               <BookOpen class="w-3.5 h-3.5" />
               Tipo de docente <span class="text-blue-900">*</span>
             </label>
-            <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <div class="border rounded-lg overflow-hidden"
+              :class="formErrors.teacherType ? 'border-red-500' : 'border-gray-200'">
               <label
                 v-for="type in teacherTypes"
                 :key="type.value"
@@ -299,6 +303,7 @@
                 />
               </label>
             </div>
+            <p v-if="formErrors.teacherType" class="text-red-500 text-[10px] mt-1">O tipo de docente é obrigatório para professores</p>
           </div>
 
           <div class="flex gap-2 pt-1">
@@ -308,11 +313,7 @@
               Cancelar
             </button>
             <button type="submit"
-              :disabled="!isFormValid"
-              :class="!isFormValid
-                ? 'flex-1 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg text-sm cursor-not-allowed'
-                : 'flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800'"
-              class="transition flex items-center justify-center gap-1.5 font-medium"
+              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium"
             >
               <Check class="w-3.5 h-3.5" />
               {{ editingUser ? 'Atualizar utilizador' : 'Criar utilizador' }}
@@ -438,6 +439,13 @@ const formData = reactive({
   teacherType: null as TeacherType | null
 })
 
+const formErrors = reactive({
+  username: false,
+  email: false,
+  password: false,
+  teacherType: false
+})
+
 const tableColumns = [
   { key: 'username', label: 'Username' },
   { key: 'email', label: 'Email' },
@@ -495,10 +503,16 @@ const fetchUsers = async (page = 0) => {
 }
 
 const handleSubmit = async () => {
-  if (!isFormValid.value) {
-    toast.error('Por favor corrija o formulário antes de submeter.')
+  formErrors.username = !formData.username?.trim()
+  formErrors.email = !formData.email?.trim() || !/^\S+@\S+\.\S+$/.test(formData.email)
+  formErrors.password = !editingUser.value && (formData.password.length < 8 || formData.password.length > 100)
+  formErrors.teacherType = formData.selectedRoles.includes('TEACHER') && !formData.teacherType
+
+  if (formErrors.username || formErrors.email || formErrors.password || formErrors.teacherType) {
+    toast.error('Por favor, preencha todos os campos obrigatórios corretamente.')
     return
   }
+
   const roles = ['USER', ...formData.selectedRoles]
   const isTeacher = formData.selectedRoles.includes('TEACHER')
   const data = {
@@ -533,6 +547,12 @@ const openEdit = (user: UserResponse) => {
   formData.password = ''
   formData.selectedRoles = user.roles.filter(r => r !== 'USER')
   formData.teacherType = user.teacherType ?? null
+  
+  formErrors.username = false
+  formErrors.email = false
+  formErrors.password = false
+  formErrors.teacherType = false
+  
   showUserModal.value = true
 }
 
@@ -550,21 +570,14 @@ const openUserModal = () => {
   formData.password = ''
   formData.selectedRoles = []
   formData.teacherType = null
+
+  formErrors.username = false
+  formErrors.email = false
+  formErrors.password = false
+  formErrors.teacherType = false
+
   showUserModal.value = true
 }
-
-const isPasswordValid = computed(() => {
-  if (editingUser.value) return true
-  const pwd = formData.password ?? ''
-  return pwd.length >= 8 && pwd.length <= 100
-})
-
-const isFormValid = computed(() => {
-  if (!formData.username?.trim()) return false
-  if (!formData.email?.trim()) return false
-  if (!editingUser.value && !isPasswordValid.value) return false
-  return true
-})
 
 const closeModal = () => {
   showUserModal.value = false
