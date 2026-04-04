@@ -276,8 +276,10 @@
               type="number"
               min="1"
               :max="cohortStore.maxRoomCapacity ?? 200"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800"
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+              :class="confirmFormErrors.studentCount ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
             />
+            <p v-if="confirmFormErrors.studentCount" class="text-red-500 text-[10px] mt-1">O número de ingressos é obrigatório</p>
             <p v-if="cohortStore.maxRoomCapacity && confirmForm.studentCount > cohortStore.maxRoomCapacity"
               class="text-xs text-red-500 mt-1.5 flex items-center gap-1">
               <AlertCircle class="w-3 h-3" />
@@ -325,22 +327,26 @@
           <Loader2 class="w-5 h-5 animate-spin text-blue-900" />
         </div>
 
-        <form v-else @submit.prevent="handleSubmit" class="p-5 space-y-4">
+        <form v-else @submit.prevent="handleSubmit" novalidate class="p-5 space-y-4">
 
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="text-xs font-medium text-gray-500 mb-1.5 block">
                 Ano curricular <span class="text-blue-900">*</span>
               </label>
-              <input v-model.number="form.year" type="number" min="1" max="5" required
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800" />
+              <input v-model.number="form.year" type="number" min="1" max="6"
+                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+                :class="formErrors.year ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
+              <p v-if="formErrors.year" class="text-red-500 text-[10px] mt-1">O ano curricular é obrigatório (1-6)</p>
             </div>
             <div>
               <label class="text-xs font-medium text-gray-500 mb-1.5 block">
                 Secção <span class="text-blue-900">*</span>
               </label>
-              <input v-model="form.section" type="text" required maxlength="2"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 uppercase" />
+              <input v-model="form.section" type="text" maxlength="2"
+                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 uppercase"
+                :class="formErrors.section ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
+              <p v-if="formErrors.section" class="text-red-500 text-[10px] mt-1">A secção é obrigatória</p>
             </div>
           </div>
 
@@ -349,19 +355,23 @@
               <label class="text-xs font-medium text-gray-500 mb-1.5 block">
                 Ano lectivo <span class="text-blue-900">*</span>
               </label>
-              <input v-model.number="form.academicYear" type="number" required
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800" />
+              <input v-model.number="form.academicYear" type="number"
+                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+                :class="formErrors.academicYear ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
+              <p v-if="formErrors.academicYear" class="text-red-500 text-[10px] mt-1">O ano lectivo é obrigatório</p>
             </div>
             <div>
               <label class="text-xs font-medium text-gray-500 mb-1.5 block">
                 Semestre <span class="text-blue-900">*</span>
               </label>
-              <select v-model.number="form.semester" required
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800">
+              <select v-model.number="form.semester"
+                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+                :class="formErrors.semester ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'">
                 <option value="" disabled>Selecionar</option>
                 <option :value="1">1º semestre</option>
                 <option :value="2">2º semestre</option>
               </select>
+              <p v-if="formErrors.semester" class="text-red-500 text-[10px] mt-1">O semestre é obrigatório</p>
             </div>
           </div>
 
@@ -369,13 +379,15 @@
             <label class="text-xs font-medium text-gray-500 mb-1.5 block">
               Curso <span class="text-blue-900">*</span>
             </label>
-            <select v-model.number="form.courseId" required
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800">
+            <select v-model.number="form.courseId"
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+              :class="formErrors.courseId ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'">
               <option value="" disabled>Selecionar curso</option>
               <option v-for="course in courseStore.courses" :key="course.id" :value="course.id">
                 {{ course.name }}
               </option>
             </select>
+            <p v-if="formErrors.courseId" class="text-red-500 text-[10px] mt-1">O curso é obrigatório</p>
           </div>
 
           <div class="flex gap-2 pt-1">
@@ -508,6 +520,7 @@ const loadingDetail = ref(false)
 const confirmDeleteId = ref<number | null>(null)
 const confirmingCohort = ref<(CohortListResponse & { turma: string }) | null>(null)
 const confirmForm = reactive({ studentCount: 35 })
+const confirmFormErrors = reactive({ studentCount: false })
 
 const form = reactive({
   year: 1,
@@ -516,6 +529,14 @@ const form = reactive({
   semester: 1 as number | '',
   courseId: '' as number | '',
   studentIds: [] as number[],
+})
+
+const formErrors = reactive({
+  year: false,
+  section: false,
+  academicYear: false,
+  semester: false,
+  courseId: false,
 })
 
 // ── Students modal ────────────────────────────────────────────────
@@ -671,12 +692,19 @@ async function fetchCohorts(page = 0) {
 async function openConfirmModal(cohort: CohortListResponse & { turma: string }) {
   confirmingCohort.value = cohort
   confirmForm.studentCount = cohort.studentCount
+  confirmFormErrors.studentCount = false
   await cohortStore.fetchMaxRoomCapacity()
   showConfirmModal.value = true
 }
 
 async function handleConfirm() {
   if (!confirmingCohort.value) return
+  confirmFormErrors.studentCount = !confirmForm.studentCount || confirmForm.studentCount < 1
+  if (confirmFormErrors.studentCount) {
+    toast.error('O número de ingressos deve ser pelo menos 1.')
+    return
+  }
+
   try {
     await cohortStore.confirmCohort(confirmingCohort.value.id, confirmForm.studentCount)
     toast.success('Ingressos confirmados!')
@@ -697,6 +725,13 @@ async function openCreateModal() {
   form.semester = 1
   form.courseId = ''
   form.studentIds = []
+
+  formErrors.year = false
+  formErrors.section = false
+  formErrors.academicYear = false
+  formErrors.semester = false
+  formErrors.courseId = false
+
   await courseStore.fetchAllCoursesSimple()
   showModal.value = true
 }
@@ -706,6 +741,13 @@ async function openEditModal(row: CohortListResponse) {
   editingId.value = row.id
   showModal.value = true
   loadingDetail.value = true
+
+  formErrors.year = false
+  formErrors.section = false
+  formErrors.academicYear = false
+  formErrors.semester = false
+  formErrors.courseId = false
+
   await cohortStore.fetchCohort(row.id)
   const detail = cohortStore.selectedCohort
   if (detail) {
@@ -726,6 +768,17 @@ function closeModal() {
 }
 
 async function handleSubmit() {
+  formErrors.year = !form.year || form.year < 1 || form.year > 6
+  formErrors.section = !form.section.trim()
+  formErrors.academicYear = !form.academicYear || form.academicYear < 2000
+  formErrors.semester = !form.semester
+  formErrors.courseId = !isEditing.value && !form.courseId
+
+  if (formErrors.year || formErrors.section || formErrors.academicYear || formErrors.semester || formErrors.courseId) {
+    toast.error('Por favor, preencha todos os campos obrigatórios corretamente.')
+    return
+  }
+
   isEditing.value ? await handleUpdate() : await handleCreate()
 }
 
