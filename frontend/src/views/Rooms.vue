@@ -186,16 +186,18 @@
           </div>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="p-5 space-y-5">
+        <form @submit.prevent="handleSubmit" novalidate class="p-5 space-y-5">
 
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <Tag class="w-3.5 h-3.5" />
               Nome da sala <span class="text-blue-900">*</span>
             </label>
-            <input v-model="formData.name" type="text" required
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
+            <input v-model="formData.name" type="text"
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              :class="formErrors.name ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Ex: Sala A101, Laboratório 3…" />
+            <p v-if="formErrors.name" class="text-red-500 text-[10px] mt-1">O nome da sala é obrigatório</p>
           </div>
 
           <div>
@@ -203,9 +205,11 @@
               <UsersIcon class="w-3.5 h-3.5" />
               Capacidade <span class="text-blue-900">*</span>
             </label>
-            <input v-model.number="formData.capacity" type="number" required min="1"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
+            <input v-model.number="formData.capacity" type="number" min="1"
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              :class="formErrors.capacity ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Número de lugares" />
+            <p v-if="formErrors.capacity" class="text-red-500 text-[10px] mt-1">A capacidade deve ser pelo menos 1</p>
           </div>
 
           <div>
@@ -237,7 +241,7 @@
                 <div class="grid grid-cols-2 divide-x divide-gray-100">
                   <div class="px-3 py-2.5">
                     <p class="text-xs text-gray-400 mb-1">Curso</p>
-                    <select v-model="restriction.courseId" required
+                    <select v-model="restriction.courseId"
                       class="w-full text-sm text-gray-700 bg-transparent border-none outline-none p-0">
                       <option :value="null" disabled>Selecionar…</option>
                       <option v-for="course in courseStore.courses" :key="course.id" :value="course.id">
@@ -247,7 +251,7 @@
                   </div>
                   <div class="px-3 py-2.5">
                     <p class="text-xs text-gray-400 mb-1">Período</p>
-                    <select v-model="restriction.period" required
+                    <select v-model="restriction.period"
                       class="w-full text-sm text-gray-700 bg-transparent border-none outline-none p-0">
                       <option :value="null" disabled>Selecionar…</option>
                       <option value="MORNING">Manhã</option>
@@ -382,6 +386,11 @@ const formData = reactive({
   restrictions: [] as Array<{ courseId: number | null; period: string | null }>
 })
 
+const formErrors = reactive({
+  name: false,
+  capacity: false
+})
+
 function buildPeriodRestrictions() {
   const periodMap: Record<string, number[]> = {}
   for (const restriction of formData.restrictions) {
@@ -417,6 +426,14 @@ const fetchRooms = async (page = 0) => {
 }
 
 const handleSubmit = async () => {
+  formErrors.name = !formData.name.trim()
+  formErrors.capacity = formData.capacity === null || formData.capacity <= 0
+
+  if (formErrors.name || formErrors.capacity) {
+    toast.error('O nome da sala e a capacidade são campos obrigatórios.')
+    return
+  }
+
   const data: any = {
     name: formData.name,
     capacity: formData.capacity,
@@ -441,6 +458,8 @@ const openEditRoomModal = async (room: RoomResponse) => {
   formData.name = room.name
   formData.capacity = room.capacity
   formData.restrictions = room.restrictions.map(r => ({ courseId: r.courseId, period: r.period }))
+  formErrors.name = false
+  formErrors.capacity = false
   showRoomModal.value = true
 }
 
@@ -464,6 +483,8 @@ const openRoomModal = async () => {
   formData.name = ''
   formData.capacity = null
   formData.restrictions = []
+  formErrors.name = false
+  formErrors.capacity = false
   await courseStore.fetchAllCoursesSimple()
   showRoomModal.value = true
 }
