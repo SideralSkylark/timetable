@@ -69,7 +69,9 @@
               >
                 <option value="">Todas</option>
                 <option value="ADMIN">Administrador</option>
+                <option value="DIRECTOR">Diretor</option>
                 <option value="COORDINATOR">Coordenador</option>
+                <option value="ASISTENT">Assistente</option>
                 <option value="TEACHER">Professor</option>
                 <option value="STUDENT">Estudante</option>
                 <option value="USER">Utilizador</option>
@@ -455,7 +457,9 @@ const tableColumns = [
 const toggleableRoles = [
   { value: 'STUDENT',     description: 'Acesso de estudante' },
   { value: 'TEACHER',     description: 'Acesso de professor' },
+  { value: 'ASISTENT',    description: 'Acesso de assistente' },
   { value: 'COORDINATOR', description: 'Acesso de coordenador' },
+  { value: 'DIRECTOR',    description: 'Acesso de director' },
   { value: 'ADMIN',       description: 'Acesso administrativo completo' },
 ]
 
