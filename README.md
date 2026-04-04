@@ -66,3 +66,5 @@ field validations
 filter in the api level(in the frontend to match the params so pagination dosent bug out)
 password reset logic(by admin or someone else) -> creates a random pass. so the user can hand it personaly to the person that forgot his
 
+Considerations:
+the modal to add students to cohort fetches 100 pages (if possible find a more reasonable sollution)

@@ -41,8 +41,8 @@ export const userService = {
       const res = await api.get<ApiResponse<UserResponse>>(`/v1/admins/${id}`)
       return res.data.data
     },
-    getStudents: async (): Promise<UserResponse[]> => {
-      const res = await api.get<ApiResponse<UserResponse[]>>('/v1/admins/students')
+    getStudents: async (page = 0, size = 1000) => {
+      const res = await api.get<ApiResponse<Page<UserResponse>>>('/v1/admins/students', { params: { page, size } })
       return res.data.data
     },
     update: async (id: number, data: UpdateUserRequest) => {

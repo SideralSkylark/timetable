@@ -101,8 +101,8 @@ export const useUserStore = defineStore('user', {
     },
 
     async fetchStudents(): Promise<UserResponse[]> {
-      const students = await userService.admin.getStudents()
-      return students
+      const page = await userService.admin.getStudents()
+      return page.content
     },
 
     async createUser(data: CreateUserRequest) {
