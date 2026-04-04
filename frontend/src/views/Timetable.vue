@@ -256,39 +256,45 @@
               {{ loadingSlots ? 'A calcular...' : slotsCalculated ? 'Recalcular' : 'Calcular permutações' }}
             </button>
 
-            <div class="border-t border-gray-100 pt-3 space-y-2">
-              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Mesma turma</p>
-              <button :disabled="loadingCohortSwaps" @click="calculateCohortSwaps"
-                class="w-full h-8 flex items-center justify-center gap-1.5 px-3 bg-gray-700 text-white text-xs font-medium rounded-lg hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                <Loader2 v-if="loadingCohortSwaps" class="w-3.5 h-3.5 animate-spin" />
-                <ArrowRightLeft v-else class="w-3.5 h-3.5" />
-                {{ loadingCohortSwaps ? 'A calcular...' : cohortSwapsCalculated ? 'Recalcular' : 'Ver trocas' }}
-              </button>
-              <template v-if="cohortSwapsCalculated">
-                <div v-if="cohortSwapCandidates.length > 0" class="space-y-1 max-h-44 overflow-y-auto">
-                  <button v-for="c in cohortSwapCandidates" :key="c.scheduledClassId" @click="pendingCohortSwap = c"
-                    class="w-full text-left px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition text-xs border border-gray-100">
-                    <p class="font-semibold text-gray-800 truncate">{{ c.subjectName }}</p>
-                    <p class="text-gray-400 mt-0.5">{{ dayLabel(c.dayOfWeek) }} · {{ c.startTime.substring(0, 5) }} · {{
-                      c.roomName }}</p>
-                  </button>
-                </div>
-                <p v-else
-                  class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2.5 text-center">
-                  Nenhuma troca válida.
-                </p>
-              </template>
-            </div>
-
             <template v-if="slotsCalculated">
               <p v-if="validSlots.length > 0" class="text-xs text-gray-400 text-center">
-                {{validSlots.filter(s => !s.isSwap).length}} livre(s) · {{validSlots.filter(s => s.isSwap).length}}
-                permuta(ções)
+                {{ validSlots.length }} permutação(ões) disponível(eis)
               </p>
               <p v-else class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2.5 text-center">
                 Nenhuma permutação válida.
               </p>
             </template>
+
+            <div class="border border-gray-100 rounded-lg overflow-hidden">
+              <div class="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-100">
+                <span class="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                  Trocar com aula da mesma turma
+                </span>
+              </div>
+              
+              <div class="p-2.5 space-y-2">
+                <button :disabled="loadingCohortSwaps" @click="calculateCohortSwaps"
+                  class="w-full h-8 flex items-center justify-center gap-1.5 px-3 bg-gray-700 text-white text-xs font-medium rounded-lg hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                  <Loader2 v-if="loadingCohortSwaps" class="w-3.5 h-3.5 animate-spin" />
+                  <ArrowRightLeft v-else class="w-3.5 h-3.5" />
+                  {{ loadingCohortSwaps ? 'A calcular...' : cohortSwapsCalculated ? 'Recalcular' : 'Ver trocas' }}
+                </button>
+                <template v-if="cohortSwapsCalculated">
+                  <div v-if="cohortSwapCandidates.length > 0" class="space-y-1 max-h-44 overflow-y-auto">
+                    <button v-for="c in cohortSwapCandidates" :key="c.scheduledClassId" @click="pendingCohortSwap = c"
+                      class="w-full text-left px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition text-xs border border-gray-100">
+                      <p class="font-semibold text-gray-800 truncate">{{ c.subjectName }}</p>
+                      <p class="text-gray-400 mt-0.5">{{ dayLabel(c.dayOfWeek) }} · {{ c.startTime.substring(0, 5) }} · {{
+                        c.roomName }}</p>
+                    </button>
+                  </div>
+                  <p v-else
+                    class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2.5 text-center">
+                    Nenhuma troca válida.
+                  </p>
+                </template>
+              </div>
+            </div>
 
             <button @click="clearSelection"
               class="w-full h-8 flex items-center justify-center text-xs text-gray-400 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
