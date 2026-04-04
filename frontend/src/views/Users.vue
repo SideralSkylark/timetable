@@ -251,7 +251,7 @@
             <div class="border border-gray-200 rounded-lg overflow-hidden">
               <div class="flex items-center justify-between px-3 py-2.5 bg-gray-50 border-b border-gray-100">
                 <div>
-                  <span class="text-sm font-medium text-gray-700">USER</span>
+                  <span class="text-sm font-medium text-gray-700">Utilizador</span>
                   <p class="text-xs text-gray-400">Permissão básica (obrigatória)</p>
                 </div>
                 <div class="w-4 h-4 rounded bg-blue-900 flex items-center justify-center">
@@ -264,7 +264,7 @@
                 class="flex items-center justify-between px-3 py-2.5 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 transition"
               >
                 <div>
-                  <span class="text-sm font-medium text-gray-700">{{ role.value }}</span>
+                  <span class="text-sm font-medium text-gray-700">{{ roleLabel(role.value) }}</span>
                   <p class="text-xs text-gray-400">{{ role.description }}</p>
                 </div>
                 <input
@@ -275,7 +275,7 @@
                 />
               </label>
             </div>
-            <p class="text-xs text-gray-400 mt-1.5">USER é sempre atribuído por padrão.</p>
+            <p class="text-xs text-gray-400 mt-1.5">Utilizador é sempre atribuído por padrão.</p>
           </div>
 
           <div v-if="formData.selectedRoles.includes('TEACHER')">
