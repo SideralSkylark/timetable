@@ -322,16 +322,18 @@
           </div>
         </div>
 
-        <form @submit.prevent="handleCourseSubmit" class="p-5 space-y-4">
+        <form @submit.prevent="handleCourseSubmit" novalidate class="p-5 space-y-4">
 
           <div>
             <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
               <Tag class="w-3.5 h-3.5" />
               Nome do curso <span class="text-blue-900">*</span>
             </label>
-            <input v-model="courseForm.name" type="text" required
+            <input v-model="courseForm.name" type="text"
               placeholder="Ex: Engenharia Informática"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300" />
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              :class="courseFormErrors.name ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
+            <p v-if="courseFormErrors.name" class="text-red-500 text-[10px] mt-1">O nome do curso é obrigatório</p>
           </div>
 
           <div>
@@ -340,13 +342,15 @@
               Coordenador <span class="text-blue-900">*</span>
             </label>
             <div class="relative">
-              <select v-model.number="courseForm.coordinatorId" required
-                class="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
+              <select v-model.number="courseForm.coordinatorId"
+                class="w-full px-3 py-2 pr-8 border rounded-lg text-sm text-gray-800 appearance-none outline-none transition cursor-pointer"
+                :class="courseFormErrors.coordinatorId ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'">
                 <option value="" disabled>Selecionar coordenador</option>
                 <option v-for="c in coordinators" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
               <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
+            <p v-if="courseFormErrors.coordinatorId" class="text-red-500 text-[10px] mt-1">O coordenador é obrigatório</p>
           </div>
 
           <div>
@@ -354,9 +358,11 @@
               <Calendar class="w-3.5 h-3.5" />
               Duração (anos) <span class="text-blue-900">*</span>
             </label>
-            <input v-model.number="courseForm.years" type="number" min="1" max="6" required
+            <input v-model.number="courseForm.years" type="number" min="1" max="6"
               @change="syncCohortRows"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800" />
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+              :class="courseFormErrors.years ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
+            <p v-if="courseFormErrors.years" class="text-red-500 text-[10px] mt-1">A duração deve ser entre 1 e 6 anos</p>
           </div>
 
           <div class="flex items-center justify-between px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
@@ -457,7 +463,9 @@
               Nome da disciplina <span class="text-blue-900">*</span>
             </label>
             <input v-model="disciplineForm.name" type="text" placeholder="Ex: Cálculo I"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300" />
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              :class="disciplineFormErrors.name ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
+            <p v-if="disciplineFormErrors.name" class="text-red-500 text-[10px] mt-1">O nome da disciplina é obrigatório</p>
           </div>
 
           <div>
@@ -465,7 +473,9 @@
               Créditos <span class="text-blue-900">*</span>
             </label>
             <input v-model.number="disciplineForm.credits" type="number" min="1" placeholder="Ex: 6"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300" />
+              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              :class="disciplineFormErrors.credits ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
+            <p v-if="disciplineFormErrors.credits" class="text-red-500 text-[10px] mt-1">Os créditos são obrigatórios e devem ser superiores a 0</p>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -475,20 +485,24 @@
               </label>
               <input v-model.number="disciplineForm.targetYear" type="number" min="1"
                 :max="selectedCourse?.years || 1"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800" />
+                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+                :class="disciplineFormErrors.targetYear ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
+              <p v-if="disciplineFormErrors.targetYear" class="text-red-500 text-[10px] mt-1">O ano é obrigatório</p>
             </div>
             <div>
               <label class="text-xs font-medium text-gray-500 mb-1.5 block">
                 Semestre <span class="text-blue-900">*</span>
               </label>
               <input v-model.number="disciplineForm.targetSemester" type="number" min="1" max="2"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800" />
+                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+                :class="disciplineFormErrors.targetSemester ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
+              <p v-if="disciplineFormErrors.targetSemester" class="text-red-500 text-[10px] mt-1">O semestre é obrigatório</p>
             </div>
           </div>
 
           <div>
             <label class="text-xs font-medium text-gray-500 mb-1.5 block">
-              Professores elegíveis <span class="text-blue-900">*</span>
+              Professores elegíveis
             </label>
 
             <div v-if="disciplineForm.selectedTeachers.length > 0" class="flex flex-wrap gap-1.5 mb-2">
@@ -509,7 +523,8 @@
               <Search class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
             </div>
 
-            <div class="border border-gray-200 rounded-lg max-h-44 overflow-y-auto">
+            <div class="border rounded-lg max-h-44 overflow-y-auto"
+              :class="disciplineFormErrors.selectedTeachers ? 'border-red-500' : 'border-gray-200'">
               <div v-if="loadingTeachers" class="p-4 text-center text-gray-400 text-xs flex items-center justify-center gap-1.5">
                 <Loader2 class="w-3.5 h-3.5 animate-spin" />
                 A carregar professores...
@@ -543,8 +558,8 @@
             <X class="w-3.5 h-3.5" />
             Cancelar
           </button>
-          <button type="button" @click="submitDiscipline" :disabled="!isDisciplineFormValid"
-            class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" @click="submitDiscipline"
+            class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition flex items-center justify-center gap-1.5">
             <Check class="w-3.5 h-3.5" />
             {{ editingDiscipline ? 'Guardar alterações' : 'Criar disciplina' }}
           </button>
@@ -635,12 +650,26 @@ const courseForm = reactive({
   hasBusinessSimulation: false,
 })
 
+const courseFormErrors = reactive({
+  name: false,
+  coordinatorId: false,
+  years: false,
+})
+
 const disciplineForm = ref({
   name: '',
   credits: 0,
   targetYear: 1,
   targetSemester: 1,
   selectedTeachers: [] as any[],
+})
+
+const disciplineFormErrors = reactive({
+  name: false,
+  credits: false,
+  targetYear: false,
+  targetSemester: false,
+  selectedTeachers: false,
 })
 
 // ── Computed ──────────────────────────────────────────────────────
@@ -651,14 +680,6 @@ const filteredTeachers = computed(() => {
     t.username.toLowerCase().includes(q) || t.email.toLowerCase().includes(q)
   )
 })
-
-const isDisciplineFormValid = computed(() =>
-  disciplineForm.value.name.trim() !== '' &&
-  disciplineForm.value.credits > 0 &&
-  disciplineForm.value.targetYear > 0 &&
-  disciplineForm.value.targetSemester > 0 &&
-  disciplineForm.value.selectedTeachers.length > 0
-)
 
 function buildExpectedCohortsMap(): Record<number, number> {
   const map: Record<number, number> = {}
@@ -743,6 +764,11 @@ function openCreateModal() {
   courseForm.years = 4
   courseForm.hasBusinessSimulation = false
   cohortRows.value = Array.from({ length: 4 }, (_, i) => ({ year: i + 1, count: 0 }))
+  
+  courseFormErrors.name = false
+  courseFormErrors.coordinatorId = false
+  courseFormErrors.years = false
+
   loadCoordinators()
   showCourseModal.value = true
 }
@@ -758,6 +784,11 @@ function openEditModal(course: any) {
     year: i + 1,
     count: map[i + 1] ?? 0,
   }))
+
+  courseFormErrors.name = false
+  courseFormErrors.coordinatorId = false
+  courseFormErrors.years = false
+
   loadCoordinators()
   showCourseModal.value = true
 }
@@ -768,6 +799,17 @@ function closeCourseModal() {
 }
 
 async function handleCourseSubmit() {
+  courseFormErrors.name = !courseForm.name.trim()
+  courseFormErrors.coordinatorId = !courseForm.coordinatorId
+  // Ensure we check for null/undefined/0/NaN and the range
+  const years = Number(courseForm.years)
+  courseFormErrors.years = isNaN(years) || years < 1 || years > 6
+
+  if (courseFormErrors.name || courseFormErrors.coordinatorId || courseFormErrors.years) {
+    toast.error('Por favor, preencha todos os campos obrigatórios do curso corretamente.')
+    return
+  }
+
   const payload = {
     name: courseForm.name,
     coordinatorId: courseForm.coordinatorId as number,
@@ -805,6 +847,12 @@ async function handleDeleteCourse(id: number) {
 function resetDisciplineForm() {
   disciplineForm.value = { name: '', credits: 0, targetYear: 1, targetSemester: 1, selectedTeachers: [] }
   teacherSearchQuery.value = ''
+  
+  disciplineFormErrors.name = false
+  disciplineFormErrors.credits = false
+  disciplineFormErrors.targetYear = false
+  disciplineFormErrors.targetSemester = false
+  disciplineFormErrors.selectedTeachers = false
 }
 
 async function openDisciplineModal(course: any) {
@@ -826,6 +874,13 @@ async function openEditDisciplineModal(discipline: any, course: any) {
     targetSemester: discipline.targetSemester,
     selectedTeachers: (discipline.eligibleTeachers ?? []).map((t: any) => ({ ...t })),
   }
+
+  disciplineFormErrors.name = false
+  disciplineFormErrors.credits = false
+  disciplineFormErrors.targetYear = false
+  disciplineFormErrors.targetSemester = false
+  disciplineFormErrors.selectedTeachers = false
+
   showDisciplineModal.value = true
 }
 
@@ -837,7 +892,18 @@ function closeDisciplineModal() {
 }
 
 async function submitDiscipline() {
-  if (!isDisciplineFormValid.value) return
+  disciplineFormErrors.name = !disciplineForm.value.name.trim()
+  disciplineFormErrors.credits = !disciplineForm.value.credits || disciplineForm.value.credits <= 0
+  disciplineFormErrors.targetYear = !disciplineForm.value.targetYear || disciplineForm.value.targetYear < 1
+  disciplineFormErrors.targetSemester = !disciplineForm.value.targetSemester || disciplineForm.value.targetSemester < 1
+  // Teachers are no longer mandatory
+  disciplineFormErrors.selectedTeachers = false
+
+  if (disciplineFormErrors.name || disciplineFormErrors.credits || disciplineFormErrors.targetYear || disciplineFormErrors.targetSemester) {
+    toast.error('Por favor, preencha todos os campos obrigatórios da disciplina.')
+    return
+  }
+
   const data = {
     name: disciplineForm.value.name,
     credits: disciplineForm.value.credits,
