@@ -19,10 +19,16 @@ export const useRoomStore = defineStore('room', {
   }),
 
   actions: {
-    async fetchRooms(page = 0, size = 10) {
+    async fetchRooms(page = 0, size = 10, filters?: { 
+      name?: string; 
+      capacityMin?: number; 
+      capacityMax?: number; 
+      courseId?: number; 
+      period?: string 
+    }) {
       this.loading = true
       try {
-        const paged = await roomService.getAll(page, size)
+        const paged = await roomService.getAll(page, size, filters)
         this.pagedRooms = paged
         this.rooms = paged.content
         this.error = null

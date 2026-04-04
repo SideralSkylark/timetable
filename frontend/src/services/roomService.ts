@@ -15,9 +15,24 @@ export const roomService = {
     return res.data.data
   },
 
-  async getAll(page: number = 0, size: number = 10) {
+  async getAll(page: number = 0, size: number = 10, filters?: { 
+    name?: string; 
+    capacityMin?: number; 
+    capacityMax?: number; 
+    courseId?: number; 
+    period?: string 
+  }) {
+    const params: any = { page, size }
+    if (filters) {
+      if (filters.name) params.name = filters.name
+      if (filters.capacityMin !== undefined && filters.capacityMin !== null) params.capacityMin = filters.capacityMin
+      if (filters.capacityMax !== undefined && filters.capacityMax !== null) params.capacityMax = filters.capacityMax
+      if (filters.courseId) params.courseId = filters.courseId
+      if (filters.period) params.period = filters.period
+    }
+
     const res = await api.get<ApiResponse<Page<RoomResponse>>>(BASE_URL, {
-      params: { page, size },
+      params,
     })
     return res.data.data
   },

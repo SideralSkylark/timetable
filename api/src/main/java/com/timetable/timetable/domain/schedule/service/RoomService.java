@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.timetable.timetable.domain.schedule.dto.CreateRoomRequest;
+import com.timetable.timetable.domain.schedule.dto.RoomFilterParams;
 import com.timetable.timetable.domain.schedule.dto.UpdateRoomRequest;
 import com.timetable.timetable.domain.schedule.entity.Course;
 import com.timetable.timetable.domain.schedule.entity.Room;
@@ -15,11 +16,16 @@ import com.timetable.timetable.domain.schedule.repository.RoomRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -55,8 +61,48 @@ public class RoomService {
     }
 
     @Transactional
+    public Page<Room> getAll(Pageable pageable, RoomFilterParams filters) {
+        if (filters == null) {
+            return roomRepository.findAll(pageable);
+        }
+
+        Specification<Room> spec = (root, query, cb) -> {
+            query.distinct(true);
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (filters.getName() != null && !filters.getName().isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + filters.getName().toLowerCase() + "%"));
+            }
+
+            if (filters.getCapacityMin() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("capacity"), filters.getCapacityMin()));
+            }
+
+            if (filters.getCapacityMax() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("capacity"), filters.getCapacityMax()));
+            }
+
+            if (filters.getCourseId() != null || filters.getPeriod() != null) {
+                Join<Room, RoomCourseRestriction> restrictionsJoin = root.join("restrictions");
+                
+                if (filters.getCourseId() != null) {
+                    predicates.add(cb.equal(restrictionsJoin.get("course").get("id"), filters.getCourseId()));
+                }
+                
+                if (filters.getPeriod() != null) {
+                    predicates.add(cb.equal(restrictionsJoin.get("period"), filters.getPeriod()));
+                }
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return roomRepository.findAll(spec, pageable);
+    }
+
+    @Transactional
     public Page<Room> getAll(Pageable pageable) {
-        return roomRepository.findAll(pageable);
+        return getAll(pageable, null);
     }
 
     @Transactional

@@ -290,7 +290,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useRoomStore } from '@/stores/room'
 import { useCourseStore } from '@/stores/course'
 import { useToast } from '@/composables/useToast'
@@ -336,17 +336,10 @@ const clearFilters = () => {
   filters.period = ''
 }
 
-// Unique courses extracted from current page's rooms
-const availableCourses = computed(() => {
-  const map = new Map<number, string>()
-  for (const room of pagedRooms.value?.content ?? []) {
-    for (const r of room.restrictions) {
-      if (r.courseId && r.courseName) map.set(r.courseId, r.courseName)
-    }
-  }
-  return [...map.entries()].map(([id, name]) => ({ id, name }))
-    .sort((a, b) => a.name.localeCompare(b.name))
-})
+// Use all courses from store for filtering
+const availableCourses = computed(() => 
+  courseStore.courses.sort((a, b) => a.name.localeCompare(b.name))
+)
 
 const mappedRooms = computed(() =>
   (pagedRooms.value?.content ?? []).map(room => ({
@@ -357,27 +350,8 @@ const mappedRooms = computed(() =>
   }))
 )
 
-const filteredRooms = computed(() => {
-  return mappedRooms.value.filter(room => {
-    // Name
-    if (filters.name.trim() && !room.name.toLowerCase().includes(filters.name.trim().toLowerCase())) return false
-    // Capacity min
-    if (filters.capacityMin !== null && room.capacity < filters.capacityMin) return false
-    // Capacity max
-    if (filters.capacityMax !== null && room.capacity > filters.capacityMax) return false
-    // Assigned course
-    if (filters.courseId !== '') {
-      const hasCourse = room.restrictions.some((r: any) => r.courseId === filters.courseId)
-      if (!hasCourse) return false
-    }
-    // Restriction period
-    if (filters.period !== '') {
-      const hasPeriod = room.restrictions.some((r: any) => r.period === filters.period)
-      if (!hasPeriod) return false
-    }
-    return true
-  })
-})
+// Now filteredRooms is just mappedRooms since filtering is done on the API
+const filteredRooms = computed(() => mappedRooms.value)
 
 // ── Form ──────────────────────────────────────────────────────────
 const formData = reactive({
@@ -422,8 +396,18 @@ const capacityBadgeClass = (capacity: number) => {
 
 const fetchRooms = async (page = 0) => {
   currentPage.value = page
-  await roomStore.fetchRooms(page, 10)
+  const backendFilters = {
+    name: filters.name.trim() || undefined,
+    capacityMin: filters.capacityMin || undefined,
+    capacityMax: filters.capacityMax || undefined,
+    courseId: filters.courseId || undefined,
+    period: filters.period || undefined,
+  }
+  await roomStore.fetchRooms(page, 10, backendFilters)
 }
+
+// Watch filters to trigger re-fetch
+watch(filters, () => fetchRooms(0))
 
 const handleSubmit = async () => {
   formErrors.name = !formData.name.trim()
@@ -494,5 +478,8 @@ const closeModal = () => {
   editingRoom.value = null
 }
 
-onMounted(fetchRooms)
+onMounted(() => {
+  fetchRooms()
+  courseStore.fetchAllCoursesSimple()
+})
 </script>

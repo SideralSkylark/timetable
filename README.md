@@ -60,9 +60,6 @@ mvn test -Dtest="*ServiceTest"
 
 ---
 TODO:
-timetable view(separate user actions properly)
-ghost-swap(allow the user to swap the ghost alocation with a teacher that exists in the system)
-field validations
 filter in the api level(in the frontend to match the params so pagination dosent bug out)
 password reset logic(by admin or someone else) -> creates a random pass. so the user can hand it personaly to the person that forgot his
 
