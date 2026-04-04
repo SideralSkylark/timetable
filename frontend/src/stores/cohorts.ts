@@ -18,11 +18,17 @@ export const useCohortStore = defineStore('cohorts', {
   }),
 
   actions: {
-    async fetchCohorts(page = 0, size = 10) {
+    async fetchCohorts(page = 0, size = 10, filters?: {
+      name?: string
+      courseId?: number
+      academicYear?: number
+      semester?: number
+      status?: string
+    }) {
       this.loading = true
       this.error = null
       try {
-        this.cohortsPage = await cohortService.getAll(page, size)
+        this.cohortsPage = await cohortService.getAll(page, size, filters)
       } catch (err: any) {
         this.error = err.response?.data?.message || 'Erro ao carregar turmas'
       } finally {

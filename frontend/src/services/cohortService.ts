@@ -12,9 +12,23 @@ import type {
 const BASE_URL = '/v1/cohorts'
 
 export const cohortService = {
-  async getAll(page = 0, size = 10) {
+  async getAll(page = 0, size = 10, filters?: {
+    name?: string
+    courseId?: number
+    academicYear?: number
+    semester?: number
+    status?: string
+  }) {
+    const params: any = { page, size }
+    if (filters) {
+      if (filters.name) params.name = filters.name
+      if (filters.courseId) params.courseId = filters.courseId
+      if (filters.academicYear) params.academicYear = filters.academicYear
+      if (filters.semester !== undefined && filters.semester !== null) params.semester = filters.semester
+      if (filters.status) params.status = filters.status
+    }
     const res = await api.get<ApiResponse<Page<CohortListResponse>>>(BASE_URL, {
-      params: { page, size },
+      params,
     })
     return res.data.data
   },

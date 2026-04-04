@@ -2,12 +2,14 @@ package com.timetable.timetable.domain.schedule.controller;
 
 import com.timetable.timetable.common.response.ApiResponse;
 import com.timetable.timetable.common.response.ResponseFactory;
+import com.timetable.timetable.domain.schedule.dto.CohortFilterParams;
 import com.timetable.timetable.domain.schedule.dto.CohortListResponse;
 import com.timetable.timetable.domain.schedule.dto.CohortResponse;
 import com.timetable.timetable.domain.schedule.dto.ConfirmCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortStudentsRequest;
+import com.timetable.timetable.domain.schedule.entity.CohortStatus;
 import com.timetable.timetable.domain.schedule.query.CohortQueryService;
 import com.timetable.timetable.domain.schedule.service.CohortService;
 
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -51,9 +54,23 @@ public class CohortController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedModel<CohortListResponse>>> getAll(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PagedModel<CohortListResponse>>> getAll(
+            Pageable pageable,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long courseId,
+            @RequestParam(required = false) Integer academicYear,
+            @RequestParam(required = false) Integer semester,
+            @RequestParam(required = false) CohortStatus status) {
+
+        CohortFilterParams filters = new CohortFilterParams();
+        filters.setName(name);
+        filters.setCourseId(courseId);
+        filters.setAcademicYear(academicYear);
+        filters.setSemester(semester);
+        filters.setStatus(status);
+
         return ResponseFactory.ok(
-                new PagedModel<>(cohortQueryService.findAll(pageable)),
+                new PagedModel<>(cohortQueryService.findAll(pageable, filters)),
                 "Cohorts fetched successfully.");
     }
 

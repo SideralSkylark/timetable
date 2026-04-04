@@ -4,6 +4,7 @@ import com.timetable.timetable.domain.schedule.entity.Cohort;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CohortRepository extends JpaRepository<Cohort, Long> {
+public interface CohortRepository extends JpaRepository<Cohort, Long>, JpaSpecificationExecutor<Cohort> {
 
     boolean existsByYearAndSectionAndSemesterAndAcademicYearAndCourseId(
             int year,

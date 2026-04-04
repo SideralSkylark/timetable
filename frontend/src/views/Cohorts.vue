@@ -110,8 +110,6 @@
                 <option value="">Todos</option>
                 <option value="ESTIMATED">Estimado</option>
                 <option value="CONFIRMED">Confirmado</option>
-                <option value="ACTIVE">Activo</option>
-                <option value="ARCHIVED">Arquivado</option>
               </select>
               <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -483,7 +481,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, watch } from 'vue'
 import { useCohortStore } from '@/stores/cohorts'
 import { useUserStore } from '@/stores/user'
 import { useCourseStore } from '@/stores/course'
@@ -620,24 +618,13 @@ const clearFilters = () => {
   filters.status = ''
 }
 
-// Unique courses from loaded cohorts for the dropdown
-const availableCourses = computed(() => {
-  const map = new Map<number, string>()
-  for (const c of cohortStore.cohortsPage?.content ?? []) {
-    if (c.courseId && c.courseName) map.set(c.courseId, c.courseName)
-  }
-  return [...map.entries()]
-    .map(([id, name]) => ({ id, name }))
-    .sort((a, b) => a.name.localeCompare(b.name))
-})
+// Unique courses from all courses for the dropdown
+const availableCourses = computed(() => courseStore.courses)
 
-// Unique academic years from loaded cohorts
+// Academic years - can be derived from some logic or just a fixed range for now
 const availableAcademicYears = computed(() => {
-  const years = new Set<number>()
-  for (const c of cohortStore.cohortsPage?.content ?? []) {
-    if (c.academicYear) years.add(c.academicYear)
-  }
-  return [...years].sort((a, b) => b - a)
+  const currentYear = new Date().getFullYear()
+  return [currentYear - 1, currentYear, currentYear + 1]
 })
 
 const mappedCohorts = computed(() =>
@@ -647,19 +634,13 @@ const mappedCohorts = computed(() =>
   }))
 )
 
-const filteredCohorts = computed(() => {
-  return mappedCohorts.value.filter(cohort => {
-    if (filters.name.trim() && !cohort.turma.toLowerCase().includes(filters.name.trim().toLowerCase())) return false
-    if (filters.courseId !== '' && cohort.courseId !== filters.courseId) return false
-    if (filters.academicYear !== '' && cohort.academicYear !== filters.academicYear) return false
-    if (filters.semester !== null && cohort.semester !== filters.semester) return false
-    if (filters.status !== '' && cohort.status !== filters.status) return false
-    return true
-  })
-})
+// Now filteredCohorts is just mappedCohorts since filtering is done on the API
+const filteredCohorts = computed(() => mappedCohorts.value)
 
 // ── Derived ───────────────────────────────────────────────────────
 const confirmationProgress = computed(() => {
+  // This might be tricky with server-side pagination if we want global progress
+  // For now, let's keep it as is (progress for current page) or remove if misleading
   const all = cohortStore.cohortsPage?.content ?? []
   if (all.length === 0) return null
   const confirmed = all.filter(c => c.status !== 'ESTIMATED').length
@@ -669,24 +650,33 @@ const confirmationProgress = computed(() => {
 const statusLabels: Record<string, string> = {
   ESTIMATED: 'Estimado',
   CONFIRMED: 'Confirmado',
-  ACTIVE:    'Activo',
-  ARCHIVED:  'Arquivado',
 }
 
 const statusBadgeClass = (status: string) => ({
   ESTIMATED: 'bg-amber-100 text-amber-700',
   CONFIRMED: 'bg-green-100 text-green-700',
-  ACTIVE:    'bg-blue-100 text-blue-700',
-  ARCHIVED:  'bg-gray-100 text-gray-500',
 }[status] ?? 'bg-gray-100 text-gray-500')
 
 // ── Lifecycle ─────────────────────────────────────────────────────
-onMounted(() => fetchCohorts())
+onMounted(async () => {
+  await courseStore.fetchAllCoursesSimple()
+  fetchCohorts()
+})
 
 async function fetchCohorts(page = 0) {
   currentPage.value = page
-  await cohortStore.fetchCohorts(page, 10)
+  const backendFilters = {
+    name: filters.name.trim() || undefined,
+    courseId: filters.courseId || undefined,
+    academicYear: filters.academicYear || undefined,
+    semester: filters.semester !== null ? filters.semester : undefined,
+    status: filters.status || undefined,
+  }
+  await cohortStore.fetchCohorts(page, 10, backendFilters)
 }
+
+// Watch filters to trigger re-fetch
+watch(filters, () => fetchCohorts(0))
 
 // ── Confirm enrolments ────────────────────────────────────────────
 async function openConfirmModal(cohort: CohortListResponse & { turma: string }) {
