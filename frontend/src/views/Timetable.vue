@@ -365,7 +365,8 @@
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-gray-100">
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
           <div class="p-2 rounded-lg" :class="pendingSwap.isSwap ? 'bg-orange-50' : 'bg-green-50'">
-            <ArrowRightLeft class="w-4 h-4" :class="pendingSwap.isSwap ? 'text-orange-600' : 'text-green-600'" />
+            <ArrowRightLeft v-if="pendingSwap.isSwap" class="w-4 h-4 text-orange-600" />
+            <ArrowRight v-else class="w-4 h-4 text-green-600" />
           </div>
           <h2 class="text-base font-semibold text-gray-900">{{ pendingSwap.isSwap ? 'Trocar aulas' : 'Mover aula' }}
           </h2>
@@ -374,17 +375,28 @@
           <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs">
             <p class="font-medium text-blue-600 mb-1 uppercase tracking-wide">A mover</p>
             <p class="font-semibold text-gray-800">{{ selectedLesson?.subject.name }}</p>
-            <p class="text-gray-500 mt-0.5">{{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{
-              selectedLesson?.timeslot?.startTime?.substring(0, 5) }} → {{ dayLabel(pendingSwap.dayOfWeek) }} · {{
-                pendingSwap.startTime.substring(0, 5) }} · {{ pendingSwap.roomName }}</p>
+            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
+                {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }}
+              </span>
+              <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <span class="text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-medium">
+                {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0,5) }} · {{ pendingSwap.roomName }}
+              </span>
+            </div>
           </div>
           <div v-if="pendingSwap.isSwap" class="bg-orange-50 border border-orange-100 rounded-lg p-3 text-xs">
             <p class="font-medium text-orange-600 mb-1 uppercase tracking-wide">Deslocada</p>
             <p class="font-semibold text-gray-800">{{ pendingSwap.swapWithSubject }}</p>
-            <p class="text-gray-500 mt-0.5">{{ pendingSwap.swapWithCohort }} · {{ dayLabel(pendingSwap.dayOfWeek) }} ·
-              {{
-                pendingSwap.startTime.substring(0, 5) }} → {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{
-                selectedLesson?.timeslot?.startTime?.substring(0, 5) }}</p>
+            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
+                {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0,5) }}
+              </span>
+              <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <span class="text-xs px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 border border-orange-200 font-medium">
+                {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }} · {{ selectedLesson?.room?.name ?? '—' }}
+              </span>
+            </div>
           </div>
           <div class="flex gap-2 pt-1">
             <button @click="pendingSwap = null"
@@ -417,16 +429,28 @@
           <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs">
             <p class="font-medium text-blue-600 mb-1 uppercase tracking-wide">Aula A</p>
             <p class="font-semibold text-gray-800">{{ selectedLesson?.subject.name }}</p>
-            <p class="text-gray-500 mt-0.5">{{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{
-              selectedLesson?.timeslot?.startTime?.substring(0, 5) }} → {{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{
-                pendingCohortSwap.startTime.substring(0, 5) }}</p>
+            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
+                {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }}
+              </span>
+              <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <span class="text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-medium">
+                {{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{ pendingCohortSwap.startTime.substring(0,5) }} · {{ pendingCohortSwap.roomName }}
+              </span>
+            </div>
           </div>
           <div class="bg-gray-50 border border-gray-100 rounded-lg p-3 text-xs">
             <p class="font-medium text-gray-400 mb-1 uppercase tracking-wide">Aula B</p>
             <p class="font-semibold text-gray-800">{{ pendingCohortSwap.subjectName }}</p>
-            <p class="text-gray-500 mt-0.5">{{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{
-              pendingCohortSwap.startTime.substring(0, 5) }} → {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{
-                selectedLesson?.timeslot?.startTime?.substring(0, 5) }}</p>
+            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
+                {{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{ pendingCohortSwap.startTime.substring(0,5) }}
+              </span>
+              <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 border border-gray-200 font-medium">
+                {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }} · {{ selectedLesson?.room?.name ?? '—' }}
+              </span>
+            </div>
           </div>
           <div class="flex gap-2 pt-1">
             <button @click="pendingCohortSwap = null"
@@ -454,7 +478,7 @@ import { useTimetableStore } from '@/stores/timetable'
 import { useToast } from '@/composables/useToast'
 import { permutationService, type ValidSlot, type CohortSwapCandidate } from '@/services/permutationService'
 import type { LessonAssignment } from '@/services/dto/timetable'
-import { CalendarDays, ChevronDown, Zap, Loader2, CheckCircle, XCircle, ArrowRightLeft, X, Send, Globe } from 'lucide-vue-next'
+import { CalendarDays, ChevronDown, Zap, Loader2, CheckCircle, XCircle, ArrowRightLeft, ArrowRight, X, Send, Globe } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const timetableStore = useTimetableStore()
