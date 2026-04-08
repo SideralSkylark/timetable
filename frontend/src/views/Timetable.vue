@@ -69,7 +69,7 @@
               <Globe class="w-3.5 h-3.5" /> Publicar
             </button>
 
-            <button v-if="isAdmin" :disabled="timetableStore.generating || timetableStore.loading"
+            <button v-if="canGenerate" :disabled="timetableStore.generating || timetableStore.loading"
               @click="showConfirmModal = true"
               class="h-8 flex items-center gap-1.5 px-3 bg-blue-900 text-white text-xs font-medium rounded-lg hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
               <Loader2 v-if="timetableStore.generating" class="w-3.5 h-3.5 animate-spin" />
@@ -160,7 +160,7 @@
           </div>
           <p class="text-sm font-semibold text-gray-600">Nenhum horário gerado</p>
           <p class="text-xs text-gray-400">
-            {{ isAdmin
+            {{ canGenerate
               ? 'Seleccione o ano e semestre e clique em "Gerar horário".' :
               'Aguarde a geração pelo' }}
           </p>
@@ -229,7 +229,7 @@
 
       <!-- Swap side panel -->
       <Transition name="slide-panel">
-        <div v-if="isAdmin && selectedCohort && selectedLesson"
+        <div v-if="canEdit && selectedCohort && selectedLesson"
           class="bg-white rounded-xl shadow-sm border border-gray-100 flex-shrink-0" style="width: 264px;">
           <div class="p-4 border-b border-gray-100 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -475,6 +475,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTimetableStore } from '@/stores/timetable'
+import { useCourseStore } from '@/stores/course'
 import { useToast } from '@/composables/useToast'
 import { permutationService, type ValidSlot, type CohortSwapCandidate } from '@/services/permutationService'
 import type { LessonAssignment } from '@/services/dto/timetable'
@@ -482,9 +483,27 @@ import { CalendarDays, ChevronDown, Zap, Loader2, CheckCircle, XCircle, ArrowRig
 
 const auth = useAuthStore()
 const timetableStore = useTimetableStore()
+const courseStore = useCourseStore()
 const toast = useToast()
 
 const isAdmin = computed(() => auth.user?.roles?.includes('ADMIN') ?? false)
+const isDirector = computed(() => auth.user?.roles?.includes('DIRECTOR') ?? false)
+const isAssistant = computed(() => auth.user?.roles?.includes('ASISTENT') ?? false)
+const isCoordinator = computed(() => auth.user?.roles?.includes('COORDINATOR') ?? false)
+
+const canGenerate = computed(() => isAdmin.value || isAssistant.value)
+
+const canEdit = computed(() => {
+  if (isAdmin.value || isDirector.value || isAssistant.value) return true
+  if (isCoordinator.value && selectedCohort.value) {
+    const cohort = availableCohorts.value.find(c => c.id === selectedCohort.value)
+    if (cohort) {
+      const course = courseStore.courses.find(c => c.id === cohort.courseId)
+      return course?.coordinatorId === auth.user?.id
+    }
+  }
+  return false
+})
 
 const currentYear = new Date().getFullYear()
 const availableYears = [currentYear - 1, currentYear, currentYear + 1]
@@ -596,7 +615,7 @@ function yearColorClass(year: number): string {
   } as Record<number, string>)[year] ?? 'bg-gray-100 text-gray-800 border border-gray-200'
 }
 function dayLabel(day?: string) { return days.find(d => d.value === day)?.label ?? day ?? '' }
-const canSelectLesson = computed(() => isAdmin.value && !!selectedCohort.value)
+const canSelectLesson = computed(() => canEdit.value && !!selectedCohort.value)
 
 function selectLesson(lesson: LessonAssignment) {
   if (selectedLesson.value?.id === lesson.id) { clearSelection(); return }
@@ -613,7 +632,10 @@ function clearSelection() {
   hoveredLesson.value = null
 }
 
-onMounted(() => timetableStore.loadForPeriod(selectedYear.value, selectedSemester.value))
+onMounted(async () => {
+  timetableStore.loadForPeriod(selectedYear.value, selectedSemester.value)
+  courseStore.fetchAllCoursesSimple()
+})
 watch([selectedYear, selectedSemester], ([y, s]) => { selectedCohort.value = ''; clearSelection(); timetableStore.loadForPeriod(y, s) })
 watch(selectedCohort, () => clearSelection())
 
