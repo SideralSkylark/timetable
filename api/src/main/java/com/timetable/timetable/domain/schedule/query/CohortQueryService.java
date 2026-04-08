@@ -2,6 +2,8 @@ package com.timetable.timetable.domain.schedule.query;
 
 import com.timetable.timetable.domain.schedule.dto.CohortFilterParams;
 import com.timetable.timetable.domain.schedule.dto.CohortListResponse;
+import com.timetable.timetable.domain.schedule.dto.CohortSummaryResponse;
+import com.timetable.timetable.domain.schedule.entity.CohortStatus;
 import com.timetable.timetable.domain.schedule.repository.CohortRepository;
 import com.timetable.timetable.domain.schedule.specification.CohortSpecifications;
 
@@ -33,5 +35,15 @@ public class CohortQueryService {
                         cohort.getStudentCount(),
                         cohort.getStatus()
                 ));
+    }
+
+    @Transactional
+    public CohortSummaryResponse getSummary(CohortFilterParams filters) {
+        long total = cohortRepository.count(CohortSpecifications.withFilters(filters));
+
+        filters.setStatus(CohortStatus.CONFIRMED);
+        long confirmed = cohortRepository.count(CohortSpecifications.withFilters(filters));
+
+        return new CohortSummaryResponse(total, confirmed);
     }
 }

@@ -667,12 +667,11 @@ const filteredCohorts = computed(() => mappedCohorts.value)
 
 // ── Derived ───────────────────────────────────────────────────────
 const confirmationProgress = computed(() => {
-  // This might be tricky with server-side pagination if we want global progress
-  // For now, let's keep it as is (progress for current page) or remove if misleading
-  const all = cohortStore.cohortsPage?.content ?? []
-  if (all.length === 0) return null
-  const confirmed = all.filter(c => c.status !== 'ESTIMATED').length
-  return { confirmed, total: all.length }
+  if (!cohortStore.cohortSummary) return null
+  return {
+    confirmed: cohortStore.cohortSummary.confirmed,
+    total: cohortStore.cohortSummary.total
+  }
 })
 
 const statusLabels: Record<string, string> = {

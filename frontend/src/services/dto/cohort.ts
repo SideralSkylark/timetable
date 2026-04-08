@@ -47,3 +47,8 @@ export interface UpdateCohortRequest {
 export interface ConfirmCohortRequest {
   studentCount: number  // número real de alunos
 }
+
+export interface CohortSummaryResponse {
+  total: number
+  confirmed: number
+}

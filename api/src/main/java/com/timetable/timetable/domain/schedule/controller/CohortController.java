@@ -5,6 +5,7 @@ import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.dto.CohortFilterParams;
 import com.timetable.timetable.domain.schedule.dto.CohortListResponse;
 import com.timetable.timetable.domain.schedule.dto.CohortResponse;
+import com.timetable.timetable.domain.schedule.dto.CohortSummaryResponse;
 import com.timetable.timetable.domain.schedule.dto.ConfirmCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.CreateCohortRequest;
 import com.timetable.timetable.domain.schedule.dto.UpdateCohortRequest;
@@ -72,6 +73,24 @@ public class CohortController {
         return ResponseFactory.ok(
                 new PagedModel<>(cohortQueryService.findAll(pageable, filters)),
                 "Cohorts fetched successfully.");
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<ApiResponse<CohortSummaryResponse>> getSummary(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long courseId,
+            @RequestParam(required = false) Integer academicYear,
+            @RequestParam(required = false) Integer semester) {
+
+        CohortFilterParams filters = new CohortFilterParams();
+        filters.setName(name);
+        filters.setCourseId(courseId);
+        filters.setAcademicYear(academicYear);
+        filters.setSemester(semester);
+
+        return ResponseFactory.ok(
+                cohortQueryService.getSummary(filters),
+                "Summary fetched successfully.");
     }
 
     @GetMapping("/{id}")

@@ -7,6 +7,7 @@ import type {
   ConfirmCohortRequest,
   CreateCohortRequest,
   UpdateCohortRequest,
+  CohortSummaryResponse,
 } from './dto/cohort'
 
 const BASE_URL = '/v1/cohorts'
@@ -28,6 +29,25 @@ export const cohortService = {
       if (filters.status) params.status = filters.status
     }
     const res = await api.get<ApiResponse<Page<CohortListResponse>>>(BASE_URL, {
+      params,
+    })
+    return res.data.data
+  },
+
+  async getSummary(filters?: {
+    name?: string
+    courseId?: number
+    academicYear?: number
+    semester?: number
+  }) {
+    const params: any = {}
+    if (filters) {
+      if (filters.name) params.name = filters.name
+      if (filters.courseId) params.courseId = filters.courseId
+      if (filters.academicYear) params.academicYear = filters.academicYear
+      if (filters.semester !== undefined && filters.semester !== null) params.semester = filters.semester
+    }
+    const res = await api.get<ApiResponse<CohortSummaryResponse>>(`${BASE_URL}/summary`, {
       params,
     })
     return res.data.data

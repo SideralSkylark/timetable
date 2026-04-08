@@ -5,12 +5,14 @@ import type {
   CohortResponse,
   CreateCohortRequest,
   UpdateCohortRequest,
+  CohortSummaryResponse,
 } from '@/services/dto/cohort'
 import type { Page } from '@/services/types/page'
 
 export const useCohortStore = defineStore('cohorts', {
   state: () => ({
     cohortsPage: null as Page<CohortListResponse> | null,
+    cohortSummary: null as CohortSummaryResponse | null,
     selectedCohort: null as CohortResponse | null,
     maxRoomCapacity: null as number | null,
     loading: false,
@@ -28,11 +30,32 @@ export const useCohortStore = defineStore('cohorts', {
       this.loading = true
       this.error = null
       try {
-        this.cohortsPage = await cohortService.getAll(page, size, filters)
+        const [pageData, summaryData] = await Promise.all([
+          cohortService.getAll(page, size, filters),
+          this.fetchCohortSummary(filters)
+        ])
+        this.cohortsPage = pageData
+        this.cohortSummary = summaryData
       } catch (err: any) {
         this.error = err.response?.data?.message || 'Erro ao carregar turmas'
       } finally {
         this.loading = false
+      }
+    },
+
+    async fetchCohortSummary(filters?: {
+      name?: string
+      courseId?: number
+      academicYear?: number
+      semester?: number
+    }) {
+      try {
+        const summary = await cohortService.getSummary(filters)
+        this.cohortSummary = summary
+        return summary
+      } catch (err: any) {
+        console.error('Failed to fetch cohort summary:', err)
+        return null
       }
     },
 
