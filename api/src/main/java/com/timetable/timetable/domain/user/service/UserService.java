@@ -1,6 +1,7 @@
 package com.timetable.timetable.domain.user.service;
 
 import java.time.LocalDateTime;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -130,6 +131,28 @@ public class UserService {
         userRepository.save(user);
         log.info("Admin updated user '{}' with roles {}", id, newRoles);
         return user;
+    }
+
+    @Transactional
+    public String resetPassword(Long id) {
+        log.debug("Resetting password for user {}", id);
+        ApplicationUser user = getByIdOrThrow(id);
+        String newPassword = generateRandomPassword(12);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        log.info("Password reset for user id={}", id);
+        return newPassword;
+    }
+
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     // ============================================================

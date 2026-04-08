@@ -5,6 +5,7 @@ import com.timetable.timetable.common.response.ResponseFactory;
 import com.timetable.timetable.domain.schedule.entity.TeacherType;
 import com.timetable.timetable.domain.user.dto.AdminUpdateUserDTO;
 import com.timetable.timetable.domain.user.dto.CreateUser;
+import com.timetable.timetable.domain.user.dto.ResetPasswordResponse;
 import com.timetable.timetable.domain.user.dto.UserFilterParams;
 import com.timetable.timetable.domain.user.dto.UserResponse;
 import com.timetable.timetable.domain.user.entity.AccountStatus;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -26,6 +28,7 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/admins")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final UserService userService;
     private final UserMapper userMapper;
@@ -89,6 +92,14 @@ public class AdminController {
         return ResponseFactory.ok(
                 userMapper.toDTO(userService.updateUserById(id, updateRequest)),
                 "User updated sucessfully.");
+    }
+
+    @PostMapping("/{id}/reset-password")
+    public ResponseEntity<ApiResponse<ResetPasswordResponse>> resetPassword(@PathVariable Long id) {
+        String newPassword = userService.resetPassword(id);
+        return ResponseFactory.ok(
+                new ResetPasswordResponse(newPassword),
+                "User password reset successfully.");
     }
 
     @DeleteMapping("/{id}")

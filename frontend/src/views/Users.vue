@@ -305,6 +305,21 @@
             <p v-if="formErrors.teacherType" class="text-red-500 text-[10px] mt-1">O tipo de docente é obrigatório para professores</p>
           </div>
 
+          <!-- Reset Password (Admin only, edit mode) -->
+          <div v-if="editingUser && isAdmin" class="pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              @click="handleResetPassword"
+              class="w-full h-9 flex items-center justify-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 transition"
+            >
+              <KeyRound class="w-3.5 h-3.5" />
+              Repor password
+            </button>
+            <p class="text-[10px] text-gray-400 mt-1 text-center">
+              Gera uma nova password aleatória e remove a actual.
+            </p>
+          </div>
+
           <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
               class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
@@ -319,6 +334,61 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal: Reset Password Success -->
+    <div v-if="resetSuccessModal" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-[60]"
+      @click.self="resetSuccessModal = false">
+      <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full border border-gray-100 p-6 print-container">
+        
+        <div class="flex flex-col items-center text-center space-y-4">
+          <div class="bg-amber-50 p-3 rounded-full">
+            <KeyRound class="w-6 h-6 text-amber-600" />
+          </div>
+          
+          <div>
+            <h2 class="text-lg font-bold text-gray-900">Password reposta!</h2>
+            <div class="mt-2 flex items-start gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-red-700">
+              <AlertCircle class="w-4 h-4 mt-0.5 shrink-0" />
+              <p class="text-xs font-medium no-print">
+                Esta password só é mostrada uma vez. Guarde-a num local seguro.
+              </p>
+            </div>
+          </div>
+
+          <div class="w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-4 my-2 relative group">
+            <span class="text-2xl font-mono font-bold tracking-wider text-blue-900 select-all print-only-text">
+              {{ tempPassword }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 w-full no-print">
+            <button
+              @click="copyToClipboard"
+              class="h-10 flex items-center justify-center gap-2 px-4 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+              :class="copyFeedback ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-600'"
+            >
+              <Copy v-if="!copyFeedback" class="w-4 h-4" />
+              <Check v-else class="w-4 h-4" />
+              {{ copyFeedback ? 'Copiado!' : 'Copiar' }}
+            </button>
+            <button
+              @click="printPassword"
+              class="h-10 flex items-center justify-center gap-2 px-4 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+            >
+              <Printer class="w-4 h-4" />
+              Imprimir
+            </button>
+          </div>
+
+          <button
+            @click="resetSuccessModal = false"
+            class="w-full h-10 bg-blue-900 text-white rounded-lg text-sm font-semibold hover:bg-blue-800 transition no-print"
+          >
+            Fechar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -344,6 +414,10 @@ import {
   Check,
   Search,
   ChevronDown,
+  KeyRound,
+  Copy,
+  Printer,
+  AlertCircle,
 } from 'lucide-vue-next'
 
 const userStore = useUserStore()
@@ -356,6 +430,9 @@ const isAssistant = computed(() => userStore.myHighestRole === 'ASISTENT')
 
 const editingUser = ref<UserResponse | null>(null)
 const showUserModal = ref(false)
+const resetSuccessModal = ref(false)
+const tempPassword = ref('')
+const copyFeedback = ref(false)
 const confirmDeleteId = ref<number | null>(null)
 const pagedUsers = computed(() => userStore.pagedUsers)
 const currentPage = ref(0)
@@ -558,6 +635,34 @@ const updateUser = async (data: any) => {
   fetchUsers(currentPage.value)
 }
 
+const handleResetPassword = async () => {
+  if (!editingUser.value) return
+  try {
+    const password = await userStore.resetPassword(editingUser.value.id)
+    tempPassword.value = password
+    resetSuccessModal.value = true
+    closeModal()
+  } catch (err: any) {
+    toast.error(err.message || 'Erro ao repor password')
+  }
+}
+
+const copyToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(tempPassword.value)
+    copyFeedback.value = true
+    setTimeout(() => {
+      copyFeedback.value = false
+    }, 2000)
+  } catch {
+    toast.error('Erro ao copiar password')
+  }
+}
+
+const printPassword = () => {
+  window.print()
+}
+
 const openEdit = (user: UserResponse) => {
   editingUser.value = user
   formData.username = user.username
@@ -608,4 +713,30 @@ onMounted(fetchUsers)
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-container, .print-container * {
+    visibility: visible;
+  }
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only-text {
+    font-size: 48pt !important;
+    display: block !important;
+    text-align: center !important;
+    margin-top: 2in !important;
+  }
+}
 </style>

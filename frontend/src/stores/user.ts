@@ -142,6 +142,20 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    async resetPassword(id: number) {
+      this.loading = true
+      try {
+        const res = await userService.admin.resetPassword(id)
+        this.error = null
+        return res.temporaryPassword
+      } catch (err: any) {
+        this.error = err.message || 'Failed to reset password'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
     async deleteUser(id: number) {
       this.loading = true
       try {

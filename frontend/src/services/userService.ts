@@ -49,6 +49,10 @@ export const userService = {
       const res = await api.put<ApiResponse<UserResponse>>(`/v1/admins/${id}`, data)
       return res.data.data
     },
+    resetPassword: async (id: number) => {
+      const res = await api.post<ApiResponse<{ temporaryPassword: string }>>(`/v1/admins/${id}/reset-password`)
+      return res.data.data
+    },
     delete: async (id: number) => {
       await api.delete(`/v1/admins/${id}`)
     },
