@@ -60,7 +60,7 @@ mvn test -Dtest="*ServiceTest"
 
 ---
 TODO:
-filter in the api level(in the frontend to match the params so pagination dosent bug out)
+Separa interfaces by roles properly
 password reset logic(by admin or someone else) -> creates a random pass. so the user can hand it personaly to the person that forgot his
 
 Considerations:
