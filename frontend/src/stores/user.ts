@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { userService } from '@/services/userService'
+import authService from '@/services/authService'
+import { useAuthStore } from './auth'
 import type { UserResponse, CreateUserRequest, UpdateUserProfileRequest, UpdateUserRequest } from '@/services/dto/user'
 import type { Page } from '@/services/types/page'
 
@@ -15,7 +17,7 @@ export const useUserStore = defineStore('user', {
   state: (): State => ({
     users: [],
     pagedUsers: null,
-    currentUser: null,
+    currentUser: authService.getCurrentUser(),
     loading: false,
     error: null,
   }),
@@ -26,8 +28,10 @@ export const useUserStore = defineStore('user', {
         USER: 1, STUDENT: 2, TEACHER: 3,
         COORDINATOR: 4, ASISTENT: 5, DIRECTOR: 6, ADMIN: 7,
       }
-      if (!state.currentUser) return 'USER'
-      return state.currentUser.roles.reduce((best, role) => {
+      const auth = useAuthStore()
+      const user = state.currentUser || auth.user
+      if (!user) return 'USER'
+      return user.roles.reduce((best, role) => {
         return (hierarchy[role] ?? 0) > (hierarchy[best] ?? 0) ? role : best
       }, 'USER')
     },
@@ -37,8 +41,10 @@ export const useUserStore = defineStore('user', {
         USER: 1, STUDENT: 2, TEACHER: 3,
         COORDINATOR: 4, ASISTENT: 5, DIRECTOR: 6, ADMIN: 7,
       }
-      if (!state.currentUser) return 0
-      return Math.max(...state.currentUser.roles.map(r => hierarchy[r] ?? 0))
+      const auth = useAuthStore()
+      const user = state.currentUser || auth.user
+      if (!user) return 0
+      return Math.max(...user.roles.map(r => hierarchy[r] ?? 0))
     },
   },
 

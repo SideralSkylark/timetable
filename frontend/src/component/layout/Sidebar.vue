@@ -69,6 +69,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useUserStore } from '@/stores/user'
 import {
   Home,
   Building,
@@ -84,6 +85,7 @@ import {
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const userStore = useUserStore()
 
 const roleLabels: Record<string, string> = {
   ADMIN:       'Administrador',
@@ -101,7 +103,7 @@ const userInitials = computed(() => {
 })
 
 const userRoleLabel = computed(() => {
-  const role = auth.user?.roles?.[0] ?? 'USER'
+  const role = userStore.myHighestRole
   return roleLabels[role] ?? role
 })
 
