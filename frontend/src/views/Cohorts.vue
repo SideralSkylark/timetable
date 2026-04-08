@@ -20,7 +20,7 @@
               <AlertCircle class="w-3.5 h-3.5" />
               {{ confirmationProgress.confirmed }}/{{ confirmationProgress.total }} confirmadas
             </div>
-            <button @click="openCreateModal"
+            <button v-if="canCreate" @click="openCreateModal"
               class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
               <Plus class="w-4 h-4" />
               Nova turma
@@ -197,7 +197,7 @@
                 </span>
               </td>
               <td class="px-5 py-3.5">
-                <div class="flex items-center justify-end gap-2">
+                <div v-if="canManageCohort(cohort)" class="flex items-center justify-end gap-2">
                   <button v-if="cohort.status === 'ESTIMATED'"
                     @click="openConfirmModal(cohort)"
                     class="flex items-center gap-1 px-2.5 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 transition opacity-0 group-hover:opacity-100">
@@ -381,7 +381,7 @@
               class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
               :class="formErrors.courseId ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'">
               <option value="" disabled>Selecionar curso</option>
-              <option v-for="course in courseStore.courses" :key="course.id" :value="course.id">
+              <option v-for="course in creatableCourses" :key="course.id" :value="course.id">
                 {{ course.name }}
               </option>
             </select>
@@ -485,6 +485,7 @@ import { ref, computed, reactive, onMounted, watch } from 'vue'
 import { useCohortStore } from '@/stores/cohorts'
 import { useUserStore } from '@/stores/user'
 import { useCourseStore } from '@/stores/course'
+import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import type { CohortListResponse } from '@/services/dto/cohort'
 import Pagination from '@/component/ui/Pagination.vue'
@@ -507,7 +508,34 @@ import {
 const cohortStore = useCohortStore()
 const courseStore = useCourseStore()
 const userStore = useUserStore()
+const auth = useAuthStore()
 const toast = useToast()
+
+const isAdmin = computed(() => auth.user?.roles?.includes('ADMIN') ?? false)
+const isDirector = computed(() => auth.user?.roles?.includes('DIRECTOR') ?? false)
+const isAssistant = computed(() => auth.user?.roles?.includes('ASISTENT') ?? false)
+const isCoordinator = computed(() => auth.user?.roles?.includes('COORDINATOR') ?? false)
+
+const canCreate = computed(() => isAdmin.value || isDirector.value || isAssistant.value || isCoordinator.value)
+
+const canManageCohort = (cohort: CohortListResponse) => {
+  if (isAdmin.value || isDirector.value || isAssistant.value) return true
+  if (isCoordinator.value) {
+    const course = courseStore.courses.find(c => c.id === cohort.courseId)
+    return course?.coordinatorId === auth.user?.id
+  }
+  return false
+}
+
+const creatableCourses = computed(() => {
+  if (isAdmin.value || isDirector.value || isAssistant.value) {
+    return courseStore.courses
+  }
+  if (isCoordinator.value) {
+    return courseStore.courses.filter(c => c.coordinatorId === auth.user?.id)
+  }
+  return []
+})
 
 const currentPage = ref(0)
 const showModal = ref(false)
@@ -723,6 +751,13 @@ async function openCreateModal() {
   formErrors.courseId = false
 
   await courseStore.fetchAllCoursesSimple()
+
+  if (isCoordinator.value && !isAdmin.value && !isDirector.value && !isAssistant.value) {
+    if (creatableCourses.value.length === 1) {
+      form.courseId = creatableCourses.value[0].id
+    }
+  }
+
   showModal.value = true
 }
 

@@ -62,21 +62,16 @@
           <div class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Permissão</label>
             <div class="relative">
-              <select
-                v-model="filters.role"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-                style="width: 160px;"
-              >
-                <option value="">Todas</option>
-                <option value="ADMIN">Administrador</option>
-                <option value="DIRECTOR">Diretor</option>
-                <option value="COORDINATOR">Coordenador</option>
-                <option value="ASISTENT">Assistente</option>
-                <option value="TEACHER">Professor</option>
-                <option value="STUDENT">Estudante</option>
-                <option value="USER">Utilizador</option>
-              </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                              <select
+                              v-model="filters.role"
+                              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+                              style="width: 160px;"
+                            >
+                              <option value="">Todas</option>
+                              <option v-for="role in visibleRoles" :key="role.value" :value="role.value">
+                                {{ roleLabel(role.value) }}
+                              </option>
+                            </select>              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
@@ -158,6 +153,8 @@
         :rows="filteredUsers"
         :currentPage="currentPage"
         :totalPages="pagedUsers?.page.totalPages ?? 0"
+        :canEdit="canEdit"
+        :canDelete="canDelete"
         @edit="openEdit"
         @delete="(id: number) => (confirmDeleteId = id)"
         @change-page="fetchUsers"
@@ -351,19 +348,19 @@ import {
 
 const userStore = useUserStore()
 const toast = useToast()
+
+// ── Role Helpers ──────────────────────────────────────────────────
+const isAdmin = computed(() => userStore.myHighestRole === 'ADMIN')
+const isDirector = computed(() => userStore.myHighestRole === 'DIRECTOR')
+const isAssistant = computed(() => userStore.myHighestRole === 'ASISTENT')
+
 const editingUser = ref<UserResponse | null>(null)
 const showUserModal = ref(false)
 const confirmDeleteId = ref<number | null>(null)
 const pagedUsers = computed(() => userStore.pagedUsers)
 const currentPage = ref(0)
 
-// ── Hierarquia ────────────────────────────────────────────────────
-const ROLE_HIERARCHY: Record<string, number> = {
-  USER: 1, STUDENT: 2, TEACHER: 3,
-  COORDINATOR: 4, ASISTENT: 5, DIRECTOR: 6, ADMIN: 7,
-}
-
-const ALL_ROLES = [
+const ALL_ROLES_INFO = [
   { value: 'STUDENT',     description: 'Acesso de estudante' },
   { value: 'TEACHER',     description: 'Acesso de professor' },
   { value: 'COORDINATOR', description: 'Acesso de coordenador' },
@@ -372,27 +369,18 @@ const ALL_ROLES = [
   { value: 'ADMIN',       description: 'Acesso administrativo completo' },
 ]
 
-// Prioridade máxima do utilizador autenticado
-const myPriority = computed(() => {
-  const roles = userStore.currentUser?.roles ?? []
-  return Math.max(...roles.map(r => ROLE_HIERARCHY[r] ?? 0), 0)
+const toggleableRoles = computed(() => {
+  if (isAdmin.value) return ALL_ROLES_INFO
+  if (isDirector.value) return ALL_ROLES_INFO.filter(r => r.value !== 'ADMIN' && r.value !== 'DIRECTOR')
+  if (isAssistant.value) return ALL_ROLES_INFO.filter(r => r.value !== 'ADMIN' && r.value !== 'DIRECTOR' && r.value !== 'ASISTENT')
+  return []
 })
 
 // Roles que pode atribuir (estritamente abaixo de si)
-const assignableRoles = computed(() =>
-  ALL_ROLES.filter(r => (ROLE_HIERARCHY[r.value] ?? 0) < myPriority.value)
-)
+const assignableRoles = toggleableRoles
 
-// Roles visíveis no filtro (mesma lógica)
-const visibleRoles = computed(() =>
-  ALL_ROLES.filter(r => (ROLE_HIERARCHY[r.value] ?? 0) < myPriority.value)
-)
-
-// Pode gerir um utilizador se a prioridade máxima do target for menor que a sua
-const canManageUser = (user: UserResponse): boolean => {
-  const targetMax = Math.max(...(user.roles ?? []).map(r => ROLE_HIERARCHY[r] ?? 0), 0)
-  return myPriority.value > targetMax
-}
+// Roles visíveis no filtro (sem restrição)
+const visibleRoles = ALL_ROLES_INFO
 
 // ── Filters ───────────────────────────────────────────────────────
 const filters = reactive({
@@ -454,14 +442,40 @@ const tableColumns = [
   { key: 'roles', label: 'Permissões' },
 ]
 
-const toggleableRoles = [
-  { value: 'STUDENT',     description: 'Acesso de estudante' },
-  { value: 'TEACHER',     description: 'Acesso de professor' },
-  { value: 'ASISTENT',    description: 'Acesso de assistente' },
-  { value: 'COORDINATOR', description: 'Acesso de coordenador' },
-  { value: 'DIRECTOR',    description: 'Acesso de director' },
-  { value: 'ADMIN',       description: 'Acesso administrativo completo' },
-]
+const canEdit = (user: UserResponse) => {
+  if (isAdmin.value) return true
+  const isSelf = user.id === userStore.currentUser?.id
+  const targetRoles = user.roles || []
+  const isTargetAdmin = targetRoles.includes('ADMIN')
+  const isTargetDirector = targetRoles.includes('DIRECTOR')
+  const isTargetAssistant = targetRoles.includes('ASISTENT')
+
+  if (isDirector.value) {
+    return !isTargetAdmin && (!isTargetDirector || isSelf)
+  }
+  if (isAssistant.value) {
+    return !isTargetAdmin && !isTargetDirector && (!isTargetAssistant || isSelf)
+  }
+  return false
+}
+
+const canDelete = (user: UserResponse) => {
+  if (isAdmin.value) return true
+  
+  const isSelf = user.id === userStore.currentUser?.id
+  const targetRoles = user.roles || []
+  const isTargetAdmin = targetRoles.includes('ADMIN')
+  const isTargetDirector = targetRoles.includes('DIRECTOR')
+  const isTargetAssistant = targetRoles.includes('ASISTENT')
+
+  if (isDirector.value) {
+    return !isTargetAdmin && !isTargetDirector && !isSelf
+  }
+  if (isAssistant.value) {
+    return !isTargetAdmin && !isTargetDirector && !isTargetAssistant && !isSelf
+  }
+  return false
+}
 
 const teacherTypes = [
   { value: 'FULL_TIME', label: 'Tempo inteiro', description: '16h mínimo, até 24h/semana' },

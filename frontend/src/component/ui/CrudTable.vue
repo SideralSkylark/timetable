@@ -37,6 +37,7 @@
           <td class="px-5 py-3.5">
             <div class="flex gap-2 justify-end">
               <button
+                v-if="canEdit ? canEdit(row) : true"
                 @click="$emit('edit', row)"
                 class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-blue-900 hover:border-blue-200 hover:bg-blue-50 transition opacity-0 group-hover:opacity-100"
                 title="Editar"
@@ -44,6 +45,7 @@
                 <Edit2 class="w-3.5 h-3.5" />
               </button>
               <button
+                v-if="canDelete ? canDelete(row) : true"
                 @click="$emit('delete', row.id)"
                 class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition opacity-0 group-hover:opacity-100"
                 title="Eliminar"
@@ -75,6 +77,8 @@ defineProps<{
   rows: any[]
   currentPage: number
   totalPages: number
+  canEdit?: (row: any) => boolean
+  canDelete?: (row: any) => boolean
 }>()
 
 defineEmits<{

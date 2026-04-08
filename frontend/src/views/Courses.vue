@@ -14,7 +14,7 @@
               <p class="text-gray-400 text-sm">Gerir cursos e suas disciplinas</p>
             </div>
           </div>
-          <button @click="openCreateModal"
+          <button v-if="isAdmin" @click="openCreateModal"
             class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
             <Plus class="w-4 h-4" />
             Novo curso
@@ -127,10 +127,10 @@
         <p class="text-gray-500 text-sm font-medium">
           {{ activeFilterCount > 0 ? 'Nenhum curso corresponde aos filtros' : 'Nenhum curso registado' }}
         </p>
-        <button v-if="activeFilterCount === 0" @click="openCreateModal" class="mt-3 text-blue-900 hover:underline text-sm">
+        <button v-if="activeFilterCount === 0 && isAdmin" @click="openCreateModal" class="mt-3 text-blue-900 hover:underline text-sm">
           Criar primeiro curso
         </button>
-        <button v-else @click="clearFilters" class="mt-3 text-blue-900 hover:underline text-sm">
+        <button v-else-if="activeFilterCount > 0" @click="clearFilters" class="mt-3 text-blue-900 hover:underline text-sm">
           Limpar filtros
         </button>
       </div>
@@ -179,12 +179,12 @@
           </div>
 
           <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition shrink-0">
-            <button @click="openEditModal(course)"
+            <button v-if="isAdmin || isOwner(course)" @click="openEditModal(course)"
               class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition"
               title="Editar curso">
               <Edit2 class="w-3.5 h-3.5" />
             </button>
-            <button @click="confirmDeleteCourseId = course.id"
+            <button v-if="isAdmin" @click="confirmDeleteCourseId = course.id"
               class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition"
               title="Eliminar curso">
               <Trash2 class="w-3.5 h-3.5" />
@@ -213,7 +213,7 @@
           <div class="px-5 py-4">
             <div class="flex items-center justify-between mb-3">
               <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Disciplinas</h4>
-              <button @click="openDisciplineModal(course)"
+              <button v-if="isAdmin || isOwner(course)" @click="openDisciplineModal(course)"
                 class="flex items-center gap-1 text-xs text-blue-900 hover:underline font-medium">
                 <Plus class="w-3.5 h-3.5" />
                 Adicionar disciplina
@@ -266,11 +266,11 @@
 
                 <div class="flex items-center gap-1.5 shrink-0 ml-3">
                   <template v-if="!subject.fixedDaySession">
-                    <button @click="openEditDisciplineModal(subject, course)"
+                    <button v-if="isAdmin || isOwner(course)" @click="openEditDisciplineModal(subject, course)"
                       class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition">
                       <Edit2 class="w-3.5 h-3.5" />
                     </button>
-                    <button @click="confirmDeleteSubjectId = subject.id; confirmDeleteSubjectCourse = course"
+                    <button v-if="isAdmin || isOwner(course)" @click="confirmDeleteSubjectId = subject.id; confirmDeleteSubjectCourse = course"
                       class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition">
                       <Trash2 class="w-3.5 h-3.5" />
                     </button>
@@ -575,6 +575,7 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { courseService } from '@/services/courseService'
 import { subjectService } from '@/services/subjectService'
 import { teacherService } from '@/services/teacherService'
+import { useUserStore } from '@/stores/user'
 import { useToast } from '@/composables/useToast'
 import type { CourseListResponse, CoordinatorOption } from '@/services/dto/course'
 import {
@@ -586,6 +587,11 @@ import {
 import { Plus as PlusIcon } from 'lucide-vue-next'
 
 const toast = useToast()
+const userStore = useUserStore()
+
+// ── Role Helpers ──────────────────────────────────────────────────
+const isAdmin = computed(() => userStore.myHighestRole === 'ADMIN')
+const isOwner = (course: any) => course.coordinatorId === userStore.currentUser?.id
 
 // ── State ─────────────────────────────────────────────────────────
 const courses = ref<any[]>([])
@@ -735,7 +741,10 @@ async function loadTeachers() {
   }
 }
 
-onMounted(() => Promise.all([loadCourses(), loadCoordinators()]))
+onMounted(() => {
+  if (!userStore.currentUser) userStore.fetchCurrentUser()
+  Promise.all([loadCourses(), loadCoordinators()])
+})
 
 // ── Course expand ─────────────────────────────────────────────────
 async function toggleCourse(course: any) {
