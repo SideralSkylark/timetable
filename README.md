@@ -1,67 +1,113 @@
-## Dominio
+# University Timetable Management System
 
-redacaoi projeto
+A comprehensive automated solution for university timetable scheduling and academic management. The system utilizes constraint satisfaction algorithms to optimize resource allocation across courses, cohorts, and faculty.
 
-### entidades
-- Cohort: Turma de estudantes de um curso. Usada para separa-los de modo a caberem nas salas.
-- Course: Entidade que ancora as disciplinas. Governada pelo coordenador da mesma.
-- Room: Recurso para hospedar aulas. Tem capacidade predefinida.
-- Subject: disciplina a ser lecionada por n docentes e n horas(definido pelos creditos)
-- TimeSlot(lesson assignment): aula planeada para uma disciplina a ser lecionada por docente x as horas y na sala z ao cohort A
-- Timetable: entidade que agrega as aulas a serem lecionadas em um periodo academico(ex: 2026 ou 2026 1 semestre)
+## Technology Stack
 
-32 horas
-18 + 8
-16 horas por semana obrigatorio tempo inteiro
-parciais 8h semanais
+### Backend
+- Java 21
+- Spring Boot 3.x
+- Timefold Solver (Constraint Satisfaction Engine)
+- Spring Security with JWT
+- PostgreSQL
+- Maven
 
-estudo autonomo como e calculado? (funcao da carga horaria)
-atribuir horarios mesmo sem corpo de docente suficiente (docentes fantasma)
+### Frontend
+- Vue.js 3 (Composition API)
+- Vite
+- Pinia (State Management)
+- Tailwind CSS 4
+- TypeScript
+- Lucide Vue Next (Iconography)
 
+## Project Structure
 
-1 dia de estudo autonomo
-9 horas sexta feira missa.
-surpluss de turmas antes de gerar.
+### Backend (api/)
+The backend follows a modular Spring Boot architecture:
+- `auth/`: Authentication logic, session management, and JWT issuance.
+- `common/`: Global exception handling, response wrappers, and shared utilities.
+- `config/`: System configuration including Security, CORS, and data initializers.
+- `domain/`: JPA entities representing the core business model (Users, Courses, Rooms, Subjects).
+- `scheduler_engine/`: The core optimization engine.
+    - `domain/`: Timefold planning entities and solutions.
+    - `solver/`: Constraint definitions and score calculation logic.
+    - `preparation/`: Data transformation logic to prepare datasets for the solver.
+- `security/`: JWT filters and security context configuration.
 
-solver(optimize it)
-given the data voluma can the solver handle it?
+### Frontend (frontend/)
+A modern SPA built with Vue.js 3:
+- `component/`: Reusable UI components (Tables, Forms, Pagination).
+- `composables/`: Shared reactive logic (e.g., toast notifications).
+- `layouts/`: Application structural templates.
+- `services/`: API integration layer and Data Transfer Objects (DTOs).
+- `stores/`: Centralized state management using Pinia.
+- `views/`: Page-level components and specific business logic.
 
+## Domain Model
 
-## Solver
-### entidades
-- TfRoom: recurso a ser usado pela planning sollution
+- **Cohort**: A specific group of students within a course, used for room capacity management.
+- **Course**: The primary academic entity that anchors subjects and is managed by a Coordinator.
+- **Room**: Physical resource with predefined capacity.
+- **Subject**: Academic discipline with specific credit hours and faculty requirements.
+- **Lesson Assignment**: A scheduled instance of a subject assigned to a teacher, timeslot, and room.
+- **Timetable**: Aggregation of lesson assignments for a specific academic period.
 
-1. PREPARAÇÃO DE DADOS
-   ├─ Criar/Validar Cohorts
-   ├─ ATRIBUIR PROFESSORES (algoritmo ganancioso)
-   │  ├─ Calcular carga de trabalho
-   │  ├─ Escolher professor com menor carga
-   │  └─ Criar fantasma se todos extrapolam 8h
-   └─ Criar CohortSubjects (teacher JÁ definido)
+## Scheduler Engine
 
-2. GERAR LESSON ASSIGNMENTS
-   └─ Para cada CohortSubject:
-       └─ Criar N LessonAssignments (N = blocks/week)
-           ├─ teacher = cohortSubject.teacher (FIXO)
-           ├─ timeslot = null (SOLVER VAI DECIDIR)
-           └─ room = null (SOLVER VAI DECIDIR)
+The generation process follows three distinct phases:
+1. **Data Preparation**: Validation of cohorts and greedy teacher assignment based on workload balancing.
+2. **Lesson Initialization**: Creation of lesson assignments based on subject credits.
+3. **Constraint Optimization**: The Timefold solver assigns optimal timeslots and rooms while respecting hard constraints (e.g., teacher/room conflicts) and soft constraints.
 
-3. SOLVER
-   └─ Atribui timeslot + room
-       └─ Respeita constraint: teacher não pode ter 2 aulas simultâneas
+## Testing
 
-## testing
-There are unit test for all services avaliable, to run them *cd* into api and then run:
+Unit tests are provided for core services. To execute tests:
 
-``` bash
+```bash
+cd api
 mvn test -Dtest="*ServiceTest"
 ```
-**make sure you have maven installed for it**
 
 ---
+
+
+
 TODO:
-Separa interfaces by roles properly
-password reset logic(by admin or someone else) -> creates a random pass. so the user can hand it personaly to the person that forgot his
+
+
+
+1. High Priority - Reliability and Data Integrity
+
+- Refactor solver persistence: Currently, the timetable solution is only saved if the frontend polls for it. It should be persisted immediately after the solver job completes via a solver listener or job lifecycle callback to prevent data loss if the browser session ends.
+
+- Implement persistent job tracking: Move the in-memory Job map to a database-backed system to allow job recovery and status tracking across server restarts.
+
+- Centralize asynchronous resource management: Replace manual ExecutorService instances with Spring's @Async abstraction and a managed ThreadPoolTaskExecutor to prevent unmanaged resource exhaustion.
+
+- Password reset logic: Implement admin-triggered password reset that generates a temporary random password for manual delivery to users.
+
+
+
+2. Medium Priority - Performance and Scalability
+
+- Resolve N+1 query patterns: Refactor CohortService and other entity managers to use bulk fetching (findAllById) instead of iterative lookups when assigning related entities like students or subjects.
+
+- Externalize business constraints: Move hardcoded logic from the TimetableConstraintProvider (e.g., year-period rules) to the database or configuration files to improve flexibility.
+
+- Enhance generation polling: Enable the frontend to detect ongoing generation jobs on mount to prevent losing track of solver progress during page refreshes.
+
+
+
+3. Low Priority - Maintainability and Code Quality
+
+- Refactor monolithic frontend components: Break down Timetable.vue and other large views into atomic, reusable components (e.g., Grid, SidePanel, Modals) to improve readability.
+
+- Standardize data mapping: Adopt MapStruct or a similar tool to replace manual builder-based mapping in services, reducing boilerplate and potential errors.
+
+- Improve TypeScript type safety: Eliminate the use of "any" in Pinia stores (specifically in course and timetable stores) by defining comprehensive interfaces for all API payloads.
+
+
 
 Considerations:
+
 the modal to add students to cohort fetches 100 pages (if possible find a more reasonable sollution)
