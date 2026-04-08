@@ -529,10 +529,10 @@ const pendingCohortSwap = ref<CohortSwapCandidate | null>(null)
 const applyingCohortSwap = ref(false)
 
 const timetableStatus = computed(() => timetableStore.solution?.status)
-const canSubmit = computed(() => isAdmin.value && timetableStatus.value === 'DRAFT')
-const canApprove = computed(() => isAdmin.value && timetableStatus.value === 'PENDING_APPROVAL')
-const canReject = computed(() => isAdmin.value && timetableStatus.value === 'PENDING_APPROVAL')
-const canPublish = computed(() => isAdmin.value && timetableStatus.value === 'APPROVED')
+const canSubmit = computed(() => (isAdmin.value || isAssistant.value) && timetableStatus.value === 'DRAFT')
+const canApprove = computed(() => (isAdmin.value || isDirector.value) && timetableStatus.value === 'PENDING_APPROVAL')
+const canReject = computed(() => (isAdmin.value || isDirector.value) && timetableStatus.value === 'PENDING_APPROVAL')
+const canPublish = computed(() => (isAdmin.value || isDirector.value) && timetableStatus.value === 'APPROVED')
 
 const days = [
   { value: 'MONDAY', label: 'Segunda' }, { value: 'TUESDAY', label: 'Terça' },
