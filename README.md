@@ -70,44 +70,33 @@ mvn test -Dtest="*ServiceTest"
 
 ---
 
+## N+1 Query Inventory
 
+The following N+1 query patterns have been identified in the backend and require optimization (e.g., using `JOIN FETCH` or `@EntityGraph`):
 
-TODO:
+1. **`CohortSubjectRepository.findByAcademicYearAndSemesterAndIsActive`**
+   - **Usage**: `PreSolverService` and `TeacherAssignmentService`.
+   - **Problem**: Iterating over the results to calculate teacher workloads or generate display names triggers separate queries for `Cohort`, `Subject`, and `ApplicationUser` (assignedTeacher) for *each* `CohortSubject`.
+   - **Impact**: High. This occurs during the critical data preparation phase of the scheduler engine.
 
+2. **`SubjectRepository.search` (and other finders like `findByTargetYearAndTargetSemester`)**
+   - **Usage**: `SubjectController` (list views).
+   - **Problem**: Returns a list of `Subject` without fetching the associated `Course` or the `eligibleTeachers` collection.
+   - **Impact**: Medium. Causes multiple queries when displaying a list of subjects with their course names or eligible teacher counts.
 
+3. **`CohortRepository` list finders (e.g., `findByCourseId`, `findByAcademicYear`)**
+   - **Usage**: `CohortController`.
+   - **Problem**: Fetches `Cohort` entities without joining the `Course` or the `students` collection.
+   - **Impact**: Medium. Accessing `getStudentCount()` (accesses `students.size()`) or `getDisplayName()` (accesses `course.getName()`) triggers an N+1 for each cohort in the list.
 
-1. High Priority - Reliability and Data Integrity
+4. **`ScheduledClassRepository.findByCohortId` (and `findByTeacherId`, `findByCohortSubjectId`)**
+   - **Usage**: `ScheduledClassController`.
+   - **Problem**: These methods use simple JPQL that does not `JOIN FETCH` related entities like `cohortSubject`, `room`, `timeslot`, or `timetable`.
+   - **Impact**: Medium. Displays of scheduled classes in the UI will trigger separate queries for each row's details.
 
-- Refactor solver persistence: Currently, the timetable solution is only saved if the frontend polls for it. It should be persisted immediately after the solver job completes via a solver listener or job lifecycle callback to prevent data loss if the browser session ends.
+5. **`UserRepository.findAllByRole` (and Specification-based `findAll`)**
+   - **Usage**: `UserService.getAllUsers`.
+   - **Problem**: `ApplicationUser.roles` is marked as `FetchType.EAGER`, but the queries often do not use `FETCH JOIN`.
+   - **Impact**: Low/Medium. Depending on Hibernate's execution plan, it may fetch roles in separate queries for each user in the result list.
 
-- Implement persistent job tracking: Move the in-memory Job map to a database-backed system to allow job recovery and status tracking across server restarts.
-
-- Centralize asynchronous resource management: Replace manual ExecutorService instances with Spring's @Async abstraction and a managed ThreadPoolTaskExecutor to prevent unmanaged resource exhaustion.
-
-- Password reset logic: Implement admin-triggered password reset that generates a temporary random password for manual delivery to users.
-
-
-
-2. Medium Priority - Performance and Scalability
-
-- Resolve N+1 query patterns: Refactor CohortService and other entity managers to use bulk fetching (findAllById) instead of iterative lookups when assigning related entities like students or subjects.
-
-- Externalize business constraints: Move hardcoded logic from the TimetableConstraintProvider (e.g., year-period rules) to the database or configuration files to improve flexibility.
-
-- Enhance generation polling: Enable the frontend to detect ongoing generation jobs on mount to prevent losing track of solver progress during page refreshes.
-
-
-
-3. Low Priority - Maintainability and Code Quality
-
-- Refactor monolithic frontend components: Break down Timetable.vue and other large views into atomic, reusable components (e.g., Grid, SidePanel, Modals) to improve readability.
-
-- Standardize data mapping: Adopt MapStruct or a similar tool to replace manual builder-based mapping in services, reducing boilerplate and potential errors.
-
-- Improve TypeScript type safety: Eliminate the use of "any" in Pinia stores (specifically in course and timetable stores) by defining comprehensive interfaces for all API payloads.
-
-
-
-Considerations:
-
-the modal to add students to cohort fetches 100 pages (if possible find a more reasonable sollution)
+---
