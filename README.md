@@ -70,44 +70,78 @@ mvn test -Dtest="*ServiceTest"
 
 ---
 
+## UI Refactor Plan
 
+To improve maintainability and ensure UI consistency, the following structural refactoring is planned. The visual identity (Tailwind CSS, Lucide icons, blue-900 theme) must remain identical.
 
-TODO:
+### 1. Reusable UI Components
+Create the following components in `frontend/src/component/ui/`:
 
+- **`PageHeader.vue`**
+  - **Props**: `icon` (Lucide component), `title` (string), `subtitle` (string).
+  - **Slots**: `#actions` (for right-side buttons/controls).
+  - **Purpose**: Standardize the white header card used across all views.
 
+- **`FilterBar.vue`**
+  - **Props**: `activeFilterCount` (number).
+  - **Slots**: `#filters` (for filter inputs).
+  - **Emits**: `@clear` (when the "Limpar filtros" button is clicked).
+  - **Purpose**: Standardize the filter container and clear button logic.
 
-1. High Priority - Reliability and Data Integrity
+- **`DeleteConfirmBanner.vue`**
+  - **Props**: `message` (string).
+  - **Emits**: `@confirm`, `@cancel`.
+  - **Purpose**: Standardize the red confirmation banner that appears above tables.
 
-- Refactor solver persistence: Currently, the timetable solution is only saved if the frontend polls for it. It should be persisted immediately after the solver job completes via a solver listener or job lifecycle callback to prevent data loss if the browser session ends.
+- **`ResetPasswordModal.vue`**
+  - **Props**: `password` (string).
+  - **Emits**: `@close`.
+  - **Purpose**: Extract the one-time password display logic from `Users.vue`. Includes "Copy to Clipboard", "Print", and the security warning.
 
-- Implement persistent job tracking: Move the in-memory Job map to a database-backed system to allow job recovery and status tracking across server restarts.
+### 2. View Refactoring
+Update the following views to utilize the new components:
 
-- Centralize asynchronous resource management: Replace manual ExecutorService instances with Spring's @Async abstraction and a managed ThreadPoolTaskExecutor to prevent unmanaged resource exhaustion.
+| View | `PageHeader` | `FilterBar` | `DeleteConfirmBanner` | `ResetPasswordModal` |
+| :--- | :---: | :---: | :---: | :---: |
+| `Users.vue` | ✅ | ✅ | ✅ | ✅ |
+| `Rooms.vue` | ✅ | ✅ | ✅ | ❌ |
+| `Cohorts.vue` | ✅ | ✅ | ✅ | ❌ |
+| `Courses.vue` | ✅ | ✅ | ❌ | ❌ |
+| `Timetable.vue` | ✅ | ✅ | ❌ | ❌ |
+| `MyTimetable.vue` | ✅ | ❌ | ❌ | ❌ |
 
-- Password reset logic: Implement admin-triggered password reset that generates a temporary random password for manual delivery to users.
+### 3. Cleanup & Modernization
+- **Delete `Students.vue`**: This is a legacy prototype; its functionality is now fully covered by `Users.vue`.
+- **Rewrite `Dashboard.vue`**: Refactor to use `useAuthStore` for user information instead of direct `localStorage` access.
+- **Enforce Style**: Ensure all new components use the project's design tokens: `blue-900` primary color, `gray-200` borders, and `rounded-xl` cards.
 
+---
 
+The following N+1 query patterns have been identified in the backend and require optimization (e.g., using `JOIN FETCH` or `@EntityGraph`):
 
-2. Medium Priority - Performance and Scalability
+1. **`CohortSubjectRepository.findByAcademicYearAndSemesterAndIsActive`**
+   - **Usage**: `PreSolverService` and `TeacherAssignmentService`.
+   - **Problem**: Iterating over the results to calculate teacher workloads or generate display names triggers separate queries for `Cohort`, `Subject`, and `ApplicationUser` (assignedTeacher) for *each* `CohortSubject`.
+   - **Impact**: High. This occurs during the critical data preparation phase of the scheduler engine.
 
-- Resolve N+1 query patterns: Refactor CohortService and other entity managers to use bulk fetching (findAllById) instead of iterative lookups when assigning related entities like students or subjects.
+2. **`SubjectRepository.search` (and other finders like `findByTargetYearAndTargetSemester`)**
+   - **Usage**: `SubjectController` (list views).
+   - **Problem**: Returns a list of `Subject` without fetching the associated `Course` or the `eligibleTeachers` collection.
+   - **Impact**: Medium. Causes multiple queries when displaying a list of subjects with their course names or eligible teacher counts.
 
-- Externalize business constraints: Move hardcoded logic from the TimetableConstraintProvider (e.g., year-period rules) to the database or configuration files to improve flexibility.
+3. **`CohortRepository` list finders (e.g., `findByCourseId`, `findByAcademicYear`)**
+   - **Usage**: `CohortController`.
+   - **Problem**: Fetches `Cohort` entities without joining the `Course` or the `students` collection.
+   - **Impact**: Medium. Accessing `getStudentCount()` (accesses `students.size()`) or `getDisplayName()` (accesses `course.getName()`) triggers an N+1 for each cohort in the list.
 
-- Enhance generation polling: Enable the frontend to detect ongoing generation jobs on mount to prevent losing track of solver progress during page refreshes.
+4. **`ScheduledClassRepository.findByCohortId` (and `findByTeacherId`, `findByCohortSubjectId`)**
+   - **Usage**: `ScheduledClassController`.
+   - **Problem**: These methods use simple JPQL that does not `JOIN FETCH` related entities like `cohortSubject`, `room`, `timeslot`, or `timetable`.
+   - **Impact**: Medium. Displays of scheduled classes in the UI will trigger separate queries for each row's details.
 
+5. **`UserRepository.findAllByRole` (and Specification-based `findAll`)**
+   - **Usage**: `UserService.getAllUsers`.
+   - **Problem**: `ApplicationUser.roles` is marked as `FetchType.EAGER`, but the queries often do not use `FETCH JOIN`.
+   - **Impact**: Low/Medium. Depending on Hibernate's execution plan, it may fetch roles in separate queries for each user in the result list.
 
-
-3. Low Priority - Maintainability and Code Quality
-
-- Refactor monolithic frontend components: Break down Timetable.vue and other large views into atomic, reusable components (e.g., Grid, SidePanel, Modals) to improve readability.
-
-- Standardize data mapping: Adopt MapStruct or a similar tool to replace manual builder-based mapping in services, reducing boilerplate and potential errors.
-
-- Improve TypeScript type safety: Eliminate the use of "any" in Pinia stores (specifically in course and timetable stores) by defining comprehensive interfaces for all API payloads.
-
-
-
-Considerations:
-
-the modal to add students to cohort fetches 100 pages (if possible find a more reasonable sollution)
+---
