@@ -25,7 +25,7 @@
           </div>
         </div>
         <div class="flex items-center gap-3">
-          <router-link to="/dashboard/my-timetable" class="px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition shadow-sm flex items-center gap-2">
+          <router-link v-if="hasTimetable" to="/dashboard/my-timetable" class="px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition shadow-sm flex items-center gap-2">
             <Calendar class="w-4 h-4" />
             Ver o meu horário
           </router-link>
@@ -39,7 +39,7 @@
             <div :class="stat.bg" class="p-2.5 rounded-lg transition-colors">
               <component :is="stat.icon" :class="stat.text" class="w-5 h-5" />
             </div>
-            <span v-if="stat.loading" class="animate-pulse bg-gray-100 h-6 w-10 rounded"></span>
+            <span v-if="statValues.loading" class="animate-pulse bg-gray-100 h-6 w-10 rounded"></span>
             <span v-else class="text-2xl font-bold text-gray-900">{{ stat.value }}</span>
           </div>
           <div class="mt-4">
@@ -122,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useUserStore } from '@/stores/user'
 import { useRoomStore } from '@/stores/room'
@@ -142,7 +142,6 @@ import {
   ShieldCheck,
   Zap,
   Clock,
-  Settings
 } from 'lucide-vue-next'
 
 const auth = useAuthStore()
@@ -156,44 +155,58 @@ const isStaff = computed(() => {
   return roles.some(r => ['ADMIN', 'DIRECTOR', 'ASISTENT', 'COORDINATOR'].includes(r))
 })
 
-const stats = ref([
-  { 
-    label: 'Utilizadores', 
-    value: 0, 
-    icon: Users, 
-    link: '/users',
-    bg: 'bg-blue-50 group-hover:bg-blue-100', 
-    text: 'text-blue-900',
-    loading: true 
-  },
-  { 
-    label: 'Salas', 
-    value: 0, 
-    icon: DoorOpen, 
-    link: '/rooms',
-    bg: 'bg-purple-50 group-hover:bg-purple-100', 
-    text: 'text-purple-700',
-    loading: true 
-  },
-  { 
-    label: 'Cursos', 
-    value: 0, 
-    icon: GraduationCap, 
-    link: '/courses',
-    bg: 'bg-indigo-50 group-hover:bg-indigo-100', 
-    text: 'text-indigo-700',
-    loading: true 
-  },
-  { 
-    label: 'Turmas', 
-    value: 0, 
-    icon: BookOpen, 
-    link: '/cohorts',
-    bg: 'bg-amber-50 group-hover:bg-amber-100', 
-    text: 'text-amber-700',
-    loading: true 
-  },
-])
+const hasTimetable = computed(() => {
+  const roles = auth.roles
+  return roles.includes('STUDENT') || roles.includes('TEACHER')
+})
+
+const statValues = reactive({
+  users: 0,
+  rooms: 0,
+  courses: 0,
+  cohorts: 0,
+  loading: true
+})
+
+const stats = computed(() => {
+  const allStats = [
+    { 
+      label: 'Utilizadores', 
+      value: statValues.users, 
+      icon: Users, 
+      link: '/users',
+      bg: 'bg-blue-50 group-hover:bg-blue-100', 
+      text: 'text-blue-900',
+    },
+    { 
+      label: 'Salas', 
+      value: statValues.rooms, 
+      icon: DoorOpen, 
+      link: '/rooms',
+      bg: 'bg-purple-50 group-hover:bg-purple-100', 
+      text: 'text-purple-700',
+    },
+    { 
+      label: 'Cursos', 
+      value: statValues.courses, 
+      icon: GraduationCap, 
+      link: '/courses',
+      bg: 'bg-indigo-50 group-hover:bg-indigo-100', 
+      text: 'text-indigo-700',
+      roles: ['ADMIN', 'COORDINATOR']
+    },
+    { 
+      label: 'Turmas', 
+      value: statValues.cohorts, 
+      icon: BookOpen, 
+      link: '/cohorts',
+      bg: 'bg-amber-50 group-hover:bg-amber-100', 
+      text: 'text-amber-700',
+    },
+  ]
+
+  return allStats.filter(s => !s.roles || s.roles.some(r => auth.roles.includes(r)))
+})
 
 const quickActions = computed(() => {
   const actions = []
@@ -218,7 +231,7 @@ const quickActions = computed(() => {
     })
   }
 
-  if (auth.roles.includes('ADMIN') || auth.roles.includes('DIRECTOR') || auth.roles.includes('COORDINATOR')) {
+  if (auth.roles.includes('ADMIN') || auth.roles.includes('COORDINATOR')) {
     actions.push({
       title: 'Disciplinas & Cursos',
       description: 'Gerir matrizes curriculares e atribuição de professores.',
@@ -254,22 +267,23 @@ const roleLabel = (role: string) => {
 
 onMounted(async () => {
   if (isStaff.value) {
+    statValues.loading = true
     try {
-      await Promise.all([
+      const results = await Promise.allSettled([
         userStore.fetchUsers(0, 1),
         roomStore.fetchRooms(0, 1),
         courseStore.fetchCourses(0, 1),
         cohortStore.fetchCohorts(0, 1)
       ])
       
-      stats.value[0].value = userStore.pagedUsers?.page.totalElements ?? 0
-      stats.value[1].value = roomStore.pagedRooms?.page.totalElements ?? 0
-      stats.value[2].value = courseStore.pagedCourses?.page.totalElements ?? 0
-      stats.value[3].value = cohortStore.cohortsPage?.page.totalElements ?? 0
+      statValues.users = userStore.pagedUsers?.page.totalElements ?? 0
+      statValues.rooms = roomStore.pagedRooms?.page.totalElements ?? 0
+      statValues.courses = courseStore.pagedCourses?.page.totalElements ?? 0
+      statValues.cohorts = cohortStore.cohortsPage?.page.totalElements ?? 0
     } catch (err) {
       console.error('Failed to load dashboard stats:', err)
     } finally {
-      stats.value.forEach(s => s.loading = false)
+      statValues.loading = false
     }
   }
 })

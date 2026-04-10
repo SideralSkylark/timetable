@@ -34,7 +34,7 @@ const routes = [
         path: 'rooms',
         name: 'Rooms',
         component: Rooms,
-        meta: { roles: ['ADMIN', 'ASISTENT'], label: 'Salas' },
+        meta: { roles: ['ADMIN', 'DIRECTOR', 'ASISTENT'], label: 'Salas' },
       },
       {
         path: 'courses',
