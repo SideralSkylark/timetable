@@ -1,156 +1,120 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div>
 
     <!-- Header -->
-    <div class="mb-6">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="bg-blue-900 p-2.5 rounded-lg">
-              <UsersIcon class="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 class="text-xl font-semibold text-gray-900">Turmas</h1>
-              <p class="text-gray-400 text-sm">Confirmar ingressos e gerir turmas</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <div v-if="confirmationProgress"
-              class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-700 font-medium">
-              <AlertCircle class="w-3.5 h-3.5" />
-              {{ confirmationProgress.confirmed }}/{{ confirmationProgress.total }} confirmadas
-            </div>
-            <button v-if="canCreate" @click="openCreateModal"
-              class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
-              <Plus class="w-4 h-4" />
-              Nova turma
-            </button>
-          </div>
+    <PageHeader
+      :icon="UsersIcon"
+      title="Turmas"
+      subtitle="Confirmar ingressos e gerir turmas"
+    >
+      <template #actions>
+        <div v-if="confirmationProgress"
+          class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-700 font-medium">
+          <AlertCircle class="w-3.5 h-3.5" />
+          {{ confirmationProgress.confirmed }}/{{ confirmationProgress.total }} confirmadas
         </div>
-      </div>
-    </div>
+        <button v-if="canCreate" @click="openCreateModal"
+          class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
+          <Plus class="w-4 h-4" />
+          Nova turma
+        </button>
+      </template>
+    </PageHeader>
 
     <!-- Filters -->
-    <div class="mb-5">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
-        <div class="flex flex-wrap items-end gap-4">
-
-          <!-- Turma name search -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Turma</label>
-            <div class="relative">
-              <input
-                v-model="filters.name"
-                type="text"
-                placeholder="Ex: 1º Ano · Turma A..."
-                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
-                style="width: 200px;"
-              />
-              <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+    <FilterBar :activeFilterCount="activeFilterCount" @clear="clearFilters">
+      <template #filters>
+        <!-- Turma name search -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Turma</label>
+          <div class="relative">
+            <input
+              v-model="filters.name"
+              type="text"
+              placeholder="Ex: 1º Ano · Turma A..."
+              class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              style="width: 200px;"
+            />
+            <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
+        </div>
 
-          <!-- Course -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Curso</label>
-            <div class="relative">
-              <select
-                v-model="filters.courseId"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-                style="width: 180px;"
-              >
-                <option value="">Todos</option>
-                <option v-for="c in availableCourses" :key="c.id" :value="c.id">{{ c.name }}</option>
-              </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <!-- Academic year -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ano lectivo</label>
-            <div class="relative">
-              <select
-                v-model="filters.academicYear"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-              >
-                <option value="">Todos</option>
-                <option v-for="y in availableAcademicYears" :key="y" :value="y">{{ y }}</option>
-              </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <!-- Semester -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Semestre</label>
-            <div class="flex items-center gap-1 h-8">
-              <button
-                v-for="opt in semesterOptions" :key="opt.value"
-                type="button"
-                @click="filters.semester = opt.value"
-                :class="filters.semester === opt.value
-                  ? 'bg-blue-900 text-white border-blue-900'
-                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
-                class="h-8 px-3 text-xs font-medium border rounded-lg transition"
-              >
-                {{ opt.label }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Status -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Estado</label>
-            <div class="relative">
-              <select
-                v-model="filters.status"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-              >
-                <option value="">Todos</option>
-                <option value="ESTIMATED">Estimado</option>
-                <option value="CONFIRMED">Confirmado</option>
-              </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <!-- Clear -->
-          <div class="flex-1 flex items-end justify-end">
-            <button
-              v-if="activeFilterCount > 0"
-              @click="clearFilters"
-              class="h-8 flex items-center gap-1.5 px-3 border border-gray-200 text-xs text-gray-500 rounded-lg hover:bg-gray-50 transition"
+        <!-- Course -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Curso</label>
+          <div class="relative">
+            <select
+              v-model="filters.courseId"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              style="width: 180px;"
             >
-              <X class="w-3.5 h-3.5" />
-              Limpar filtros
-              <span class="bg-blue-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium leading-none">
-                {{ activeFilterCount }}
-              </span>
+              <option value="">Todos</option>
+              <option v-for="c in availableCourses" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+
+        <!-- Academic year -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ano lectivo</label>
+          <div class="relative">
+            <select
+              v-model="filters.academicYear"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+            >
+              <option value="">Todos</option>
+              <option v-for="y in availableAcademicYears" :key="y" :value="y">{{ y }}</option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+
+        <!-- Semester -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Semestre</label>
+          <div class="flex items-center gap-1 h-8">
+            <button
+              v-for="opt in semesterOptions" :key="opt.value"
+              type="button"
+              @click="filters.semester = opt.value"
+              :class="filters.semester === opt.value
+                ? 'bg-blue-900 text-white border-blue-900'
+                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
+              class="h-8 px-3 text-xs font-medium border rounded-lg transition"
+            >
+              {{ opt.label }}
             </button>
           </div>
-
         </div>
-      </div>
-    </div>
+
+        <!-- Status -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Estado</label>
+          <div class="relative">
+            <select
+              v-model="filters.status"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+            >
+              <option value="">Todos</option>
+              <option value="ESTIMATED">Estimado</option>
+              <option value="CONFIRMED">Confirmado</option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+      </template>
+    </FilterBar>
 
     <!-- Table -->
     <div>
       <!-- Delete confirmation banner -->
-      <div v-if="confirmDeleteId !== null"
-        class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
-        <span class="text-sm text-red-700">Tem a certeza que quer eliminar esta turma?</span>
-        <div class="flex gap-2">
-          <button @click="confirmDeleteId = null"
-            class="px-3 py-1.5 text-xs border border-gray-200 text-gray-500 rounded-md hover:bg-white transition">
-            Cancelar
-          </button>
-          <button @click="handleDelete(confirmDeleteId!)"
-            class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium">
-            Eliminar
-          </button>
-        </div>
-      </div>
+      <DeleteConfirmBanner
+        v-if="confirmDeleteId !== null"
+        message="Tem a certeza que quer eliminar esta turma?"
+        @cancel="confirmDeleteId = null"
+        @confirm="handleDelete(confirmDeleteId!)"
+      />
 
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-sm">
@@ -489,6 +453,9 @@ import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import type { CohortListResponse } from '@/services/dto/cohort'
 import Pagination from '@/component/ui/Pagination.vue'
+import PageHeader from '@/component/ui/PageHeader.vue'
+import FilterBar from '@/component/ui/FilterBar.vue'
+import DeleteConfirmBanner from '@/component/ui/DeleteConfirmBanner.vue'
 import {
   Users as UsersIcon,
   Plus,

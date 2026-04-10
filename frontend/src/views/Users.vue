@@ -1,151 +1,118 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div>
 
     <!-- Header -->
-    <div class="mb-6">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="bg-blue-900 p-2.5 rounded-lg">
-              <UsersIcon class="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 class="text-xl font-semibold text-gray-900">Gestão de utilizadores</h1>
-              <p class="text-gray-400 text-sm">Gerir contas, emails e permissões</p>
-            </div>
-          </div>
-          <button @click="openUserModal"
-            class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
-            <Plus class="w-4 h-4" />
-            Novo utilizador
-          </button>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      :icon="UsersIcon"
+      title="Gestão de utilizadores"
+      subtitle="Gerir contas, emails e permissões"
+    >
+      <template #actions>
+        <button @click="openUserModal"
+          class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
+          <Plus class="w-4 h-4" />
+          Novo utilizador
+        </button>
+      </template>
+    </PageHeader>
 
     <!-- Filters -->
-    <div class="mb-5">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
-        <div class="flex flex-wrap items-end gap-4">
-
-          <!-- Username -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Username</label>
-            <div class="relative">
-              <input
-                v-model="filters.username"
-                type="text"
-                placeholder="Pesquisar utilizador..."
-                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
-                style="width: 180px;"
-              />
-              <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+    <FilterBar :activeFilterCount="activeFilterCount" @clear="clearFilters">
+      <template #filters>
+        <!-- Username -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Username</label>
+          <div class="relative">
+            <input
+              v-model="filters.username"
+              type="text"
+              placeholder="Pesquisar utilizador..."
+              class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              style="width: 180px;"
+            />
+            <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
+        </div>
 
-          <!-- Email -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Email</label>
-            <div class="relative">
-              <input
-                v-model="filters.email"
-                type="text"
-                placeholder="Pesquisar email..."
-                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
-                style="width: 180px;"
-              />
-              <Mail class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+        <!-- Email -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Email</label>
+          <div class="relative">
+            <input
+              v-model="filters.email"
+              type="text"
+              placeholder="Pesquisar email..."
+              class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              style="width: 180px;"
+            />
+            <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
+        </div>
 
-          <!-- Role -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Permissão</label>
-            <div class="relative">
-                              <select
-                              v-model="filters.role"
-                              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-                              style="width: 160px;"
-                            >
-                              <option value="">Todas</option>
-                              <option v-for="role in visibleRoles" :key="role.value" :value="role.value">
-                                {{ roleLabel(role.value) }}
-                              </option>
-                            </select>              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+        <!-- Role -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Permissão</label>
+          <div class="relative">
+            <select
+              v-model="filters.role"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              style="width: 160px;"
+            >
+              <option value="">Todas</option>
+              <option v-for="role in visibleRoles" :key="role.value" :value="role.value">
+                {{ roleLabel(role.value) }}
+              </option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
+        </div>
 
-          <!-- Status -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Estado</label>
+        <!-- Status -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Estado</label>
+          <div class="relative">
+            <select
+              v-model="filters.status"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              style="width: 140px;"
+            >
+              <option value="">Todos</option>
+              <option value="ACTIVE">Ativo</option>
+              <option value="INACTIVE">Inativo</option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+
+        <!-- Teacher type — only shown when role is TEACHER or unfiltered -->
+        <Transition name="fade">
+          <div v-if="filters.role === '' || filters.role === 'TEACHER'" class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo de docente</label>
             <div class="relative">
               <select
-                v-model="filters.status"
+                v-model="filters.teacherType"
                 class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-                style="width: 140px;"
+                style="width: 160px;"
               >
                 <option value="">Todos</option>
-                <option value="ACTIVE">Ativo</option>
-                <option value="INACTIVE">Inativo</option>
+                <option value="FULL_TIME">Tempo inteiro</option>
+                <option value="PART_TIME">Tempo parcial</option>
               </select>
               <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
-
-          <!-- Teacher type — only shown when role is TEACHER or unfiltered -->
-          <Transition name="fade">
-            <div v-if="filters.role === '' || filters.role === 'TEACHER'" class="flex flex-col gap-1">
-              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo de docente</label>
-              <div class="relative">
-                <select
-                  v-model="filters.teacherType"
-                  class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-                  style="width: 160px;"
-                >
-                  <option value="">Todos</option>
-                  <option value="FULL_TIME">Tempo inteiro</option>
-                  <option value="PART_TIME">Tempo parcial</option>
-                </select>
-                <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
-          </Transition>
-
-          <!-- Clear button -->
-          <div class="flex-1 flex items-end justify-end">
-            <button
-              v-if="activeFilterCount > 0"
-              @click="clearFilters"
-              class="h-8 flex items-center gap-1.5 px-3 border border-gray-200 text-xs text-gray-500 rounded-lg hover:bg-gray-50 transition"
-            >
-              <X class="w-3.5 h-3.5" />
-              Limpar filtros
-              <span class="bg-blue-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium leading-none">
-                {{ activeFilterCount }}
-              </span>
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </div>
+        </Transition>
+      </template>
+    </FilterBar>
 
     <div>
       <!-- Delete confirmation banner -->
-      <div v-if="confirmDeleteId !== null"
-        class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
-        <span class="text-sm text-red-700">Tem a certeza que quer eliminar este utilizador?</span>
-        <div class="flex gap-2">
-          <button @click="confirmDeleteId = null"
-            class="px-3 py-1.5 text-xs border border-gray-200 text-gray-500 rounded-md hover:bg-white transition">
-            Cancelar
-          </button>
-          <button @click="confirmDelete(confirmDeleteId!)"
-            class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium">
-            Eliminar
-          </button>
-        </div>
-      </div>
+      <DeleteConfirmBanner
+        v-if="confirmDeleteId !== null"
+        message="Tem a certeza que quer eliminar este utilizador?"
+        @cancel="confirmDeleteId = null"
+        @confirm="confirmDelete(confirmDeleteId!)"
+      />
 
       <!-- Table -->
       <CrudTable
@@ -338,59 +305,11 @@
     </div>
 
     <!-- Modal: Reset Password Success -->
-    <div v-if="resetSuccessModal" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-[60]"
-      @click.self="resetSuccessModal = false">
-      <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full border border-gray-100 p-6 print-container">
-        
-        <div class="flex flex-col items-center text-center space-y-4">
-          <div class="bg-amber-50 p-3 rounded-full">
-            <KeyRound class="w-6 h-6 text-amber-600" />
-          </div>
-          
-          <div>
-            <h2 class="text-lg font-bold text-gray-900">Password reposta!</h2>
-            <div class="mt-2 flex items-start gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-red-700">
-              <AlertCircle class="w-4 h-4 mt-0.5 shrink-0" />
-              <p class="text-xs font-medium no-print">
-                Esta password só é mostrada uma vez. Guarde-a num local seguro.
-              </p>
-            </div>
-          </div>
-
-          <div class="w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-4 my-2 relative group">
-            <span class="text-2xl font-mono font-bold tracking-wider text-blue-900 select-all print-only-text">
-              {{ tempPassword }}
-            </span>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 w-full no-print">
-            <button
-              @click="copyToClipboard"
-              class="h-10 flex items-center justify-center gap-2 px-4 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
-              :class="copyFeedback ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-600'"
-            >
-              <Copy v-if="!copyFeedback" class="w-4 h-4" />
-              <Check v-else class="w-4 h-4" />
-              {{ copyFeedback ? 'Copiado!' : 'Copiar' }}
-            </button>
-            <button
-              @click="printPassword"
-              class="h-10 flex items-center justify-center gap-2 px-4 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
-            >
-              <Printer class="w-4 h-4" />
-              Imprimir
-            </button>
-          </div>
-
-          <button
-            @click="resetSuccessModal = false"
-            class="w-full h-10 bg-blue-900 text-white rounded-lg text-sm font-semibold hover:bg-blue-800 transition no-print"
-          >
-            Fechar
-          </button>
-        </div>
-      </div>
-    </div>
+    <ResetPasswordModal
+      v-if="resetSuccessModal"
+      :password="tempPassword"
+      @close="resetSuccessModal = false"
+    />
   </div>
 </template>
 
@@ -400,6 +319,10 @@ import { useUserStore } from '@/stores/user'
 import { useToast } from '@/composables/useToast'
 import type { UserResponse, TeacherType } from '@/services/dto/user'
 import CrudTable from '@/component/ui/CrudTable.vue'
+import PageHeader from '@/component/ui/PageHeader.vue'
+import FilterBar from '@/component/ui/FilterBar.vue'
+import DeleteConfirmBanner from '@/component/ui/DeleteConfirmBanner.vue'
+import ResetPasswordModal from '@/component/ui/ResetPasswordModal.vue'
 import {
   Users as UsersIcon,
   Plus,
@@ -415,9 +338,6 @@ import {
   Search,
   ChevronDown,
   KeyRound,
-  Copy,
-  Printer,
-  AlertCircle,
 } from 'lucide-vue-next'
 
 const userStore = useUserStore()
@@ -647,22 +567,6 @@ const handleResetPassword = async () => {
   }
 }
 
-const copyToClipboard = async () => {
-  try {
-    await navigator.clipboard.writeText(tempPassword.value)
-    copyFeedback.value = true
-    setTimeout(() => {
-      copyFeedback.value = false
-    }, 2000)
-  } catch {
-    toast.error('Erro ao copiar password')
-  }
-}
-
-const printPassword = () => {
-  window.print()
-}
-
 const openEdit = (user: UserResponse) => {
   editingUser.value = user
   formData.username = user.username
@@ -713,30 +617,4 @@ onMounted(fetchUsers)
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
-
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  .print-container, .print-container * {
-    visibility: visible;
-  }
-  .print-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    border: none !important;
-    box-shadow: none !important;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .print-only-text {
-    font-size: 48pt !important;
-    display: block !important;
-    text-align: center !important;
-    margin-top: 2in !important;
-  }
-}
 </style>

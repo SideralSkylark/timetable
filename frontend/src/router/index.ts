@@ -28,7 +28,7 @@ const routes = [
         path: '',
         name: 'DashboardHome',
         component: Dashboard,
-        meta: { roles: ['USER'], label: 'Início' },
+        meta: { roles: ['ADMIN', 'DIRECTOR', 'ASISTENT', 'COORDINATOR'], label: 'Início' },
       },
       {
         path: 'rooms',
@@ -80,10 +80,16 @@ router.beforeEach((to) => {
     return { name: 'Login' }
   }
 
+  // Redirect authenticated users from guest-only routes (like Login)
   if (to.meta.requiresGuest && auth.isAuthenticated) {
+    const roles = auth.user?.roles ?? []
+    if (roles.includes('STUDENT') || roles.includes('TEACHER')) {
+      return { name: 'MyTimetableView' }
+    }
     return { name: 'DashboardHome' }
   }
 
+  // Standard roles check
   if (to.meta.roles && auth.isAuthenticated) {
     const roles = auth.user?.roles ?? []
     const allowed = (to.meta.roles as string[]).some((r) => roles.includes(r))
