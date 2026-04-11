@@ -1,6 +1,6 @@
 <template>
   <div class="mb-5">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
+    <div class="bg-white rounded-[10px] shadow-sm border border-gray-100 px-5 py-4">
       <div class="flex flex-wrap items-end gap-4">
         <slot name="filters" />
         <div class="flex-1 flex items-end justify-end">

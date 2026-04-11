@@ -3,7 +3,7 @@
     <!-- Brand -->
     <div class="px-5 py-5 border-b border-gray-100">
       <div class="flex items-center gap-3">
-        <div class="bg-blue-900 p-2 rounded-lg">
+        <div class="bg-blue-900 p-2 rounded-md">
           <GraduationCap class="w-5 h-5 text-white" />
         </div>
         <div>
@@ -19,7 +19,7 @@
         v-for="item in allowedRoutes"
         :key="item.name"
         :to="{ name: item.name }"
-        class="group flex items-center gap-2.5 px-2.5 py-2 text-sm rounded-lg transition-colors"
+        class="group flex items-center gap-2.5 px-2.5 py-2 text-sm rounded-md transition-colors"
         :class="isActive(item)
           ? 'bg-blue-900 text-white'
           : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'"
@@ -40,7 +40,7 @@
     <!-- User footer -->
     <div class="px-3 py-3 border-t border-gray-100">
       <!-- User info -->
-      <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg mb-0.5">
+      <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-md mb-0.5">
         <div class="w-7 h-7 rounded-full bg-blue-900 flex items-center justify-center shrink-0">
           <span class="text-xs font-medium text-white leading-none">{{ userInitials }}</span>
         </div>

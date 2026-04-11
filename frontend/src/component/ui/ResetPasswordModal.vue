@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-[60]"
     @click.self="$emit('close')">
-    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full border border-gray-100 p-6 print-container">
+    <div class="bg-white rounded-[10px] shadow-2xl max-w-sm w-full border border-gray-100 p-6 print-container">
       
       <div class="flex flex-col items-center text-center space-y-4">
         <div class="bg-amber-50 p-3 rounded-full">
@@ -10,7 +10,7 @@
         
         <div>
           <h2 class="text-lg font-bold text-gray-900">Password reposta!</h2>
-          <div class="mt-2 flex items-start gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-red-700">
+          <div class="mt-2 flex items-start gap-2 bg-red-50 border border-red-100 rounded-md px-3 py-2 text-red-700">
             <AlertCircle class="w-4 h-4 mt-0.5 shrink-0" />
             <p class="text-xs font-medium no-print">
               Esta password só é mostrada uma vez. Guarde-a num local seguro.
@@ -18,7 +18,7 @@
           </div>
         </div>
 
-        <div class="w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-4 my-2 relative group">
+        <div class="w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-md p-4 my-2 relative group">
           <span class="text-2xl font-mono font-bold tracking-wider text-blue-900 select-all print-only-text">
             {{ password }}
           </span>

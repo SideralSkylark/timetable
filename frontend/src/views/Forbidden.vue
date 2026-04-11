@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+  <div class="min-h-screen bg-slate-100 flex items-center justify-center px-4">
     <div class="w-full max-w-sm text-center">
 
       <!-- Icon -->
       <div class="flex justify-center mb-6">
-        <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+        <div class="bg-red-50 p-4 rounded-[10px] border border-red-100">
           <ShieldOff class="w-10 h-10 text-red-500" />
         </div>
       </div>

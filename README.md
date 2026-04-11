@@ -96,3 +96,63 @@ The following N+1 query patterns have been identified in the backend and require
    - **Impact**: Low/Medium. Depending on Hibernate's execution plan, it may fetch roles in separate queries for each user in the result list.
 
 ---
+
+# frontend refactor prompt
+You are a senior frontend engineer doing a focused visual design pass on a Vue 3 + Tailwind CSS management system. Your job is to apply a specific set of design improvements consistently across the entire project. Do NOT change any logic, stores, composables, props, emits, or component APIs. Only touch visual/styling code.
+
+## Step 1 — Explore the project structure first
+
+Before making any changes, read and understand the project:
+- Find the main layout file (likely src/layouts/ or App.vue) to understand the page shell
+- Find the PageHeader component (likely src/components/ui/PageHeader.vue or similar)
+- Find the FilterBar component if it exists
+- List all page-level views in src/views/ or src/pages/
+- Check tailwind.config.js or tailwind.config.ts to understand the current color setup
+- Check if there is a global CSS file (src/assets/main.css, src/style.css, or similar)
+
+Report what you find before proceeding.
+
+## Step 2 — Apply these 3 global changes
+
+### A. PageHeader left accent border
+In the PageHeader component, find the outermost wrapper div of the header card/panel (the white bg container, not the page root div). Add these classes to it:
+  border-l-[3px] border-l-blue-800
+
+If the component uses dynamic classes or a :class binding, append these. The intent is a visible 3px left border in the brand blue on every page header across the app.
+
+### B. Page background
+Find where the page/shell background color is set. This is likely on the main layout wrapper, the router-view container, or a global CSS body/html rule. Change the background from bg-white, bg-gray-50, or bg-gray-100 to bg-slate-100. If it is set in CSS rather than Tailwind, change it to #f1f5f9. Apply this only to the page-level shell background, not to cards or panels.
+
+### C. Section and filter labels
+Search across ALL .vue files for elements that have ALL of these classes together: uppercase, tracking-wider (or tracking-wide), and text-xs or text-[10px], and are currently colored with text-gray-400 or text-gray-500. These are structural section/filter labels. For every one found:
+- Change the color class to text-blue-800
+- Add font-bold if not already present
+- Change text-xs to text-[10px] if not already that size
+
+Do NOT apply this to badge text, table column headers in data tables, or any label that sits inside a colored background element.
+
+## Step 3 — Apply these per-component changes
+
+### Border radius standardisation
+Go through every .vue file and apply this hierarchy:
+- Outermost card/panel containers: change rounded-xl or rounded-2xl to rounded-[10px]
+- Inner row elements, subject rows, filter inputs, modal inner sections: change rounded-xl or rounded-lg to rounded-md (6px)
+- Badge/pill/tag elements (small inline colored spans): change rounded-lg or rounded-xl to rounded (4px)
+- Status pills that represent a live state (active, published, valid, etc.): leave as rounded-full
+Do not change border radius on buttons — leave those as-is.
+
+### Active row accent bar
+In any list where rows are expandable or selectable (course list, user list, cohort list), find the expanded/active row state. Add a left accent element inside the row for the active/expanded state:
+  <div class="w-[3px] h-8 rounded-r bg-blue-800 flex-shrink-0"></div>
+This should appear as the first child inside the row flex container when the row is expanded or active. For rows that are not expanded/active, render a same-sized transparent div to preserve alignment:
+  <div class="w-[3px] h-8 flex-shrink-0"></div>
+
+## Step 4 — Verify consistency
+
+After making all changes, do a final pass:
+- Check that no page-level card still has bg-gray-50 or bg-white as its outer page background
+- Check that the PageHeader left border appears in every view
+- Check that no section label is still text-gray-400 with uppercase tracking
+- List every file you changed with a one-line summary of what changed
+
+Make all changes directly to the source files. Do not create new files. Do not refactor component structure. Do not touch script blocks.

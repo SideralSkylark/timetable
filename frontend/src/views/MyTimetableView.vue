@@ -9,14 +9,14 @@
 
     <!-- Filters -->
     <div class="mb-5">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
+      <div class="bg-white rounded-[10px] shadow-sm border border-gray-100 px-5 py-4">
         <div class="flex flex-wrap items-end gap-4">
 
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ano lectivo</label>
+            <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Ano lectivo</label>
             <div class="relative">
               <select v-model="selectedYear"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
                 <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
               </select>
               <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -24,10 +24,10 @@
           </div>
 
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Semestre</label>
+            <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Semestre</label>
             <div class="relative">
               <select v-model="selectedSemester"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
                 <option :value="1">1º semestre</option>
                 <option :value="2">2º semestre</option>
               </select>
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Timetable grid -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-[10px] shadow-sm border border-gray-100 overflow-hidden">
 
       <div v-if="loading" class="flex flex-col items-center justify-center py-24 gap-3">
         <Loader2 class="w-7 h-7 animate-spin text-blue-900" />

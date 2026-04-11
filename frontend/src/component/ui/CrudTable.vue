@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="bg-white rounded-[10px] shadow-sm border border-gray-100 overflow-hidden">
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-gray-100">

@@ -8,7 +8,7 @@
 
     <div class="space-y-6">
       <!-- Welcome Card -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="bg-white rounded-[10px] shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
           <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-900 border border-blue-100">
             <UserIcon class="w-8 h-8" />
@@ -34,9 +34,9 @@
 
       <!-- Stats Grid (only for staff/admin) -->
       <div v-if="isStaff" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div v-for="stat in stats" :key="stat.label" class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition group">
+        <div v-for="stat in stats" :key="stat.label" class="bg-white rounded-[10px] shadow-sm border border-gray-100 p-5 hover:shadow-md transition group">
           <div class="flex items-start justify-between">
-            <div :class="stat.bg" class="p-2.5 rounded-lg transition-colors">
+            <div :class="stat.bg" class="p-2.5 rounded-md transition-colors">
               <component :is="stat.icon" :class="stat.text" class="w-5 h-5" />
             </div>
             <span v-if="statValues.loading" class="animate-pulse bg-gray-100 h-6 w-10 rounded"></span>
@@ -56,11 +56,11 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Quick Access -->
         <div class="lg:col-span-2 space-y-4">
-          <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider px-1">Acessos Rápidos</h3>
+          <h3 class="text-[10px] font-bold text-blue-800 uppercase tracking-wider px-1">Acessos Rápidos</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <router-link v-for="action in quickActions" :key="action.title" :to="action.link"
-              class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:border-blue-200 hover:shadow-md transition group flex items-start gap-4">
-              <div :class="action.color" class="p-3 rounded-xl shrink-0">
+              class="bg-white p-4 rounded-[10px] border border-gray-100 shadow-sm hover:border-blue-200 hover:shadow-md transition group flex items-start gap-4">
+              <div :class="action.color" class="p-3 rounded-md shrink-0">
                 <component :is="action.icon" class="w-6 h-6" />
               </div>
               <div class="min-w-0">
@@ -73,8 +73,8 @@
 
         <!-- System Status / Info -->
         <div class="space-y-4">
-          <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider px-1">Estado do Sistema</h3>
-          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-5">
+          <h3 class="text-[10px] font-bold text-blue-800 uppercase tracking-wider px-1">Estado do Sistema</h3>
+          <div class="bg-white rounded-[10px] border border-gray-100 shadow-sm p-5 space-y-5">
             <div class="flex items-center justify-between">
               <span class="text-sm text-gray-600">Estado da Geração</span>
               <span class="px-2.5 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100 flex items-center gap-1.5">
@@ -85,8 +85,8 @@
             
             <div class="space-y-4 pt-4 border-t border-gray-50">
               <div class="flex items-start gap-3">
-                <div class="bg-blue-50 p-2 rounded-lg">
-                  <Info class="w-4 h-4 text-blue-900" />
+                <div class="bg-blue-50 p-2 rounded-md">
+                  <span class="text-blue-900"><Info class="w-4 h-4" /></span>
                 </div>
                 <div>
                   <p class="text-xs font-semibold text-gray-900">Período Activo</p>
@@ -94,8 +94,8 @@
                 </div>
               </div>
               <div class="flex items-start gap-3">
-                <div class="bg-amber-50 p-2 rounded-lg">
-                  <ShieldCheck class="w-4 h-4 text-amber-600" />
+                <div class="bg-amber-50 p-2 rounded-md">
+                  <span class="text-amber-600"><ShieldCheck class="w-4 h-4" /></span>
                 </div>
                 <div>
                   <p class="text-xs font-semibold text-gray-900">Segurança</p>
@@ -104,7 +104,7 @@
               </div>
             </div>
 
-            <div class="bg-blue-900 rounded-xl p-4 mt-6 text-white overflow-hidden relative group cursor-pointer shadow-lg shadow-blue-900/20">
+            <div class="bg-blue-900 rounded-[10px] p-4 mt-6 text-white overflow-hidden relative group cursor-pointer shadow-lg shadow-blue-900/20">
               <div class="relative z-10">
                 <p class="text-xs font-bold text-blue-200 uppercase tracking-widest mb-1">Versão do Sistema</p>
                 <p class="text-xl font-bold">v2.4.0-Refactor</p>
