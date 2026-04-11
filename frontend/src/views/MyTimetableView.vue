@@ -1,22 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-
+  <div>
     <!-- Header -->
-    <div class="mb-6">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <div class="flex items-center gap-3">
-          <div class="bg-blue-900 p-2.5 rounded-lg">
-            <CalendarDays class="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 class="text-xl font-semibold text-gray-900">O meu horário</h1>
-            <p class="text-gray-400 text-sm">
-              {{ isTeacher ? 'Aulas atribuídas' : 'Horário da turma' }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      :icon="CalendarDays"
+      title="O meu horário"
+      :subtitle="isTeacher ? 'Aulas atribuídas' : 'Horário da turma'"
+    />
 
     <!-- Filters -->
     <div class="mb-5">
@@ -125,6 +114,8 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { timetableService } from '@/services/timetableService'
 import type { LessonAssignment, TimetableSolution } from '@/services/dto/timetable'
+import PageHeader from '@/component/ui/PageHeader.vue'
+import FilterBar from '@/component/ui/FilterBar.vue'
 import { CalendarDays, ChevronDown, Loader2 } from 'lucide-vue-next'
 
 const auth = useAuthStore()

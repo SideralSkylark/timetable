@@ -28,7 +28,7 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/admins")
 @RequiredArgsConstructor
 @Slf4j
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'ASISTENT', 'DIRECTOR')")
 public class AdminController {
     private final UserService userService;
     private final UserMapper userMapper;

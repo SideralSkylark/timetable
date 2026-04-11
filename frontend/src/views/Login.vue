@@ -101,7 +101,14 @@ const handleLogin = async () => {
   loading.value = true
   try {
     await authStore.login(email.value, password.value)
-    router.push('/dashboard')
+    
+    // Role-based redirection
+    const roles = authStore.user?.roles ?? []
+    if (roles.includes('STUDENT') || roles.includes('TEACHER')) {
+      router.push({ name: 'MyTimetableView' })
+    } else {
+      router.push({ name: 'DashboardHome' })
+    }
   } catch {
     error.value = 'Credenciais inválidas. Tente novamente.'
   } finally {

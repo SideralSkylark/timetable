@@ -1,139 +1,124 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div>
 
     <!-- Header -->
-    <div class="mb-6">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <div class="flex items-center justify-between gap-4">
-
-          <div class="flex items-center gap-3 shrink-0">
-            <div class="bg-blue-900 p-2.5 rounded-lg">
-              <CalendarDays class="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 class="text-xl font-semibold text-gray-900">Horários</h1>
-              <p class="text-gray-400 text-sm">Visualizar e gerir horários da instituição</p>
-            </div>
-          </div>
-
-          <!-- All items pinned to h-8 so nothing shifts -->
-          <div class="flex items-center gap-2 flex-wrap justify-end">
-
-            <div v-if="timetableStore.loading"
-              class="h-8 flex items-center gap-1.5 px-3 bg-gray-50 border border-gray-100 rounded-lg text-xs text-gray-400">
-              <Loader2 class="w-3.5 h-3.5 animate-spin" />
-              A carregar...
-            </div>
-
-            <div v-if="timetableStore.solution && !timetableStore.loading"
-              class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border" :class="timetableStore.solution.feasible
-                ? 'bg-green-50 text-green-700 border-green-100'
-                : 'bg-red-50 text-red-700 border-red-100'">
-              <CheckCircle v-if="timetableStore.solution.feasible" class="w-3.5 h-3.5" />
-              <XCircle v-else class="w-3.5 h-3.5" />
-              {{ timetableStore.solution.feasible ? 'Válido' : 'Com conflitos' }}
-              <span class="font-mono opacity-40 ml-0.5">{{ timetableStore.solution.score }}</span>
-            </div>
-
-            <div v-if="timetableStore.solution"
-              class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border" :class="{
-                'bg-amber-50 text-amber-700 border-amber-100': timetableStatus === 'PENDING_APPROVAL',
-                'bg-green-50 text-green-700 border-green-100': timetableStatus === 'APPROVED',
-                'bg-blue-50  text-blue-700  border-blue-100': timetableStatus === 'PUBLISHED',
-                'bg-gray-50  text-gray-500  border-gray-100': !timetableStatus || timetableStatus === 'DRAFT',
-              }">
-              {{ {
-                DRAFT: 'Rascunho', PENDING_APPROVAL: 'Aguarda aprovação',
-                APPROVED: 'Aprovado', REJECTED: 'Rejeitado', PUBLISHED: 'Publicado',
-              }[timetableStatus ?? 'DRAFT'] ?? 'Rascunho' }}
-            </div>
-
-            <!-- Divider before action buttons -->
-            <div v-if="timetableStore.solution && (canSubmit || canApprove || canReject || canPublish || isAdmin)"
-              class="w-px h-5 bg-gray-200" />
-
-            <button v-if="canSubmit" @click="timetableStore.submitForApproval()"
-              class="h-8 flex items-center gap-1.5 px-3 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-400 transition">
-              <Send class="w-3.5 h-3.5" /> Submeter
-            </button>
-            <button v-if="canApprove" @click="timetableStore.approve()"
-              class="h-8 flex items-center gap-1.5 px-3 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition">
-              <CheckCircle class="w-3.5 h-3.5" /> Aprovar
-            </button>
-            <button v-if="canReject" @click="timetableStore.reject()"
-              class="h-8 flex items-center gap-1.5 px-3 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition">
-              <XCircle class="w-3.5 h-3.5" /> Rejeitar
-            </button>
-            <button v-if="canPublish" @click="timetableStore.publish()"
-              class="h-8 flex items-center gap-1.5 px-3 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition">
-              <Globe class="w-3.5 h-3.5" /> Publicar
-            </button>
-
-            <button v-if="canGenerate" :disabled="timetableStore.generating || timetableStore.loading"
-              @click="showConfirmModal = true"
-              class="h-8 flex items-center gap-1.5 px-3 bg-blue-900 text-white text-xs font-medium rounded-lg hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
-              <Loader2 v-if="timetableStore.generating" class="w-3.5 h-3.5 animate-spin" />
-              <Zap v-else class="w-3.5 h-3.5" />
-              {{ timetableStore.generating ? 'A gerar...' : 'Gerar horário' }}
-            </button>
-          </div>
+    <PageHeader
+      :icon="CalendarDays"
+      title="Horários"
+      subtitle="Visualizar e gerir horários da instituição"
+    >
+      <template #actions>
+        <div v-if="timetableStore.loading"
+          class="h-8 flex items-center gap-1.5 px-3 bg-gray-50 border border-gray-100 rounded-lg text-xs text-gray-400">
+          <Loader2 class="w-3.5 h-3.5 animate-spin" />
+          A carregar...
         </div>
-      </div>
-    </div>
+
+        <div v-if="timetableStore.solution && !timetableStore.loading"
+          class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border" :class="timetableStore.solution.feasible
+            ? 'bg-green-50 text-green-700 border-green-100'
+            : 'bg-red-50 text-red-700 border-red-100'">
+          <CheckCircle v-if="timetableStore.solution.feasible" class="w-3.5 h-3.5" />
+          <XCircle v-else class="w-3.5 h-3.5" />
+          {{ timetableStore.solution.feasible ? 'Válido' : 'Com conflitos' }}
+          <span class="font-mono opacity-40 ml-0.5">{{ timetableStore.solution.score }}</span>
+        </div>
+
+        <div v-if="timetableStore.solution"
+          class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border" :class="{
+            'bg-amber-50 text-amber-700 border-amber-100': timetableStatus === 'PENDING_APPROVAL',
+            'bg-green-50 text-green-700 border-green-100': timetableStatus === 'APPROVED',
+            'bg-blue-50  text-blue-700  border-blue-100': timetableStatus === 'PUBLISHED',
+            'bg-gray-50  text-gray-500  border-gray-100': !timetableStatus || timetableStatus === 'DRAFT',
+          }">
+          {{ {
+            DRAFT: 'Rascunho', PENDING_APPROVAL: 'Aguarda aprovação',
+            APPROVED: 'Aprovado', REJECTED: 'Rejeitado', PUBLISHED: 'Publicado',
+          }[timetableStatus ?? 'DRAFT'] ?? 'Rascunho' }}
+        </div>
+
+        <!-- Divider before action buttons -->
+        <div v-if="timetableStore.solution && (canSubmit || canApprove || canReject || canPublish || isAdmin)"
+          class="w-px h-5 bg-gray-200" />
+
+        <button v-if="canSubmit" @click="timetableStore.submitForApproval()"
+          class="h-8 flex items-center gap-1.5 px-3 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-400 transition">
+          <Send class="w-3.5 h-3.5" /> Submeter
+        </button>
+        <button v-if="canApprove" @click="timetableStore.approve()"
+          class="h-8 flex items-center gap-1.5 px-3 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition">
+          <CheckCircle class="w-3.5 h-3.5" /> Aprovar
+        </button>
+        <button v-if="canReject" @click="timetableStore.reject()"
+          class="h-8 flex items-center gap-1.5 px-3 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition">
+          <XCircle class="w-3.5 h-3.5" /> Rejeitar
+        </button>
+        <button v-if="canPublish" @click="timetableStore.publish()"
+          class="h-8 flex items-center gap-1.5 px-3 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition">
+          <Globe class="w-3.5 h-3.5" /> Publicar
+        </button>
+
+        <button v-if="canGenerate" :disabled="timetableStore.generating || timetableStore.loading"
+          @click="showConfirmModal = true"
+          class="h-8 flex items-center gap-1.5 px-3 bg-blue-900 text-white text-xs font-medium rounded-lg hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <Loader2 v-if="timetableStore.generating" class="w-3.5 h-3.5 animate-spin" />
+          <Zap v-else class="w-3.5 h-3.5" />
+          {{ timetableStore.generating ? 'A gerar...' : 'Gerar horário' }}
+        </button>
+      </template>
+    </PageHeader>
 
     <!-- Filters -->
-    <div class="mb-5">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
-        <div class="flex flex-wrap items-end gap-4">
-
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ano lectivo</label>
-            <div class="relative">
-              <select v-model="selectedYear"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
-                <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
-              </select>
-              <ChevronDown
-                class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+    <FilterBar :activeFilterCount="0">
+      <template #filters>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ano lectivo</label>
+          <div class="relative">
+            <select v-model="selectedYear"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
+              <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
+            </select>
+            <ChevronDown
+              class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
-
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Semestre</label>
-            <div class="relative">
-              <select v-model="selectedSemester"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
-                <option :value="1">1º semestre</option>
-                <option :value="2">2º semestre</option>
-              </select>
-              <ChevronDown
-                class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Turma</label>
-            <div class="relative">
-              <select v-model="selectedCohort"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
-                <option value="">Todas as turmas</option>
-                <option v-for="c in availableCohorts" :key="c.id" :value="c.id">{{ c.displayName }}</option>
-              </select>
-              <ChevronDown
-                class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <div v-if="hasLessons" class="flex-1 flex items-center justify-end gap-4">
-            <div v-for="item in yearLegend" :key="item.year" class="flex items-center gap-1.5">
-              <div class="w-2.5 h-2.5 rounded-sm" :class="item.dot"></div>
-              <span class="text-xs text-gray-400">{{ item.label }}</span>
-            </div>
-          </div>
-
         </div>
-      </div>
-    </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Semestre</label>
+          <div class="relative">
+            <select v-model="selectedSemester"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
+              <option :value="1">1º semestre</option>
+              <option :value="2">2º semestre</option>
+            </select>
+            <ChevronDown
+              class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Turma</label>
+          <div class="relative">
+            <select v-model="selectedCohort"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
+              <option value="">Todas as turmas</option>
+              <option v-for="c in availableCohorts" :key="c.id" :value="c.id">{{ c.displayName }}</option>
+            </select>
+            <ChevronDown
+              class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+      </template>
+
+      <template #actions>
+        <div v-if="hasLessons" class="flex items-center justify-end gap-4 h-8">
+          <div v-for="item in yearLegend" :key="item.year" class="flex items-center gap-1.5">
+            <div class="w-2.5 h-2.5 rounded-sm" :class="item.dot"></div>
+            <span class="text-xs text-gray-400">{{ item.label }}</span>
+          </div>
+        </div>
+      </template>
+    </FilterBar>
 
     <!-- Table + side panel -->
     <div class="flex gap-4 items-start">
@@ -479,6 +464,8 @@ import { useCourseStore } from '@/stores/course'
 import { useToast } from '@/composables/useToast'
 import { permutationService, type ValidSlot, type CohortSwapCandidate } from '@/services/permutationService'
 import type { LessonAssignment } from '@/services/dto/timetable'
+import PageHeader from '@/component/ui/PageHeader.vue'
+import FilterBar from '@/component/ui/FilterBar.vue'
 import { CalendarDays, ChevronDown, Zap, Loader2, CheckCircle, XCircle, ArrowRightLeft, ArrowRight, X, Send, Globe } from 'lucide-vue-next'
 
 const auth = useAuthStore()

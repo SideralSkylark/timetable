@@ -18,19 +18,39 @@
       </p>
 
       <!-- Action -->
-      <RouterLink
-        to="/dashboard"
+      <button
+        @click="goHome"
         class="inline-flex items-center gap-2 bg-blue-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition"
       >
         <LayoutDashboard class="w-4 h-4" />
-        Voltar ao painel
-      </RouterLink>
+        {{ homeLabel }}
+      </button>
 
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { ShieldOff, LayoutDashboard } from 'lucide-vue-next'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const isRestrictedRole = computed(() => {
+  const roles = auth.user?.roles ?? []
+  return roles.includes('STUDENT') || roles.includes('TEACHER')
+})
+
+const homeLabel = computed(() => isRestrictedRole.value ? 'Voltar ao horário' : 'Voltar ao painel')
+
+const goHome = () => {
+  if (isRestrictedRole.value) {
+    router.push({ name: 'MyTimetableView' })
+  } else {
+    router.push({ name: 'DashboardHome' })
+  }
+}
 </script>

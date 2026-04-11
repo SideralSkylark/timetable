@@ -1,140 +1,106 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div>
 
     <!-- Header -->
-    <div class="mb-6">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="bg-blue-900 p-2.5 rounded-lg">
-              <Building class="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 class="text-xl font-semibold text-gray-900">Gestão de salas</h1>
-              <p class="text-gray-400 text-sm">Gerir as salas da instituição</p>
-            </div>
-          </div>
-          <button @click="openRoomModal"
-            class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
-            <Plus class="w-4 h-4" />
-            Nova sala
-          </button>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      :icon="Building"
+      title="Gestão de salas"
+      subtitle="Gerir as salas da instituição"
+    >
+      <template #actions>
+        <button @click="openRoomModal"
+          class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
+          <Plus class="w-4 h-4" />
+          Nova sala
+        </button>
+      </template>
+    </PageHeader>
 
     <!-- Filters -->
-    <div class="mb-5">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
-        <div class="flex flex-wrap items-end gap-4">
-
-          <!-- Search by name -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Nome</label>
-            <div class="relative">
-              <input
-                v-model="filters.name"
-                type="text"
-                placeholder="Pesquisar sala..."
-                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
-                style="width: 180px;"
-              />
-              <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+    <FilterBar :activeFilterCount="activeFilterCount" @clear="clearFilters">
+      <template #filters>
+        <!-- Search by name -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Nome</label>
+          <div class="relative">
+            <input
+              v-model="filters.name"
+              type="text"
+              placeholder="Pesquisar sala..."
+              class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              style="width: 180px;"
+            />
+            <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
-
-          <!-- Capacity range -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Capacidade</label>
-            <div class="flex items-center gap-1.5">
-              <input
-                v-model.number="filters.capacityMin"
-                type="number"
-                min="0"
-                placeholder="Mín"
-                class="h-8 w-20 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
-              />
-              <span class="text-xs text-gray-300">—</span>
-              <input
-                v-model.number="filters.capacityMax"
-                type="number"
-                min="0"
-                placeholder="Máx"
-                class="h-8 w-20 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
-              />
-            </div>
-          </div>
-
-          <!-- Assigned course -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Curso</label>
-            <div class="relative">
-              <select
-                v-model="filters.courseId"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-                style="width: 180px;"
-              >
-                <option value="">Todos os cursos</option>
-                <option v-for="course in availableCourses" :key="course.id" :value="course.id">
-                  {{ course.name }}
-                </option>
-              </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <!-- Restriction period -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Período</label>
-            <div class="relative">
-              <select
-                v-model="filters.period"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-              >
-                <option value="">Todos os períodos</option>
-                <option value="MORNING">Manhã</option>
-                <option value="AFTERNOON">Tarde</option>
-                <option value="EVENING">Noite</option>
-              </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <!-- Active filter count + clear -->
-          <div class="flex-1 flex items-end justify-end">
-            <button
-              v-if="activeFilterCount > 0"
-              @click="clearFilters"
-              class="h-8 flex items-center gap-1.5 px-3 border border-gray-200 text-xs text-gray-500 rounded-lg hover:bg-gray-50 transition"
-            >
-              <X class="w-3.5 h-3.5" />
-              Limpar filtros
-              <span class="bg-blue-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium leading-none">
-                {{ activeFilterCount }}
-              </span>
-            </button>
-          </div>
-
         </div>
-      </div>
-    </div>
+
+        <!-- Capacity range -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Capacidade</label>
+          <div class="flex items-center gap-1.5">
+            <input
+              v-model.number="filters.capacityMin"
+              type="number"
+              min="0"
+              placeholder="Mín"
+              class="h-8 w-20 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+            />
+            <span class="text-xs text-gray-300">—</span>
+            <input
+              v-model.number="filters.capacityMax"
+              type="number"
+              min="0"
+              placeholder="Máx"
+              class="h-8 w-20 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+            />
+          </div>
+        </div>
+
+        <!-- Assigned course -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Curso</label>
+          <div class="relative">
+            <select
+              v-model="filters.courseId"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              style="width: 180px;"
+            >
+              <option value="">Todos os cursos</option>
+              <option v-for="course in availableCourses" :key="course.id" :value="course.id">
+                {{ course.name }}
+              </option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+
+        <!-- Restriction period -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Período</label>
+          <div class="relative">
+            <select
+              v-model="filters.period"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+            >
+              <option value="">Todos os períodos</option>
+              <option value="MORNING">Manhã</option>
+              <option value="AFTERNOON">Tarde</option>
+              <option value="EVENING">Noite</option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+      </template>
+    </FilterBar>
 
     <div>
       <!-- Delete confirmation banner -->
-      <div v-if="confirmDeleteId !== null"
-        class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
-        <span class="text-sm text-red-700">Tem certeza que deseja deletar a sala "<strong class="text-red-700">{{ roomToDelete?.name }}</strong>"?</span>
-        <div class="flex gap-2">
-          <button @click="confirmDeleteId = null; roomToDelete = null"
-            class="px-3 py-1.5 text-xs border border-gray-200 text-gray-500 rounded-md hover:bg-white transition">
-            Cancelar
-          </button>
-          <button @click="confirmDelete(confirmDeleteId!)"
-            class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium">
-            Eliminar
-          </button>
-        </div>
-      </div>
+      <DeleteConfirmBanner
+        v-if="confirmDeleteId !== null"
+        :message="`Tem certeza que deseja deletar a sala '<strong class='text-red-700'>${roomToDelete?.name}</strong>'?`"
+        @cancel="confirmDeleteId = null; roomToDelete = null"
+        @confirm="confirmDelete(confirmDeleteId!)"
+      />
 
       <!-- Table -->
       <CrudTable
@@ -304,6 +270,9 @@ import { useCourseStore } from '@/stores/course'
 import { useToast } from '@/composables/useToast'
 import type { RoomResponse } from '@/services/dto/room'
 import CrudTable from '@/component/ui/CrudTable.vue'
+import PageHeader from '@/component/ui/PageHeader.vue'
+import FilterBar from '@/component/ui/FilterBar.vue'
+import DeleteConfirmBanner from '@/component/ui/DeleteConfirmBanner.vue'
 import {
   Building, Plus, DoorOpen, Edit, Tag,
   Users as UsersIcon, X, Check, ShieldAlert,

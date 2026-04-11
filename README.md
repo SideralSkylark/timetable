@@ -68,55 +68,6 @@ cd api
 mvn test -Dtest="*ServiceTest"
 ```
 
----
-
-## UI Refactor Plan
-
-To improve maintainability and ensure UI consistency, the following structural refactoring is planned. The visual identity (Tailwind CSS, Lucide icons, blue-900 theme) must remain identical.
-
-### 1. Reusable UI Components
-Create the following components in `frontend/src/component/ui/`:
-
-- **`PageHeader.vue`**
-  - **Props**: `icon` (Lucide component), `title` (string), `subtitle` (string).
-  - **Slots**: `#actions` (for right-side buttons/controls).
-  - **Purpose**: Standardize the white header card used across all views.
-
-- **`FilterBar.vue`**
-  - **Props**: `activeFilterCount` (number).
-  - **Slots**: `#filters` (for filter inputs).
-  - **Emits**: `@clear` (when the "Limpar filtros" button is clicked).
-  - **Purpose**: Standardize the filter container and clear button logic.
-
-- **`DeleteConfirmBanner.vue`**
-  - **Props**: `message` (string).
-  - **Emits**: `@confirm`, `@cancel`.
-  - **Purpose**: Standardize the red confirmation banner that appears above tables.
-
-- **`ResetPasswordModal.vue`**
-  - **Props**: `password` (string).
-  - **Emits**: `@close`.
-  - **Purpose**: Extract the one-time password display logic from `Users.vue`. Includes "Copy to Clipboard", "Print", and the security warning.
-
-### 2. View Refactoring
-Update the following views to utilize the new components:
-
-| View | `PageHeader` | `FilterBar` | `DeleteConfirmBanner` | `ResetPasswordModal` |
-| :--- | :---: | :---: | :---: | :---: |
-| `Users.vue` | ✅ | ✅ | ✅ | ✅ |
-| `Rooms.vue` | ✅ | ✅ | ✅ | ❌ |
-| `Cohorts.vue` | ✅ | ✅ | ✅ | ❌ |
-| `Courses.vue` | ✅ | ✅ | ❌ | ❌ |
-| `Timetable.vue` | ✅ | ✅ | ❌ | ❌ |
-| `MyTimetable.vue` | ✅ | ❌ | ❌ | ❌ |
-
-### 3. Cleanup & Modernization
-- **Delete `Students.vue`**: This is a legacy prototype; its functionality is now fully covered by `Users.vue`.
-- **Rewrite `Dashboard.vue`**: Refactor to use `useAuthStore` for user information instead of direct `localStorage` access.
-- **Enforce Style**: Ensure all new components use the project's design tokens: `blue-900` primary color, `gray-200` borders, and `rounded-xl` cards.
-
----
-
 The following N+1 query patterns have been identified in the backend and require optimization (e.g., using `JOIN FETCH` or `@EntityGraph`):
 
 1. **`CohortSubjectRepository.findByAcademicYearAndSemesterAndIsActive`**

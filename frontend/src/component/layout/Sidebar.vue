@@ -108,7 +108,7 @@ const userRoleLabel = computed(() => {
 })
 
 const dashboardRoutes = [
-  { name: 'DashboardHome',  label: 'Início',       icon: Home,        roles: ['USER'] },
+  { name: 'DashboardHome',  label: 'Início',       icon: Home,        roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
   { name: 'Rooms',          label: 'Salas',         icon: Building,    roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
   { name: 'Courses',        label: 'Cursos',        icon: School,      roles: ['ADMIN', 'COORDINATOR'] },
   { name: 'Cohorts',        label: 'Turmas',        icon: CohortIcon,  roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },

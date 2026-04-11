@@ -1,115 +1,89 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div>
 
     <!-- Header -->
-    <div class="mb-6">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="bg-blue-900 p-2.5 rounded-lg">
-              <GraduationCap class="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 class="text-xl font-semibold text-gray-900">Gestão de cursos</h1>
-              <p class="text-gray-400 text-sm">Gerir cursos e suas disciplinas</p>
-            </div>
-          </div>
-          <button v-if="isAdmin" @click="openCreateModal"
-            class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
-            <Plus class="w-4 h-4" />
-            Novo curso
-          </button>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      :icon="GraduationCap"
+      title="Gestão de cursos"
+      subtitle="Gerir cursos e suas disciplinas"
+    >
+      <template #actions>
+        <button v-if="isAdmin" @click="openCreateModal"
+          class="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition text-sm font-medium">
+          <Plus class="w-4 h-4" />
+          Novo curso
+        </button>
+      </template>
+    </PageHeader>
 
     <!-- Filters -->
-    <div class="mb-5">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
-        <div class="flex flex-wrap items-end gap-4">
-
-          <!-- Course name -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Nome</label>
-            <div class="relative">
-              <input
-                v-model="filters.name"
-                type="text"
-                placeholder="Pesquisar curso..."
-                class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
-                style="width: 200px;"
-              />
-              <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+    <FilterBar :activeFilterCount="activeFilterCount" @clear="clearFilters">
+      <template #filters>
+        <!-- Course name -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Nome</label>
+          <div class="relative">
+            <input
+              v-model="filters.name"
+              type="text"
+              placeholder="Pesquisar curso..."
+              class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              style="width: 200px;"
+            />
+            <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
+        </div>
 
-          <!-- Coordinator -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Coordenador</label>
-            <div class="relative">
-              <select
-                v-model="filters.coordinatorId"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-                style="width: 180px;"
-              >
-                <option value="">Todos</option>
-                <option v-for="c in coordinators" :key="c.id" :value="c.id">{{ c.name }}</option>
-              </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <!-- Duration -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Duração</label>
-            <div class="relative">
-              <select
-                v-model="filters.years"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
-              >
-                <option value="">Todos</option>
-                <option v-for="y in [1,2,3,4,5,6]" :key="y" :value="y">{{ y }} ano{{ y !== 1 ? 's' : '' }}</option>
-              </select>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <!-- Business simulation toggle chips -->
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Sim. empresarial</label>
-            <div class="flex items-center gap-1 h-8">
-              <button
-                v-for="opt in bizSimOptions" :key="String(opt.value)"
-                type="button"
-                @click="filters.hasBusinessSimulation = opt.value"
-                :class="filters.hasBusinessSimulation === opt.value
-                  ? 'bg-blue-900 text-white border-blue-900'
-                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
-                class="h-8 px-3 text-xs font-medium border rounded-lg transition"
-              >
-                {{ opt.label }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Clear -->
-          <div class="flex-1 flex items-end justify-end">
-            <button
-              v-if="activeFilterCount > 0"
-              @click="clearFilters"
-              class="h-8 flex items-center gap-1.5 px-3 border border-gray-200 text-xs text-gray-500 rounded-lg hover:bg-gray-50 transition"
+        <!-- Coordinator -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Coordenador</label>
+          <div class="relative">
+            <select
+              v-model="filters.coordinatorId"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              style="width: 180px;"
             >
-              <X class="w-3.5 h-3.5" />
-              Limpar filtros
-              <span class="bg-blue-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium leading-none">
-                {{ activeFilterCount }}
-              </span>
+              <option value="">Todos</option>
+              <option v-for="c in coordinators" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+
+        <!-- Duration -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Duração</label>
+          <div class="relative">
+            <select
+              v-model="filters.years"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+            >
+              <option value="">Todos</option>
+              <option v-for="y in [1,2,3,4,5,6]" :key="y" :value="y">{{ y }} ano{{ y !== 1 ? 's' : '' }}</option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+
+        <!-- Business simulation toggle chips -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Sim. empresarial</label>
+          <div class="flex items-center gap-1 h-8">
+            <button
+              v-for="opt in bizSimOptions" :key="String(opt.value)"
+              type="button"
+              @click="filters.hasBusinessSimulation = opt.value"
+              :class="filters.hasBusinessSimulation === opt.value
+                ? 'bg-blue-900 text-white border-blue-900'
+                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
+              class="h-8 px-3 text-xs font-medium border rounded-lg transition"
+            >
+              {{ opt.label }}
             </button>
           </div>
-
         </div>
-      </div>
-    </div>
+      </template>
+    </FilterBar>
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16 text-gray-400 text-sm gap-2">
@@ -578,6 +552,8 @@ import { teacherService } from '@/services/teacherService'
 import { useUserStore } from '@/stores/user'
 import { useToast } from '@/composables/useToast'
 import type { CourseListResponse, CoordinatorOption } from '@/services/dto/course'
+import PageHeader from '@/component/ui/PageHeader.vue'
+import FilterBar from '@/component/ui/FilterBar.vue'
 import {
   GraduationCap, Plus, Edit, Edit2, Trash2,
   ChevronDown, ChevronRight, BookOpen, User,
