@@ -3,7 +3,7 @@
 
     <!-- Header -->
     <PageHeader
-      :icon="Building"
+      :icon="DoorOpen"
       title="Gestão de salas"
       subtitle="Gerir as salas da instituição"
     >
@@ -239,21 +239,21 @@
 
           <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
               <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button type="submit"
               :disabled="isSubmitting"
               :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }"
-              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
+              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
               <template v-if="isSubmitting">
                 <Loader2 class="w-3.5 h-3.5 animate-spin" />
-                <span>{{ editingRoom ? 'Updating...' : 'Creating...' }}</span>
+                <span>{{ editingRoom ? 'A guardar...' : 'A criar...' }}</span>
               </template>
               <template v-else>
                 <Check class="w-3.5 h-3.5" />
-                <span>{{ editingRoom ? 'Update Room' : 'Create Room' }}</span>
+                <span>{{ editingRoom ? 'Guardar alterações' : 'Criar sala' }}</span>
               </template>
             </button>
           </div>

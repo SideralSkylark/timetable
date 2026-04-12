@@ -120,12 +120,12 @@
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-gray-100">
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Turma</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Curso</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Ano lectivo</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Semestre</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Alunos</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Estado</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Turma</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Curso</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Ano lectivo</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Semestre</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Alunos</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Estado</th>
               <th class="px-5 py-3" />
             </tr>
           </thead>
@@ -255,12 +255,12 @@
 
           <div class="flex gap-2 pt-1">
             <button type="button" @click="showConfirmModal = false"
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
               <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button @click="handleConfirm"
-              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition flex items-center justify-center gap-1.5 font-medium">
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition flex items-center justify-center gap-1.5 font-medium">
               <CheckCircle class="w-3.5 h-3.5" />
               Confirmar ingressos
             </button>
@@ -354,12 +354,12 @@
 
           <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
               <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button type="submit"
-              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
+              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
               <Check class="w-3.5 h-3.5" />
               {{ isEditing ? 'Guardar alterações' : 'Criar turma' }}
             </button>
@@ -429,12 +429,12 @@
 
     <div class="p-5 border-t border-gray-100 flex gap-2 shrink-0">
       <button type="button" @click="showStudentsModal = false"
-        class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+        class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
         <X class="w-3.5 h-3.5" />
         Cancelar
       </button>
       <button @click="handleSaveStudents"
-        class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
+        class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
         <Check class="w-3.5 h-3.5" />
         Guardar
       </button>

@@ -277,7 +277,7 @@
             <button
               type="button"
               @click="handleResetPassword"
-              class="w-full h-9 flex items-center justify-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 transition"
+              class="w-full h-9 flex items-center justify-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-md hover:bg-amber-100 transition"
             >
               <KeyRound class="w-3.5 h-3.5" />
               Repor password
@@ -289,12 +289,12 @@
 
           <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
               <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button type="submit"
-              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium"
+              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium"
             >
               <Check class="w-3.5 h-3.5" />
               {{ editingUser ? 'Atualizar utilizador' : 'Criar utilizador' }}

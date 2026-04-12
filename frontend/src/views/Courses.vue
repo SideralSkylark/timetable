@@ -399,12 +399,12 @@
         
                   <div class="flex gap-2 pt-1">
                     <button type="button" @click="closeCourseModal"
-                      class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+                      class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
                       <X class="w-3.5 h-3.5" />
                       Cancelar
                     </button>
                     <button type="submit"
-                      class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition flex items-center justify-center gap-1.5">
+                      class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm font-medium hover:bg-blue-800 transition flex items-center justify-center gap-1.5">
                       <Save v-if="editingCourse" class="w-3.5 h-3.5" />
                       <Check v-else class="w-3.5 h-3.5" />
                       {{ editingCourse ? 'Guardar alterações' : 'Criar curso' }}
@@ -531,12 +531,12 @@
         
                 <div class="px-5 py-4 border-t border-gray-100 flex gap-2">
                   <button type="button" @click="closeDisciplineModal"
-                    class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+                    class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
                     <X class="w-3.5 h-3.5" />
                     Cancelar
                   </button>
                   <button type="button" @click="submitDiscipline"
-                    class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition flex items-center justify-center gap-1.5">
+                    class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm font-medium hover:bg-blue-800 transition flex items-center justify-center gap-1.5">
                     <Check class="w-3.5 h-3.5" />
                     {{ editingDiscipline ? 'Guardar alterações' : 'Criar disciplina' }}
                   </button>

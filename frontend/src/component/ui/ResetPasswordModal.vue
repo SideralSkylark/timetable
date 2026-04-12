@@ -4,7 +4,7 @@
     <div class="bg-white rounded-[10px] shadow-2xl max-w-sm w-full border border-gray-100 p-6 print-container">
       
       <div class="flex flex-col items-center text-center space-y-4">
-        <div class="bg-amber-50 p-3 rounded-full">
+        <div class="bg-amber-50 p-2 rounded-md">
           <KeyRound class="w-6 h-6 text-amber-600" />
         </div>
         
@@ -27,7 +27,7 @@
         <div class="grid grid-cols-2 gap-3 w-full no-print">
           <button
             @click="copyToClipboard"
-            class="h-10 flex items-center justify-center gap-2 px-4 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+            class="h-10 flex items-center justify-center gap-2 px-4 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-50 transition"
             :class="copyFeedback ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-600'"
           >
             <Copy v-if="!copyFeedback" class="w-4 h-4" />
@@ -36,7 +36,7 @@
           </button>
           <button
             @click="printPassword"
-            class="h-10 flex items-center justify-center gap-2 px-4 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+            class="h-10 flex items-center justify-center gap-2 px-4 border border-gray-200 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
           >
             <Printer class="w-4 h-4" />
             Imprimir
@@ -45,7 +45,7 @@
 
         <button
           @click="$emit('close')"
-          class="w-full h-10 bg-blue-900 text-white rounded-lg text-sm font-semibold hover:bg-blue-800 transition no-print"
+          class="w-full h-10 bg-blue-900 text-white rounded-md text-sm font-semibold hover:bg-blue-800 transition no-print"
         >
           Fechar
         </button>

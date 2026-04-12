@@ -6,7 +6,7 @@
           <th
             v-for="col in columns"
             :key="col.key"
-            class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide"
+            class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider"
           >
             {{ col.label }}
           </th>
@@ -39,7 +39,7 @@
               <button
                 v-if="canEdit ? canEdit(row) : true"
                 @click="$emit('edit', row)"
-                class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-blue-900 hover:border-blue-200 hover:bg-blue-50 transition opacity-0 group-hover:opacity-100"
+                class="p-1.5 border border-gray-200 rounded-md text-gray-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition opacity-0 group-hover:opacity-100"
                 title="Editar"
               >
                 <Edit2 class="w-3.5 h-3.5" />

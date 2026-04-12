@@ -97,62 +97,138 @@ The following N+1 query patterns have been identified in the backend and require
 
 ---
 
-# frontend refactor prompt
-You are a senior frontend engineer doing a focused visual design pass on a Vue 3 + Tailwind CSS management system. Your job is to apply a specific set of design improvements consistently across the entire project. Do NOT change any logic, stores, composables, props, emits, or component APIs. Only touch visual/styling code.
+# frontend refactor prompt 1
+You are making a focused visual polish pass on a Vue 3 + Tailwind CSS project.
+Do NOT change any logic, script blocks, props, emits, or component structure.
+Only change Tailwind class strings in template blocks. Make exactly these changes:
 
-## Step 1 — Explore the project structure first
+## 1. Sidebar.vue — background and border
+On the <aside> element:
+- Change `bg-white` to `bg-slate-50`
+- Change `border-gray-100` to `border-slate-200`
 
-Before making any changes, read and understand the project:
-- Find the main layout file (likely src/layouts/ or App.vue) to understand the page shell
-- Find the PageHeader component (likely src/components/ui/PageHeader.vue or similar)
-- Find the FilterBar component if it exists
-- List all page-level views in src/views/ or src/pages/
-- Check tailwind.config.js or tailwind.config.ts to understand the current color setup
-- Check if there is a global CSS file (src/assets/main.css, src/style.css, or similar)
+## 2. Sidebar.vue — active nav item
+In the RouterLink `:class` binding, find the active state classes.
+- Change the active background from `bg-blue-900` to `bg-blue-50`
+- Change the active text from `text-white` to `text-blue-800`
+- Keep `font-semibold` on the active state
+On the active nav item icon <component :is>, change `text-white` (active) to `text-blue-800`
+On the ChevronRight icon that appears on active items, change `text-white/60` to `text-blue-400`
 
-Report what you find before proceeding.
+## 3. Sidebar.vue — brand subtitle
+Find the <p> element with the "Sistema de gestão" text.
+- Replace its current color and size classes with:
+  `text-[10px] text-blue-800 font-bold uppercase tracking-wider`
 
-## Step 2 — Apply these 3 global changes
+## 4. PageHeader.vue — icon box
+Find the div wrapping the icon with `bg-blue-900`.
+- Change `bg-blue-900` to `bg-blue-50`
+- On the <component :is="icon"> inside it, add `text-blue-800` class
+  (or change the existing color class to `text-blue-800`)
+- Change `p-2.5` to `p-2` to compensate for the lighter background
+  (the darker bg made it feel smaller than it is)
 
-### A. PageHeader left accent border
-In the PageHeader component, find the outermost wrapper div of the header card/panel (the white bg container, not the page root div). Add these classes to it:
-  border-l-[3px] border-l-blue-800
+## 5. CrudTable.vue — column header labels
+Find all <th> elements in the <thead>.
+- Change `text-xs font-medium text-gray-400 uppercase tracking-wide`
+  to `text-[10px] font-bold text-blue-800 uppercase tracking-wider`
+Do NOT change the empty <th> at the end (the actions column header).
 
-If the component uses dynamic classes or a :class binding, append these. The intent is a visible 3px left border in the brand blue on every page header across the app.
+## 6. CrudTable.vue — edit button hover color
+Find the edit button with `hover:text-blue-900 hover:border-blue-200 hover:bg-blue-50`.
+- Change to `hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50`
 
-### B. Page background
-Find where the page/shell background color is set. This is likely on the main layout wrapper, the router-view container, or a global CSS body/html rule. Change the background from bg-white, bg-gray-50, or bg-gray-100 to bg-slate-100. If it is set in CSS rather than Tailwind, change it to #f1f5f9. Apply this only to the page-level shell background, not to cards or panels.
+## 7. FilterBar.vue — active filter count badge
+Find the <span> element that displays `activeFilterCount` with classes
+`bg-blue-900 text-white`.
+- Change `bg-blue-900 text-white` to `bg-blue-100 text-blue-800`
 
-### C. Section and filter labels
-Search across ALL .vue files for elements that have ALL of these classes together: uppercase, tracking-wider (or tracking-wide), and text-xs or text-[10px], and are currently colored with text-gray-400 or text-gray-500. These are structural section/filter labels. For every one found:
-- Change the color class to text-blue-800
-- Add font-bold if not already present
-- Change text-xs to text-[10px] if not already that size
+After all changes, verify:
+- No other classes were changed beyond the 7 items listed
+- Script blocks are untouched
+- No new elements were added or removed
+- Report which line in each file was changed
 
-Do NOT apply this to badge text, table column headers in data tables, or any label that sits inside a colored background element.
 
-## Step 3 — Apply these per-component changes
+# frontend refactor prompt 2
+You are making a second focused polish pass on a Vue 3 + Tailwind CSS project.
+Do NOT change any logic, script blocks, props, emits, reactive state, or computed properties.
+Only change icon imports, icon references in templates, and Tailwind class strings.
+Make exactly these changes in order:
 
-### Border radius standardisation
-Go through every .vue file and apply this hierarchy:
-- Outermost card/panel containers: change rounded-xl or rounded-2xl to rounded-[10px]
-- Inner row elements, subject rows, filter inputs, modal inner sections: change rounded-xl or rounded-lg to rounded-md (6px)
-- Badge/pill/tag elements (small inline colored spans): change rounded-lg or rounded-xl to rounded (4px)
-- Status pills that represent a live state (active, published, valid, etc.): leave as rounded-full
-Do not change border radius on buttons — leave those as-is.
+## ICONS
 
-### Active row accent bar
-In any list where rows are expandable or selectable (course list, user list, cohort list), find the expanded/active row state. Add a left accent element inside the row for the active/expanded state:
-  <div class="w-[3px] h-8 rounded-r bg-blue-800 flex-shrink-0"></div>
-This should appear as the first child inside the row flex container when the row is expanded or active. For rows that are not expanded/active, render a same-sized transparent div to preserve alignment:
-  <div class="w-[3px] h-8 flex-shrink-0"></div>
+### 1. Sidebar.vue — standardise room icon
+In the dashboardRoutes array in <script>, find the Rooms entry using the `Building` icon.
+- Change it to use `DoorOpen` instead.
+- Update the import at the top: remove `Building` from lucide imports, add `DoorOpen` if not already present.
 
-## Step 4 — Verify consistency
+### 2. Sidebar.vue — standardise courses icon
+In the dashboardRoutes array, find the Courses entry using the `School` icon.
+- Change it to `GraduationCap`. GraduationCap is already imported (as CohortIcon alias) — add a clean import for it or reuse the existing one.
+- Remove the `School` import from lucide imports.
 
-After making all changes, do a final pass:
-- Check that no page-level card still has bg-gray-50 or bg-white as its outer page background
-- Check that the PageHeader left border appears in every view
-- Check that no section label is still text-gray-400 with uppercase tracking
-- List every file you changed with a one-line summary of what changed
+### 3. Sidebar.vue — fix duplicate CalendarDays icons
+In the dashboardRoutes array, find the MyTimetableView entry (Meu Horário) which uses `CalendarDays`.
+- Change it to use `CalendarCheck` instead.
+- Add `CalendarCheck` to the lucide imports.
+- Leave the Timetable entry (Horários) using `CalendarDays` unchanged.
 
-Make all changes directly to the source files. Do not create new files. Do not refactor component structure. Do not touch script blocks.
+### 4. Sidebar.vue — fix Cohorts icon
+In the dashboardRoutes array, find the Cohorts entry (currently using `CohortIcon` which is `GraduationCap`).
+- Change it to use `BookOpen`.
+- Add `BookOpen` to the lucide imports if not present.
+- Remove the `CohortIcon` alias and its source `GraduationCap as CohortIcon` import line.
+
+### 5. Rooms.vue (or wherever the Rooms PageHeader is) — standardise room icon
+Find the PageHeader `:icon` prop for the rooms page. If it uses `Building`, change it to `DoorOpen`.
+Update the import accordingly.
+
+## MODALS
+
+### 6. ResetPasswordModal.vue — icon container shape
+Find the div wrapping the `KeyRound` icon with classes `bg-amber-50 p-3 rounded-full`.
+- Change `rounded-full` to `rounded-md`
+- Change `p-3` to `p-2`
+
+### 7. All modal footer buttons — radius consistency
+In every .vue file, find cancel and confirm/submit button pairs that appear inside modal <div> containers (fixed inset-0 overlays). These buttons currently use `rounded-lg`.
+- Change all cancel and confirm buttons inside modals from `rounded-lg` to `rounded-md`.
+- Do NOT change the primary action buttons in PageHeader #actions slots — those stay as `rounded-lg`.
+- Do NOT change buttons in FilterBar — those stay as-is.
+The rule: if a button is inside a `fixed inset-0` modal overlay, it gets `rounded-md`. Everything else keeps its current radius.
+
+### 8. Rooms.vue — fix English button text
+In the rooms modal submit button, find the template strings:
+- Change `'Updating...'` to `'A guardar...'`
+- Change `'Creating...'` to `'A criar...'`
+- Change `'Update Room'` to `'Guardar alterações'`
+- Change `'Create Room'` to `'Criar sala'`
+
+## DEPTH / SHADOW
+
+### 9. PageHeader.vue — remove shadow from chrome element
+On the main container div of PageHeader (the one with `shadow-sm border border-gray-100`):
+- Remove `shadow-sm`
+- Change `border-gray-100` to `border-slate-200`
+
+### 10. FilterBar.vue — remove shadow from chrome element
+On the main container div of FilterBar (the one with `shadow-sm border border-gray-100`):
+- Remove `shadow-sm`
+- Change `border-gray-100` to `border-slate-200`
+
+### 11. Cohorts.vue — table header labels
+Find all <th> elements in the cohorts table thead that have `text-xs font-medium text-gray-400 uppercase tracking-wide`.
+- Change to `text-[10px] font-bold text-blue-800 uppercase tracking-wider`
+
+### 12. GenericForm.vue — field label style
+Find the <label> element inside the `v-for="field in fields"` loop.
+- Change its text classes from `text-xs font-medium text-gray-500` to `text-[10px] font-bold text-blue-800 uppercase tracking-wider`
+- Remove the `mb-1.5` if present and replace with `mb-2` to compensate for the smaller font size.
+
+## VERIFICATION
+After all changes:
+- Confirm no script block was modified
+- Confirm no component structure changed
+- List every file touched and the specific line(s) changed in each
+- Flag any case where an icon was used in a place you couldn't find (so it can be checked manually)
