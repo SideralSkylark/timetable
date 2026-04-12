@@ -3,7 +3,7 @@
 
     <!-- Header -->
     <PageHeader
-      :icon="UsersIcon"
+      :icon="BookOpen"
       title="Turmas"
       subtitle="Confirmar ingressos e gerir turmas"
     >
@@ -470,6 +470,7 @@ import {
   Check,
   Search,
   ChevronDown,
+  BookOpen,
 } from 'lucide-vue-next'
 
 const cohortStore = useCohortStore()

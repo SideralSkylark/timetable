@@ -71,7 +71,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUserStore } from '@/stores/user'
 import {
-  Home,
+  LayoutDashboard,
   DoorOpen,
   GraduationCap,
   Users as UsersIcon,
@@ -108,7 +108,7 @@ const userRoleLabel = computed(() => {
 })
 
 const dashboardRoutes = [
-  { name: 'DashboardHome',  label: 'Início',       icon: Home,        roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
+  { name: 'DashboardHome',  label: 'Início',       icon: LayoutDashboard, roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
   { name: 'Rooms',          label: 'Salas',         icon: DoorOpen,    roles: ['ADMIN', 'ASISTENT', 'DIRECTOR'] },
   { name: 'Courses',        label: 'Cursos',        icon: GraduationCap, roles: ['ADMIN', 'COORDINATOR'] },
   { name: 'Cohorts',        label: 'Turmas',        icon: BookOpen,    roles: ['ADMIN', 'COORDINATOR', 'ASISTENT', 'DIRECTOR'] },

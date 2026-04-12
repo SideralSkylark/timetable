@@ -2,7 +2,7 @@
   <div>
     <!-- Header -->
     <PageHeader
-      :icon="CalendarDays"
+      :icon="CalendarCheck"
       title="O meu horário"
       :subtitle="isTeacher ? 'Aulas atribuídas' : 'Horário da turma'"
     />
@@ -116,7 +116,7 @@ import { timetableService } from '@/services/timetableService'
 import type { LessonAssignment, TimetableSolution } from '@/services/dto/timetable'
 import PageHeader from '@/component/ui/PageHeader.vue'
 import FilterBar from '@/component/ui/FilterBar.vue'
-import { CalendarDays, ChevronDown, Loader2 } from 'lucide-vue-next'
+import { CalendarCheck, ChevronDown, Loader2 } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 
