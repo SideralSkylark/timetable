@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+  <div class="min-h-screen bg-slate-100 flex items-center justify-center px-4">
     <div class="w-full max-w-sm">
 
       <!-- Brand mark -->
       <div class="flex flex-col items-center mb-8">
-        <div class="bg-blue-900 p-3 rounded-xl mb-4">
+        <div class="bg-blue-900 p-3 rounded-md mb-4">
           <GraduationCap class="w-7 h-7 text-white" />
         </div>
         <h1 class="text-xl font-semibold text-gray-900">Bem-vindo</h1>
@@ -12,7 +12,7 @@
       </div>
 
       <!-- Card -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="bg-white rounded-[10px] shadow-sm border border-gray-100 p-6">
         <form @submit.prevent="handleLogin" class="space-y-4">
 
           <!-- Email -->
@@ -26,7 +26,7 @@
               type="email"
               required
               placeholder="O seu email"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
+              class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
             />
           </div>
 
@@ -42,7 +42,7 @@
                 :type="showPassword ? 'text' : 'password'"
                 required
                 placeholder="A sua password"
-                class="w-full px-3 py-2 pr-9 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
+                class="w-full px-3 py-2 pr-9 border border-gray-200 rounded-md text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition text-gray-800 placeholder:text-gray-300"
               />
               <button
                 type="button"
@@ -58,7 +58,7 @@
 
           <!-- Error -->
           <div v-if="error"
-            class="flex items-center gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5">
+            class="flex items-center gap-2 bg-red-50 border border-red-100 rounded-md px-3 py-2.5">
             <AlertCircle class="w-3.5 h-3.5 text-red-500 shrink-0" />
             <p class="text-xs text-red-600">{{ error }}</p>
           </div>

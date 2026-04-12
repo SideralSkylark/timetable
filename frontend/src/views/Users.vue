@@ -21,13 +21,13 @@
       <template #filters>
         <!-- Username -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Username</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Username</label>
           <div class="relative">
             <input
               v-model="filters.username"
               type="text"
               placeholder="Pesquisar utilizador..."
-              class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              class="h-8 pl-8 pr-3 border border-gray-200 rounded-md text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
               style="width: 180px;"
             />
             <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -36,13 +36,13 @@
 
         <!-- Email -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Email</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Email</label>
           <div class="relative">
             <input
               v-model="filters.email"
               type="text"
               placeholder="Pesquisar email..."
-              class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              class="h-8 pl-8 pr-3 border border-gray-200 rounded-md text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
               style="width: 180px;"
             />
             <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -51,11 +51,11 @@
 
         <!-- Role -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Permissão</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Permissão</label>
           <div class="relative">
             <select
               v-model="filters.role"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
               style="width: 160px;"
             >
               <option value="">Todas</option>
@@ -69,11 +69,11 @@
 
         <!-- Status -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Estado</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Estado</label>
           <div class="relative">
             <select
               v-model="filters.status"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
               style="width: 140px;"
             >
               <option value="">Todos</option>
@@ -87,11 +87,11 @@
         <!-- Teacher type — only shown when role is TEACHER or unfiltered -->
         <Transition name="fade">
           <div v-if="filters.role === '' || filters.role === 'TEACHER'" class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo de docente</label>
+            <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Tipo de docente</label>
             <div class="relative">
               <select
                 v-model="filters.teacherType"
-                class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+                class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
                 style="width: 160px;"
               >
                 <option value="">Todos</option>
@@ -156,10 +156,10 @@
     <!-- Modal -->
     <div v-if="showUserModal" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
       @click.self="closeModal">
-      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
+      <div class="bg-white rounded-[10px] shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
 
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
-          <div :class="editingUser ? 'bg-amber-50' : 'bg-blue-50'" class="p-2 rounded-lg">
+          <div :class="editingUser ? 'bg-amber-50' : 'bg-blue-50'" class="p-2 rounded-md">
             <UserPlus v-if="!editingUser" class="w-4 h-4 text-blue-900" />
             <Edit v-else class="w-4 h-4 text-amber-600" />
           </div>
@@ -174,47 +174,47 @@
         <form @submit.prevent="handleSubmit" novalidate class="p-5 space-y-5">
 
           <div>
-            <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
+            <label class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5">
               <User class="w-3.5 h-3.5" />
               Username <span class="text-blue-900">*</span>
             </label>
             <input v-model="formData.username" type="text"
-              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
               :class="formErrors.username ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Digite o username" />
             <p v-if="formErrors.username" class="text-red-500 text-[10px] mt-1">O username é obrigatório</p>
           </div>
 
           <div>
-            <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
+            <label class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5">
               <Mail class="w-3.5 h-3.5" />
               Email <span class="text-blue-900">*</span>
             </label>
             <input v-model="formData.email" type="email"
-              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
               :class="formErrors.email ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Digite o email" />
             <p v-if="formErrors.email" class="text-red-500 text-[10px] mt-1">Introduza um email válido</p>
           </div>
 
           <div v-if="!editingUser">
-            <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
+            <label class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5">
               <Lock class="w-3.5 h-3.5" />
               Password <span class="text-blue-900">*</span>
             </label>
             <input v-model="formData.password" type="password"
-              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
               :class="formErrors.password ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Digite a password" />
             <p v-if="formErrors.password" class="text-red-500 text-[10px] mt-1">Password deve ter entre 8 e 100 caracteres</p>
           </div>
 
           <div>
-            <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-2">
+            <label class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-2">
               <Shield class="w-3.5 h-3.5" />
               Permissões <span class="text-blue-900">*</span>
             </label>
-            <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <div class="border border-gray-200 rounded-md overflow-hidden">
               <div class="flex items-center justify-between px-3 py-2.5 bg-gray-50 border-b border-gray-100">
                 <div>
                   <span class="text-sm font-medium text-gray-700">Utilizador</span>
@@ -245,11 +245,11 @@
           </div>
 
           <div v-if="formData.selectedRoles.includes('TEACHER')">
-            <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-2">
+            <label class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-2">
               <BookOpen class="w-3.5 h-3.5" />
               Tipo de docente <span class="text-blue-900">*</span>
             </label>
-            <div class="border rounded-lg overflow-hidden"
+            <div class="border rounded-md overflow-hidden"
               :class="formErrors.teacherType ? 'border-red-500' : 'border-gray-200'">
               <label
                 v-for="type in teacherTypes"
@@ -277,7 +277,7 @@
             <button
               type="button"
               @click="handleResetPassword"
-              class="w-full h-9 flex items-center justify-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 transition"
+              class="w-full h-9 flex items-center justify-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-md hover:bg-amber-100 transition"
             >
               <KeyRound class="w-3.5 h-3.5" />
               Repor password
@@ -289,12 +289,12 @@
 
           <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
               <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button type="submit"
-              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium"
+              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium"
             >
               <Check class="w-3.5 h-3.5" />
               {{ editingUser ? 'Atualizar utilizador' : 'Criar utilizador' }}

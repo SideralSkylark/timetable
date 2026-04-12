@@ -9,13 +9,13 @@
     >
       <template #actions>
         <div v-if="timetableStore.loading"
-          class="h-8 flex items-center gap-1.5 px-3 bg-gray-50 border border-gray-100 rounded-lg text-xs text-gray-400">
+          class="h-8 flex items-center gap-1.5 px-3 bg-gray-50 border border-gray-100 rounded-md text-xs text-gray-400">
           <Loader2 class="w-3.5 h-3.5 animate-spin" />
           A carregar...
         </div>
 
         <div v-if="timetableStore.solution && !timetableStore.loading"
-          class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border" :class="timetableStore.solution.feasible
+          class="h-8 flex items-center gap-1.5 px-3 rounded-md text-xs font-medium border" :class="timetableStore.solution.feasible
             ? 'bg-green-50 text-green-700 border-green-100'
             : 'bg-red-50 text-red-700 border-red-100'">
           <CheckCircle v-if="timetableStore.solution.feasible" class="w-3.5 h-3.5" />
@@ -25,7 +25,7 @@
         </div>
 
         <div v-if="timetableStore.solution"
-          class="h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium border" :class="{
+          class="h-8 flex items-center gap-1.5 px-3 rounded-md text-xs font-medium border" :class="{
             'bg-amber-50 text-amber-700 border-amber-100': timetableStatus === 'PENDING_APPROVAL',
             'bg-green-50 text-green-700 border-green-100': timetableStatus === 'APPROVED',
             'bg-blue-50  text-blue-700  border-blue-100': timetableStatus === 'PUBLISHED',
@@ -72,10 +72,10 @@
     <FilterBar :activeFilterCount="0">
       <template #filters>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ano lectivo</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Ano lectivo</label>
           <div class="relative">
             <select v-model="selectedYear"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
               <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
             </select>
             <ChevronDown
@@ -84,10 +84,10 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Semestre</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Semestre</label>
           <div class="relative">
             <select v-model="selectedSemester"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
               <option :value="1">1º semestre</option>
               <option :value="2">2º semestre</option>
             </select>
@@ -97,10 +97,10 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Turma</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Turma</label>
           <div class="relative">
             <select v-model="selectedCohort"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer">
               <option value="">Todas as turmas</option>
               <option v-for="c in availableCohorts" :key="c.id" :value="c.id">{{ c.displayName }}</option>
             </select>
@@ -123,7 +123,7 @@
     <!-- Table + side panel -->
     <div class="flex gap-4 items-start">
 
-      <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden min-w-0">
+      <div class="flex-1 bg-white rounded-[10px] shadow-sm border border-gray-100 overflow-hidden min-w-0">
 
         <div v-if="timetableStore.generating" class="flex flex-col items-center justify-center py-24 gap-3">
           <Loader2 class="w-7 h-7 animate-spin text-blue-900" />
@@ -215,7 +215,7 @@
       <!-- Swap side panel -->
       <Transition name="slide-panel">
         <div v-if="canEdit && selectedCohort && selectedLesson"
-          class="bg-white rounded-xl shadow-sm border border-gray-100 flex-shrink-0" style="width: 264px;">
+          class="bg-white rounded-[10px] shadow-sm border border-gray-100 flex-shrink-0" style="width: 264px;">
           <div class="p-4 border-b border-gray-100 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <ArrowRightLeft class="w-4 h-4 text-blue-900" />
@@ -226,7 +226,7 @@
             </button>
           </div>
           <div class="p-4 space-y-3">
-            <div class="bg-gray-50 rounded-lg p-3 space-y-0.5">
+            <div class="bg-gray-50 rounded-md p-3 space-y-0.5">
               <p class="font-semibold text-gray-800 text-sm">{{ selectedLesson.subject.name }}</p>
               <p class="text-xs text-gray-400">{{ selectedLesson.cohort.displayName }}</p>
               <p class="text-xs text-gray-400">{{ dayLabel(selectedLesson.timeslot?.dayOfWeek) }} · {{
@@ -245,14 +245,14 @@
               <p v-if="validSlots.length > 0" class="text-xs text-gray-400 text-center">
                 {{ validSlots.length }} permutação(ões) disponível(eis)
               </p>
-              <p v-else class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2.5 text-center">
+              <p v-else class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-md p-2.5 text-center">
                 Nenhuma permutação válida.
               </p>
             </template>
 
-            <div class="border border-gray-100 rounded-lg overflow-hidden">
+            <div class="border border-gray-100 rounded-md overflow-hidden">
               <div class="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-100">
-                <span class="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                <span class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">
                   Trocar com aula da mesma turma
                 </span>
               </div>
@@ -290,168 +290,329 @@
       </Transition>
     </div>
 
-    <!-- Hover tooltip -->
-    <Teleport to="body">
-      <Transition name="tooltip">
-        <div v-if="hoveredLesson && !selectedLesson"
-          class="fixed bottom-6 right-6 bg-gray-900 text-white rounded-xl shadow-2xl p-4 w-52 z-50 pointer-events-none">
-          <p class="font-semibold text-sm mb-3 pb-2 border-b border-white/10 leading-snug">{{ hoveredLesson.subject.name
-            }}
-          </p>
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Turma</span><span
-                class="text-right">{{ hoveredLesson.cohort.displayName }}</span></div>
-            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Professor</span><span
-                class="text-right">{{ hoveredLesson.teacher?.fullName ?? '—' }}</span></div>
-            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Sala</span><span
-                class="text-right">{{ hoveredLesson.room?.name ?? '—' }}</span></div>
-            <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Créditos</span><span>{{
-              hoveredLesson.subject.credits }}</span></div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+        <!-- Hover tooltip -->
 
-    <!-- Modal: Confirm generate -->
-    <div v-if="showConfirmModal" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
-      @click.self="showConfirmModal = false">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-gray-100">
-        <div class="p-5 border-b border-gray-100 flex items-center gap-3">
-          <div class="bg-blue-50 p-2 rounded-lg">
-            <Zap class="w-4 h-4 text-blue-900" />
-          </div>
-          <h2 class="text-base font-semibold text-gray-900">Gerar horário</h2>
-        </div>
-        <div class="p-5">
-          <p class="text-sm text-gray-500 leading-relaxed">
-            Vai gerar o horário para <strong class="text-gray-700">{{ selectedYear }} · {{ selectedSemester }}º
-              semestre</strong>.
-            <template v-if="timetableStore.solution"><br /><span class="text-amber-600 font-medium">O horário existente
-                será substituído.</span></template>
-            A operação pode demorar até 5 minutos.
-          </p>
-          <div class="flex gap-2 mt-5">
-            <button @click="showConfirmModal = false"
-              class="flex-1 h-9 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
-              <X class="w-3.5 h-3.5" /> Cancelar
-            </button>
-            <button @click="handleGenerate"
-              class="flex-1 h-9 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition flex items-center justify-center gap-1.5">
-              <Zap class="w-3.5 h-3.5" /> Confirmar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        <Teleport to="body">
 
-    <!-- Modal: Move / Swap -->
-    <div v-if="pendingSwap" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
-      @click.self="pendingSwap = null">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-gray-100">
-        <div class="p-5 border-b border-gray-100 flex items-center gap-3">
-          <div class="p-2 rounded-lg" :class="pendingSwap.isSwap ? 'bg-orange-50' : 'bg-green-50'">
-            <ArrowRightLeft v-if="pendingSwap.isSwap" class="w-4 h-4 text-orange-600" />
-            <ArrowRight v-else class="w-4 h-4 text-green-600" />
-          </div>
-          <h2 class="text-base font-semibold text-gray-900">{{ pendingSwap.isSwap ? 'Trocar aulas' : 'Mover aula' }}
-          </h2>
-        </div>
-        <div class="p-5 space-y-3">
-          <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs">
-            <p class="font-medium text-blue-600 mb-1 uppercase tracking-wide">A mover</p>
-            <p class="font-semibold text-gray-800">{{ selectedLesson?.subject.name }}</p>
-            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
-              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
-                {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }}
-              </span>
-              <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
-              <span class="text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-medium">
-                {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0,5) }} · {{ pendingSwap.roomName }}
-              </span>
-            </div>
-          </div>
-          <div v-if="pendingSwap.isSwap" class="bg-orange-50 border border-orange-100 rounded-lg p-3 text-xs">
-            <p class="font-medium text-orange-600 mb-1 uppercase tracking-wide">Deslocada</p>
-            <p class="font-semibold text-gray-800">{{ pendingSwap.swapWithSubject }}</p>
-            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
-              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
-                {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0,5) }}
-              </span>
-              <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
-              <span class="text-xs px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 border border-orange-200 font-medium">
-                {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }} · {{ selectedLesson?.room?.name ?? '—' }}
-              </span>
-            </div>
-          </div>
-          <div class="flex gap-2 pt-1">
-            <button @click="pendingSwap = null"
-              class="flex-1 h-9 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
-              <X class="w-3.5 h-3.5" /> Cancelar
-            </button>
-            <button @click="handleApplySwap" :disabled="applyingSwap"
-              class="flex-1 h-9 text-white rounded-lg text-sm font-medium transition flex items-center justify-center gap-1.5 disabled:opacity-50"
-              :class="pendingSwap.isSwap ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'">
-              <Loader2 v-if="applyingSwap" class="w-3.5 h-3.5 animate-spin" />
-              <ArrowRightLeft v-else class="w-3.5 h-3.5" />
-              Confirmar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+          <Transition name="tooltip">
 
-    <!-- Modal: Cohort swap -->
-    <div v-if="pendingCohortSwap" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
-      @click.self="pendingCohortSwap = null">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-gray-100">
-        <div class="p-5 border-b border-gray-100 flex items-center gap-3">
-          <div class="bg-gray-100 p-2 rounded-lg">
-            <ArrowRightLeft class="w-4 h-4 text-gray-600" />
-          </div>
-          <h2 class="text-base font-semibold text-gray-900">Trocar aulas da turma</h2>
-        </div>
-        <div class="p-5 space-y-3">
-          <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs">
-            <p class="font-medium text-blue-600 mb-1 uppercase tracking-wide">Aula A</p>
-            <p class="font-semibold text-gray-800">{{ selectedLesson?.subject.name }}</p>
-            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
-              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
-                {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }}
-              </span>
-              <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
-              <span class="text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-medium">
-                {{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{ pendingCohortSwap.startTime.substring(0,5) }} · {{ pendingCohortSwap.roomName }}
-              </span>
+            <div v-if="hoveredLesson && !selectedLesson"
+
+              class="fixed bottom-6 right-6 bg-gray-900 text-white rounded-[10px] shadow-2xl p-4 w-52 z-50 pointer-events-none">
+
+              <p class="font-semibold text-sm mb-3 pb-2 border-b border-white/10 leading-snug">{{ hoveredLesson.subject.name
+
+                }}
+
+              </p>
+
+              <div class="space-y-1.5">
+
+                <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Turma</span><span
+
+                    class="text-right">{{ hoveredLesson.cohort.displayName }}</span></div>
+
+                <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Professor</span><span
+
+                    class="text-right">{{ hoveredLesson.teacher?.fullName ?? '—' }}</span></div>
+
+                <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Sala</span><span
+
+                    class="text-right">{{ hoveredLesson.room?.name ?? '—' }}</span></div>
+
+                <div class="flex justify-between text-xs gap-3"><span class="text-gray-400 shrink-0">Créditos</span><span>{{
+
+                  hoveredLesson.subject.credits }}</span></div>
+
+              </div>
+
             </div>
-          </div>
-          <div class="bg-gray-50 border border-gray-100 rounded-lg p-3 text-xs">
-            <p class="font-medium text-gray-400 mb-1 uppercase tracking-wide">Aula B</p>
-            <p class="font-semibold text-gray-800">{{ pendingCohortSwap.subjectName }}</p>
-            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
-              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
-                {{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{ pendingCohortSwap.startTime.substring(0,5) }}
-              </span>
-              <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
-              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 border border-gray-200 font-medium">
-                {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }} · {{ selectedLesson?.room?.name ?? '—' }}
-              </span>
+
+          </Transition>
+
+        </Teleport>
+
+    
+
+        <!-- Modal: Confirm generate -->
+
+        <div v-if="showConfirmModal" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+
+          @click.self="showConfirmModal = false">
+
+          <div class="bg-white rounded-[10px] shadow-2xl w-full max-w-sm border border-gray-100">
+
+            <div class="p-5 border-b border-gray-100 flex items-center gap-3">
+
+              <div class="bg-blue-50 p-2 rounded-md">
+
+                <Zap class="w-4 h-4 text-blue-900" />
+
+              </div>
+
+              <h2 class="text-base font-semibold text-gray-900">Gerar horário</h2>
+
             </div>
+
+            <div class="p-5">
+
+              <p class="text-sm text-gray-500 leading-relaxed">
+
+                Vai gerar o horário para <strong class="text-gray-700">{{ selectedYear }} · {{ selectedSemester }}º
+
+                  semestre</strong>.
+
+                <template v-if="timetableStore.solution"><br /><span class="text-amber-600 font-medium">O horário existente
+
+                    será substituído.</span></template>
+
+                A operação pode demorar até 5 minutos.
+
+              </p>
+
+              <div class="flex gap-2 mt-5">
+
+                <button @click="showConfirmModal = false"
+
+                  class="flex-1 h-9 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+
+                  <X class="w-3.5 h-3.5" /> Cancelar
+
+                </button>
+
+                <button @click="handleGenerate"
+
+                  class="flex-1 h-9 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition flex items-center justify-center gap-1.5">
+
+                  <Zap class="w-3.5 h-3.5" /> Confirmar
+
+                </button>
+
+              </div>
+
+            </div>
+
           </div>
-          <div class="flex gap-2 pt-1">
-            <button @click="pendingCohortSwap = null"
-              class="flex-1 h-9 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
-              <X class="w-3.5 h-3.5" /> Cancelar
-            </button>
-            <button @click="handleApplyCohortSwap" :disabled="applyingCohortSwap"
-              class="flex-1 h-9 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-600 transition flex items-center justify-center gap-1.5 disabled:opacity-50">
-              <Loader2 v-if="applyingCohortSwap" class="w-3.5 h-3.5 animate-spin" />
-              <ArrowRightLeft v-else class="w-3.5 h-3.5" />
-              Confirmar
-            </button>
-          </div>
+
         </div>
-      </div>
-    </div>
+
+    
+
+        <!-- Modal: Move / Swap -->
+
+        <div v-if="pendingSwap" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+
+          @click.self="pendingSwap = null">
+
+          <div class="bg-white rounded-[10px] shadow-2xl w-full max-w-sm border border-gray-100">
+
+            <div class="p-5 border-b border-gray-100 flex items-center gap-3">
+
+              <div class="p-2 rounded-md" :class="pendingSwap.isSwap ? 'bg-orange-50' : 'bg-green-50'">
+
+                <ArrowRightLeft v-if="pendingSwap.isSwap" class="w-4 h-4 text-orange-600" />
+
+                <ArrowRight v-else class="w-4 h-4 text-green-600" />
+
+              </div>
+
+              <h2 class="text-base font-semibold text-gray-900">{{ pendingSwap.isSwap ? 'Trocar aulas' : 'Mover aula' }}
+
+              </h2>
+
+            </div>
+
+            <div class="p-5 space-y-3">
+
+              <div class="bg-blue-50 border border-blue-100 rounded-md p-3 text-xs">
+
+                <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wide mb-1">A mover</p>
+
+                <p class="font-semibold text-gray-800">{{ selectedLesson?.subject.name }}</p>
+
+                <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
+
+                    {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }}
+
+                  </span>
+
+                  <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
+
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-medium">
+
+                    {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0,5) }} · {{ pendingSwap.roomName }}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div v-if="pendingSwap.isSwap" class="bg-orange-50 border border-orange-100 rounded-md p-3 text-xs">
+
+                <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wide mb-1">Deslocada</p>
+
+                <p class="font-semibold text-gray-800">{{ pendingSwap.swapWithSubject }}</p>
+
+                <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
+
+                    {{ dayLabel(pendingSwap.dayOfWeek) }} · {{ pendingSwap.startTime.substring(0,5) }}
+
+                  </span>
+
+                  <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
+
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 border border-orange-200 font-medium">
+
+                    {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }} · {{ selectedLesson?.room?.name ?? '—' }}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div class="flex gap-2 pt-1">
+
+                <button @click="pendingSwap = null"
+
+                  class="flex-1 h-9 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+
+                  <X class="w-3.5 h-3.5" /> Cancelar
+
+                </button>
+
+                <button @click="handleApplySwap" :disabled="applyingSwap"
+
+                  class="flex-1 h-9 text-white rounded-lg text-sm font-medium transition flex items-center justify-center gap-1.5 disabled:opacity-50"
+
+                  :class="pendingSwap.isSwap ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'">
+
+                  <Loader2 v-if="applyingSwap" class="w-3.5 h-3.5 animate-spin" />
+
+                  <ArrowRightLeft v-else class="w-3.5 h-3.5" />
+
+                  Confirmar
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+    
+
+        <!-- Modal: Cohort swap -->
+
+        <div v-if="pendingCohortSwap" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+
+          @click.self="pendingCohortSwap = null">
+
+          <div class="bg-white rounded-[10px] shadow-2xl w-full max-w-sm border border-gray-100">
+
+            <div class="p-5 border-b border-gray-100 flex items-center gap-3">
+
+              <div class="bg-gray-100 p-2 rounded-md">
+
+                <ArrowRightLeft class="w-4 h-4 text-gray-600" />
+
+              </div>
+
+              <h2 class="text-base font-semibold text-gray-900">Trocar aulas da turma</h2>
+
+            </div>
+
+            <div class="p-5 space-y-3">
+
+              <div class="bg-blue-50 border border-blue-100 rounded-md p-3 text-xs">
+
+                <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wide mb-1">Aula A</p>
+
+                <p class="font-semibold text-gray-800">{{ selectedLesson?.subject.name }}</p>
+
+                <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
+
+                    {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }}
+
+                  </span>
+
+                  <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
+
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-medium">
+
+                    {{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{ pendingCohortSwap.startTime.substring(0,5) }} · {{ pendingCohortSwap.roomName }}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div class="bg-gray-50 border border-gray-100 rounded-md p-3 text-xs">
+
+                <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wide mb-1">Aula B</p>
+
+                <p class="font-semibold text-gray-800">{{ pendingCohortSwap.subjectName }}</p>
+
+                <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 border border-gray-200 font-medium">
+
+                    {{ dayLabel(pendingCohortSwap.dayOfWeek) }} · {{ pendingCohortSwap.startTime.substring(0,5) }}
+
+                  </span>
+
+                  <ArrowRight class="w-3 h-3 text-gray-400 flex-shrink-0" />
+
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 border border-gray-200 font-medium">
+
+                    {{ dayLabel(selectedLesson?.timeslot?.dayOfWeek) }} · {{ selectedLesson?.timeslot?.startTime?.substring(0,5) }} · {{ selectedLesson?.room?.name ?? '—' }}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div class="flex gap-2 pt-1">
+
+                <button @click="pendingCohortSwap = null"
+
+                  class="flex-1 h-9 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+
+                  <X class="w-3.5 h-3.5" /> Cancelar
+
+                </button>
+
+                <button @click="handleApplyCohortSwap" :disabled="applyingCohortSwap"
+
+                  class="flex-1 h-9 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-600 transition flex items-center justify-center gap-1.5 disabled:opacity-50">
+
+                  <Loader2 v-if="applyingCohortSwap" class="w-3.5 h-3.5 animate-spin" />
+
+                  <ArrowRightLeft v-else class="w-3.5 h-3.5" />
+
+                  Confirmar
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
 
   </div>
 </template>

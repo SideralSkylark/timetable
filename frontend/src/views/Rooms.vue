@@ -3,7 +3,7 @@
 
     <!-- Header -->
     <PageHeader
-      :icon="Building"
+      :icon="DoorOpen"
       title="Gestão de salas"
       subtitle="Gerir as salas da instituição"
     >
@@ -21,13 +21,13 @@
       <template #filters>
         <!-- Search by name -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Nome</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Nome</label>
           <div class="relative">
             <input
               v-model="filters.name"
               type="text"
               placeholder="Pesquisar sala..."
-              class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              class="h-8 pl-8 pr-3 border border-gray-200 rounded-md text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
               style="width: 180px;"
             />
             <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -36,14 +36,14 @@
 
         <!-- Capacity range -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Capacidade</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Capacidade</label>
           <div class="flex items-center gap-1.5">
             <input
               v-model.number="filters.capacityMin"
               type="number"
               min="0"
               placeholder="Mín"
-              class="h-8 w-20 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              class="h-8 w-20 px-3 border border-gray-200 rounded-md text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
             />
             <span class="text-xs text-gray-300">—</span>
             <input
@@ -51,18 +51,18 @@
               type="number"
               min="0"
               placeholder="Máx"
-              class="h-8 w-20 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              class="h-8 w-20 px-3 border border-gray-200 rounded-md text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
             />
           </div>
         </div>
 
         <!-- Assigned course -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Curso</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Curso</label>
           <div class="relative">
             <select
               v-model="filters.courseId"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
               style="width: 180px;"
             >
               <option value="">Todos os cursos</option>
@@ -76,11 +76,11 @@
 
         <!-- Restriction period -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Período</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Período</label>
           <div class="relative">
             <select
               v-model="filters.period"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
             >
               <option value="">Todos os períodos</option>
               <option value="MORNING">Manhã</option>
@@ -137,10 +137,10 @@
     <!-- Modal -->
     <div v-if="showRoomModal" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
       @click.self="closeModal">
-      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
+      <div class="bg-white rounded-[10px] shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
 
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
-          <div :class="editingRoom ? 'bg-amber-50' : 'bg-blue-50'" class="p-2 rounded-lg">
+          <div :class="editingRoom ? 'bg-amber-50' : 'bg-blue-50'" class="p-2 rounded-md">
             <DoorOpen v-if="!editingRoom" class="w-4 h-4 text-blue-900" />
             <Edit v-else class="w-4 h-4 text-amber-600" />
           </div>
@@ -155,24 +155,24 @@
         <form @submit.prevent="handleSubmit" novalidate class="p-5 space-y-5">
 
           <div>
-            <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
+            <label class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5">
               <Tag class="w-3.5 h-3.5" />
               Nome da sala <span class="text-blue-900">*</span>
             </label>
             <input v-model="formData.name" type="text"
-              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
               :class="formErrors.name ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Ex: Sala A101, Laboratório 3…" />
             <p v-if="formErrors.name" class="text-red-500 text-[10px] mt-1">O nome da sala é obrigatório</p>
           </div>
 
           <div>
-            <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
+            <label class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5">
               <UsersIcon class="w-3.5 h-3.5" />
               Capacidade <span class="text-blue-900">*</span>
             </label>
             <input v-model.number="formData.capacity" type="number" min="1"
-              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
+              class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800 placeholder:text-gray-300"
               :class="formErrors.capacity ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
               placeholder="Número de lugares" />
             <p v-if="formErrors.capacity" class="text-red-500 text-[10px] mt-1">A capacidade deve ser pelo menos 1</p>
@@ -180,7 +180,7 @@
 
           <div>
             <div class="flex items-center justify-between mb-2">
-              <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+              <label class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider">
                 <ShieldAlert class="w-3.5 h-3.5" />
                 Restrições de acesso
               </label>
@@ -190,13 +190,13 @@
             </div>
 
             <div v-if="formData.restrictions.length === 0"
-              class="border border-dashed border-gray-200 rounded-lg py-5 text-center text-gray-400 text-xs mb-2">
+              class="border border-dashed border-gray-200 rounded-md py-5 text-center text-gray-400 text-xs mb-2">
               Sem restrições — esta sala é de acesso livre.
             </div>
 
             <div v-else class="space-y-2 mb-2">
               <div v-for="(restriction, index) in formData.restrictions" :key="index"
-                class="border border-gray-200 rounded-lg overflow-hidden">
+                class="border border-gray-200 rounded-md overflow-hidden">
                 <div class="flex items-center justify-between px-3 py-1.5 bg-gray-50 border-b border-gray-100">
                   <span class="text-xs text-gray-400 font-medium">Restrição {{ index + 1 }}</span>
                   <button type="button" @click="formData.restrictions.splice(index, 1)"
@@ -239,21 +239,21 @@
 
           <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
               <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button type="submit"
               :disabled="isSubmitting"
               :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }"
-              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
+              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
               <template v-if="isSubmitting">
                 <Loader2 class="w-3.5 h-3.5 animate-spin" />
-                <span>{{ editingRoom ? 'Updating...' : 'Creating...' }}</span>
+                <span>{{ editingRoom ? 'A guardar...' : 'A criar...' }}</span>
               </template>
               <template v-else>
                 <Check class="w-3.5 h-3.5" />
-                <span>{{ editingRoom ? 'Update Room' : 'Create Room' }}</span>
+                <span>{{ editingRoom ? 'Guardar alterações' : 'Criar sala' }}</span>
               </template>
             </button>
           </div>

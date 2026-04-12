@@ -1,11 +1,11 @@
 <template>
   <form
     @submit.prevent="handleSubmit"
-    class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
+    class="bg-white rounded-[10px] border border-gray-100 shadow-sm overflow-hidden"
   >
     <!-- Header -->
     <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
-      <div :class="isCreate ? 'bg-blue-50' : 'bg-amber-50'" class="p-2 rounded-lg shrink-0">
+      <div :class="isCreate ? 'bg-blue-50' : 'bg-amber-50'" class="p-2 rounded-md shrink-0">
         <Plus v-if="isCreate" class="w-4 h-4 text-blue-900" />
         <Save v-else class="w-4 h-4 text-amber-600" />
       </div>
@@ -18,7 +18,7 @@
     <!-- Form fields -->
     <div class="p-5 space-y-4">
       <div v-for="field in fields" :key="field.name">
-        <label :for="field.name" class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
+        <label :for="field.name" class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-2">
           {{ field.label || field.placeholder }}
           <span v-if="field.required" class="text-blue-900">*</span>
         </label>
@@ -29,7 +29,7 @@
             :id="field.name"
             v-model="form[field.name]"
             :required="field.required"
-            class="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+            class="w-full px-3 py-2 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
           >
             <option v-if="field.placeholder && !field.required" :value="null" class="text-gray-400">
               {{ field.placeholder }}
@@ -52,7 +52,7 @@
           :type="field.type"
           :placeholder="field.placeholder"
           :required="field.required"
-          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+          class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-gray-800 focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
         />
       </div>
     </div>
@@ -62,14 +62,14 @@
       <button
         type="button"
         @click="$emit('cancel')"
-        class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center gap-1.5"
+        class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center gap-1.5"
       >
         <X class="w-3.5 h-3.5" />
         Cancelar
       </button>
       <button
         type="submit"
-        class="px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition flex items-center gap-1.5"
+        class="px-4 py-2 bg-blue-900 text-white rounded-md text-sm font-medium hover:bg-blue-800 transition flex items-center gap-1.5"
       >
         <Save v-if="!isCreate" class="w-3.5 h-3.5" />
         <Plus v-else class="w-3.5 h-3.5" />

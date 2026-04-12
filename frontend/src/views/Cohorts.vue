@@ -3,13 +3,13 @@
 
     <!-- Header -->
     <PageHeader
-      :icon="UsersIcon"
+      :icon="BookOpen"
       title="Turmas"
       subtitle="Confirmar ingressos e gerir turmas"
     >
       <template #actions>
         <div v-if="confirmationProgress"
-          class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-700 font-medium">
+          class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-md text-xs text-amber-700 font-medium">
           <AlertCircle class="w-3.5 h-3.5" />
           {{ confirmationProgress.confirmed }}/{{ confirmationProgress.total }} confirmadas
         </div>
@@ -26,13 +26,13 @@
       <template #filters>
         <!-- Turma name search -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Turma</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Turma</label>
           <div class="relative">
             <input
               v-model="filters.name"
               type="text"
               placeholder="Ex: 1º Ano · Turma A..."
-              class="h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+              class="h-8 pl-8 pr-3 border border-gray-200 rounded-md text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
               style="width: 200px;"
             />
             <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -41,11 +41,11 @@
 
         <!-- Course -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Curso</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Curso</label>
           <div class="relative">
             <select
               v-model="filters.courseId"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
               style="width: 180px;"
             >
               <option value="">Todos</option>
@@ -57,11 +57,11 @@
 
         <!-- Academic year -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Ano lectivo</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Ano lectivo</label>
           <div class="relative">
             <select
               v-model="filters.academicYear"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
             >
               <option value="">Todos</option>
               <option v-for="y in availableAcademicYears" :key="y" :value="y">{{ y }}</option>
@@ -72,7 +72,7 @@
 
         <!-- Semester -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Semestre</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Semestre</label>
           <div class="flex items-center gap-1 h-8">
             <button
               v-for="opt in semesterOptions" :key="opt.value"
@@ -81,7 +81,7 @@
               :class="filters.semester === opt.value
                 ? 'bg-blue-900 text-white border-blue-900'
                 : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
-              class="h-8 px-3 text-xs font-medium border rounded-lg transition"
+              class="h-8 px-3 text-xs font-medium border rounded-md transition"
             >
               {{ opt.label }}
             </button>
@@ -90,11 +90,11 @@
 
         <!-- Status -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Estado</label>
+          <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Estado</label>
           <div class="relative">
             <select
               v-model="filters.status"
-              class="h-8 px-3 pr-8 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
+              class="h-8 px-3 pr-8 border border-gray-200 rounded-md text-sm text-gray-800 bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition cursor-pointer"
             >
               <option value="">Todos</option>
               <option value="ESTIMATED">Estimado</option>
@@ -116,16 +116,16 @@
         @confirm="handleDelete(confirmDeleteId!)"
       />
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="bg-white rounded-[10px] shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-gray-100">
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Turma</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Curso</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Ano lectivo</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Semestre</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Alunos</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Estado</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Turma</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Curso</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Ano lectivo</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Semestre</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Alunos</th>
+              <th class="text-left px-5 py-3 text-[10px] font-bold text-blue-800 uppercase tracking-wider">Estado</th>
               <th class="px-5 py-3" />
             </tr>
           </thead>
@@ -205,10 +205,10 @@
     <div v-if="showConfirmModal"
       class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
       @click.self="showConfirmModal = false">
-      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-100">
+      <div class="bg-white rounded-[10px] shadow-2xl max-w-md w-full border border-gray-100">
 
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
-          <div class="bg-green-50 p-2 rounded-lg">
+          <div class="bg-green-50 p-2 rounded-md">
             <CheckCircle class="w-4 h-4 text-green-600" />
           </div>
           <div>
@@ -220,7 +220,7 @@
         </div>
 
         <div class="p-5 space-y-4">
-          <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+          <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-md px-3 py-2.5">
             <AlertCircle class="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
             <p class="text-xs text-amber-700">
               Estimativa inicial: <strong>{{ confirmingCohort?.studentCount }} alunos</strong>.
@@ -229,7 +229,7 @@
           </div>
 
           <div>
-            <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1.5">
+            <label class="flex items-center gap-1.5 text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5">
               <UsersIcon class="w-3.5 h-3.5" />
               Número de ingressos <span class="text-blue-900">*</span>
             </label>
@@ -238,7 +238,7 @@
               type="number"
               min="1"
               :max="cohortStore.maxRoomCapacity ?? 200"
-              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+              class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800"
               :class="confirmFormErrors.studentCount ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'"
             />
             <p v-if="confirmFormErrors.studentCount" class="text-red-500 text-[10px] mt-1">O número de ingressos é obrigatório</p>
@@ -255,12 +255,12 @@
 
           <div class="flex gap-2 pt-1">
             <button type="button" @click="showConfirmModal = false"
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
               <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button @click="handleConfirm"
-              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition flex items-center justify-center gap-1.5 font-medium">
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition flex items-center justify-center gap-1.5 font-medium">
               <CheckCircle class="w-3.5 h-3.5" />
               Confirmar ingressos
             </button>
@@ -273,10 +273,10 @@
     <div v-if="showModal"
       class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
       @click.self="closeModal">
-      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
+      <div class="bg-white rounded-[10px] shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
 
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
-          <div :class="isEditing ? 'bg-amber-50' : 'bg-blue-50'" class="p-2 rounded-lg">
+          <div :class="isEditing ? 'bg-amber-50' : 'bg-blue-50'" class="p-2 rounded-md">
             <Edit v-if="isEditing" class="w-4 h-4 text-amber-600" />
             <UserPlus v-else class="w-4 h-4 text-blue-900" />
           </div>
@@ -293,20 +293,20 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+              <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5 block">
                 Ano curricular <span class="text-blue-900">*</span>
               </label>
               <input v-model.number="form.year" type="number" min="1" max="6"
-                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+                class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800"
                 :class="formErrors.year ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
               <p v-if="formErrors.year" class="text-red-500 text-[10px] mt-1">O ano curricular é obrigatório (1-6)</p>
             </div>
             <div>
-              <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+              <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5 block">
                 Secção <span class="text-blue-900">*</span>
               </label>
               <input v-model="form.section" type="text" maxlength="2"
-                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800 uppercase"
+                class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800 uppercase"
                 :class="formErrors.section ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
               <p v-if="formErrors.section" class="text-red-500 text-[10px] mt-1">A secção é obrigatória</p>
             </div>
@@ -314,20 +314,20 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+              <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5 block">
                 Ano lectivo <span class="text-blue-900">*</span>
               </label>
               <input v-model.number="form.academicYear" type="number"
-                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+                class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800"
                 :class="formErrors.academicYear ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'" />
               <p v-if="formErrors.academicYear" class="text-red-500 text-[10px] mt-1">O ano lectivo é obrigatório</p>
             </div>
             <div>
-              <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+              <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5 block">
                 Semestre <span class="text-blue-900">*</span>
               </label>
               <select v-model.number="form.semester"
-                class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+                class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800"
                 :class="formErrors.semester ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'">
                 <option value="" disabled>Selecionar</option>
                 <option :value="1">1º semestre</option>
@@ -338,11 +338,11 @@
           </div>
 
           <div v-if="!isEditing">
-            <label class="text-xs font-medium text-gray-500 mb-1.5 block">
+            <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1.5 block">
               Curso <span class="text-blue-900">*</span>
             </label>
             <select v-model.number="form.courseId"
-              class="w-full px-3 py-2 border rounded-lg text-sm outline-none transition text-gray-800"
+              class="w-full px-3 py-2 border rounded-md text-sm outline-none transition text-gray-800"
               :class="formErrors.courseId ? 'border-red-500 focus:ring-red-100 focus:border-red-500' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-900 focus:ring-2'">
               <option value="" disabled>Selecionar curso</option>
               <option v-for="course in creatableCourses" :key="course.id" :value="course.id">
@@ -354,12 +354,12 @@
 
           <div class="flex gap-2 pt-1">
             <button type="button" @click="closeModal"
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
               <X class="w-3.5 h-3.5" />
               Cancelar
             </button>
             <button type="submit"
-              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
+              class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
               <Check class="w-3.5 h-3.5" />
               {{ isEditing ? 'Guardar alterações' : 'Criar turma' }}
             </button>
@@ -371,10 +371,10 @@
 <div v-if="showStudentsModal"
   class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
   @click.self="showStudentsModal = false">
-  <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col border border-gray-100">
+  <div class="bg-white rounded-[10px] shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col border border-gray-100">
 
     <div class="p-5 border-b border-gray-100 flex items-center gap-3 shrink-0">
-      <div class="bg-blue-50 p-2 rounded-lg">
+      <div class="bg-blue-50 p-2 rounded-md">
         <UsersIcon class="w-4 h-4 text-blue-900" />
       </div>
       <div>
@@ -390,7 +390,7 @@
           v-model="studentSearch"
           type="text"
           placeholder="Pesquisar estudante..."
-          class="w-full h-8 pl-8 pr-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
+          class="w-full h-8 pl-8 pr-3 border border-gray-200 rounded-md text-sm text-gray-800 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none transition placeholder:text-gray-300"
         />
         <Search class="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
       </div>
@@ -408,7 +408,7 @@
         <label
           v-for="student in filteredStudentList"
           :key="student.id"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-50 transition"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer hover:bg-gray-50 transition"
           :class="selectedStudentIds.includes(student.id) ? 'bg-blue-50' : ''">
           <input
             type="checkbox"
@@ -429,12 +429,12 @@
 
     <div class="p-5 border-t border-gray-100 flex gap-2 shrink-0">
       <button type="button" @click="showStudentsModal = false"
-        class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
+        class="flex-1 px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 transition flex items-center justify-center gap-1.5">
         <X class="w-3.5 h-3.5" />
         Cancelar
       </button>
       <button @click="handleSaveStudents"
-        class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
+        class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-md text-sm hover:bg-blue-800 transition flex items-center justify-center gap-1.5 font-medium">
         <Check class="w-3.5 h-3.5" />
         Guardar
       </button>
@@ -470,6 +470,7 @@ import {
   Check,
   Search,
   ChevronDown,
+  BookOpen,
 } from 'lucide-vue-next'
 
 const cohortStore = useCohortStore()

@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+  <div class="mb-3 flex items-center justify-between bg-red-50 border border-red-100 rounded-md px-4 py-3">
     <span class="text-sm text-red-700" v-html="message"></span>
     <div class="flex gap-2">
       <button @click="$emit('cancel')"

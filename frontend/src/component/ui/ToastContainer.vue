@@ -4,7 +4,7 @@
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        :class="['bg-white rounded-xl shadow-md border flex items-center overflow-hidden', borderClass(toast.type)]"
+        :class="['bg-white rounded-[10px] shadow-md border flex items-center overflow-hidden', borderClass(toast.type)]"
       >
         <!-- Coloured left accent -->
         <div :class="['w-1 self-stretch shrink-0', accentClass(toast.type)]" />

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-gray-50">
+  <div class="flex h-screen bg-slate-100">
     <Sidebar />
     <main class="flex-1 overflow-y-auto px-6 py-6">
       <RouterView />
