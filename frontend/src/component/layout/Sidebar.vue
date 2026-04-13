@@ -1,10 +1,10 @@
 <template>
   <aside class="w-60 bg-slate-50 border-r border-slate-200 flex flex-col">
     <!-- Brand -->
-    <div class="px-5 py-5 border-b border-gray-100">
+    <div class="px-5 py-5 border-b border-slate-200">
       <div class="flex items-center gap-3">
-        <div class="bg-blue-900 p-2 rounded-md">
-          <GraduationCap class="w-5 h-5 text-white" />
+        <div class="bg-blue-50 p-2 rounded-md">
+          <GraduationCap class="w-5 h-5 text-blue-800" />
         </div>
         <div>
           <h2 class="text-sm font-semibold text-gray-900">UCM-FEG</h2>
@@ -19,11 +19,15 @@
         v-for="item in allowedRoutes"
         :key="item.name"
         :to="{ name: item.name }"
-        class="group flex items-center gap-2.5 px-2.5 py-2 text-sm rounded-md transition-colors"
+        class="relative overflow-hidden group flex items-center gap-2.5 px-2.5 py-2 text-sm rounded-md transition-colors"
         :class="isActive(item)
           ? 'bg-blue-50 text-blue-800 font-semibold'
           : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'"
       >
+        <div
+          v-if="isActive(item)"
+          class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[22px] bg-blue-800 rounded-r"
+        ></div>
         <component
           :is="item.icon"
           class="w-4 h-4 flex-shrink-0"
@@ -38,9 +42,9 @@
     </nav>
 
     <!-- User footer -->
-    <div class="px-3 py-3 border-t border-gray-100">
+    <div class="px-3 py-3 border-t border-slate-200">
       <!-- User info -->
-      <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-md mb-0.5">
+      <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-md mb-0.5 bg-slate-100 border border-slate-200">
         <div class="w-7 h-7 rounded-full bg-blue-900 flex items-center justify-center shrink-0">
           <span class="text-xs font-medium text-white leading-none">{{ userInitials }}</span>
         </div>
@@ -48,7 +52,7 @@
           <p class="text-xs font-medium text-gray-800 truncate">
             {{ auth.user?.username ?? 'Utilizador' }}
           </p>
-          <p class="text-xs text-gray-400 truncate">
+          <p class="text-[10px] text-blue-800 font-bold uppercase tracking-wider truncate">
             {{ userRoleLabel }}
           </p>
         </div>
@@ -56,7 +60,7 @@
       <!-- Logout -->
       <button
         @click="logout"
-        class="w-full flex items-center gap-2.5 px-2.5 py-2 text-sm rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors group"
+        class="w-full flex items-center gap-2.5 px-2.5 py-2 text-sm rounded-md text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors group"
       >
         <LogOut class="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" />
         <span class="font-medium">Terminar sessão</span>
