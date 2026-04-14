@@ -318,11 +318,13 @@ import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useToast } from '@/composables/useToast'
 import type { UserResponse, TeacherType } from '@/services/dto/user'
-import CrudTable from '@/component/ui/CrudTable.vue'
-import PageHeader from '@/component/ui/PageHeader.vue'
-import FilterBar from '@/component/ui/FilterBar.vue'
-import DeleteConfirmBanner from '@/component/ui/DeleteConfirmBanner.vue'
-import ResetPasswordModal from '@/component/ui/ResetPasswordModal.vue'
+import {
+  CrudTable,
+  PageHeader,
+  FilterBar,
+  DeleteConfirmBanner,
+  ResetPasswordModal,
+} from '@/components/ui'
 import {
   Users as UsersIcon,
   Plus,

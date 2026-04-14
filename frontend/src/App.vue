@@ -4,6 +4,6 @@
 </template>
 
 <script setup lang="ts">
-import ToastContainer from '@/component/ui/ToastContainer.vue'
+import ToastContainer from '@/components/ui/ToastContainer.vue'
 </script>
 

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
+import { authService } from '@/services/authService'
 import { userService } from '@/services/userService'
-import authService from '@/services/authService'
 import { useAuthStore } from './auth'
 import type { UserResponse, CreateUserRequest, UpdateUserProfileRequest, UpdateUserRequest } from '@/services/dto/user'
 import type { Page } from '@/services/types/page'

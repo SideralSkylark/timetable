@@ -59,6 +59,29 @@ The generation process follows three distinct phases:
 2. **Lesson Initialization**: Creation of lesson assignments based on subject credits.
 3. **Constraint Optimization**: The Timefold solver assigns optimal timeslots and rooms while respecting hard constraints (e.g., teacher/room conflicts) and soft constraints.
 
+## Frontend Maintenance & Best Practices
+
+To ensure long-term maintainability and scalability of the frontend, the following improvements and practices are recommended:
+
+### 1. Project Organization & Consistency
+- **Folder Naming**: Standardize on plural names for all directories in `src/` (e.g., rename `component/` to `components/` and `service/` to `services/`).
+- **Service Pattern**: Align all services to use a single pattern (either strictly classes or exported object literals) to avoid architectural drift.
+- **Barrel Exports**: Implement `index.ts` files in major folders (e.g., `components/ui`, `services/dto`) to simplify imports and provide a cleaner public API for modules.
+
+### 2. Type Safety & Developer Experience
+- **Eliminate `any`**: Refactor components and services to remove `any` types. Use TypeScript generics for reusable components like `CrudTable` to ensure rows and columns are properly typed.
+- **API Validation**: Integrate a library like **Zod** to validate API responses at runtime, ensuring the frontend is resilient to backend schema changes.
+- **Shared Constants**: Move hardcoded strings (roles like `ADMIN`, `STUDENT`, `TEACHER`) to shared constants or enums to prevent "magic strings" bugs.
+
+### 3. UI/UX Scalability
+- **Base Component Library**: Extract repeated Tailwind patterns into a set of "Base" UI components (e.g., `BaseButton`, `BaseInput`, `BaseCard`). This centralizes styling and makes theme updates easier.
+- **Internationalization (i18n)**: Implement `vue-i18n` to remove hardcoded strings from templates. This simplifies maintenance and enables multi-language support (e.g., PT/EN).
+- **Centralized Error Handling**: Improve the `api.ts` interceptor to automatically trigger toast notifications for common error codes, reducing boilerplate in views and stores.
+
+### 4. Testing & Quality Assurance
+- **Component Testing**: Increase coverage for core UI components (like `CrudTable` and `CrudForm`) using Vitest and Vue Test Utils.
+- **Store Logic**: Add unit tests for Pinia stores to verify complex state transitions (e.g., auth flow, scheduling logic).
+
 ## Testing
 
 Unit tests are provided for core services. To execute tests:

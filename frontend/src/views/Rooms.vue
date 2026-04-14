@@ -269,10 +269,10 @@ import { useRoomStore } from '@/stores/room'
 import { useCourseStore } from '@/stores/course'
 import { useToast } from '@/composables/useToast'
 import type { RoomResponse } from '@/services/dto/room'
-import CrudTable from '@/component/ui/CrudTable.vue'
-import PageHeader from '@/component/ui/PageHeader.vue'
-import FilterBar from '@/component/ui/FilterBar.vue'
-import DeleteConfirmBanner from '@/component/ui/DeleteConfirmBanner.vue'
+import CrudTable from '@/components/ui/CrudTable.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import FilterBar from '@/components/ui/FilterBar.vue'
+import DeleteConfirmBanner from '@/components/ui/DeleteConfirmBanner.vue'
 import {
   Building, Plus, DoorOpen, Edit, Tag,
   Users as UsersIcon, X, Check, ShieldAlert,

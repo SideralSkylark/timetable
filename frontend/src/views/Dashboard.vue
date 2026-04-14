@@ -128,7 +128,7 @@ import { useUserStore } from '@/stores/user'
 import { useRoomStore } from '@/stores/room'
 import { useCourseStore } from '@/stores/course'
 import { useCohortStore } from '@/stores/cohorts'
-import PageHeader from '@/component/ui/PageHeader.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
 import { 
   LayoutDashboard, 
   User as UserIcon, 
