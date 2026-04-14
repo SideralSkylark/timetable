@@ -30,8 +30,8 @@
             class="px-5 py-3.5"
           >
             <!-- Custom cell slot: name pattern is `cell-{key}` -->
-            <slot :name="`cell-${col.key}`" :row="row" :value="row[col.key]">
-              <span class="text-gray-700">{{ row[col.key] }}</span>
+            <slot :name="`cell-${col.key}`" :row="row" :value="(row as any)[col.key]">
+              <span class="text-gray-700">{{ (row as any)[col.key] }}</span>
             </slot>
           </td>
           <td class="px-5 py-3.5">
@@ -68,22 +68,22 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends { id: string | number }">
 import { Edit2, Trash2 } from 'lucide-vue-next'
 import Pagination from './Pagination.vue'
 
 defineProps<{
   columns: { key: string; label: string }[]
-  rows: any[]
+  rows: T[]
   currentPage: number
   totalPages: number
-  canEdit?: (row: any) => boolean
-  canDelete?: (row: any) => boolean
+  canEdit?: (row: T) => boolean
+  canDelete?: (row: T) => boolean
 }>()
 
 defineEmits<{
-  (e: 'edit', row: any): void
-  (e: 'delete', id: number): void
+  (e: 'edit', row: T): void
+  (e: 'delete', id: T['id']): void
   (e: 'change-page', page: number): void
 }>()
 </script>

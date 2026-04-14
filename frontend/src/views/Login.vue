@@ -85,6 +85,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { Role } from '@/services'
 import { GraduationCap, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, LogIn } from 'lucide-vue-next'
 
 const email = ref('')
@@ -104,7 +105,7 @@ const handleLogin = async () => {
     
     // Role-based redirection
     const roles = authStore.user?.roles ?? []
-    if (roles.includes('STUDENT') || roles.includes('TEACHER')) {
+    if (roles.includes(Role.STUDENT) || roles.includes(Role.TEACHER)) {
       router.push({ name: 'MyTimetableView' })
     } else {
       router.push({ name: 'DashboardHome' })

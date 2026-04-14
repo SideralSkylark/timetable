@@ -1,3 +1,5 @@
+export { default as BaseButton } from './BaseButton.vue'
+export { default as BaseInput } from './BaseInput.vue'
 export { default as CrudForm } from './CrudForm.vue'
 export { default as CrudTable } from './CrudTable.vue'
 export { default as DeleteConfirmBanner } from './DeleteConfirmBanner.vue'

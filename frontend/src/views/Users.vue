@@ -317,6 +317,7 @@
 import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useToast } from '@/composables/useToast'
+import { Role } from '@/services'
 import type { UserResponse, TeacherType } from '@/services/dto/user'
 import {
   CrudTable,
@@ -346,9 +347,9 @@ const userStore = useUserStore()
 const toast = useToast()
 
 // ── Role Helpers ──────────────────────────────────────────────────
-const isAdmin = computed(() => userStore.myHighestRole === 'ADMIN')
-const isDirector = computed(() => userStore.myHighestRole === 'DIRECTOR')
-const isAssistant = computed(() => userStore.myHighestRole === 'ASISTENT')
+const isAdmin = computed(() => userStore.myHighestRole === Role.ADMIN)
+const isDirector = computed(() => userStore.myHighestRole === Role.DIRECTOR)
+const isAssistant = computed(() => userStore.myHighestRole === Role.ASISTENT)
 
 const editingUser = ref<UserResponse | null>(null)
 const showUserModal = ref(false)
@@ -360,12 +361,12 @@ const pagedUsers = computed(() => userStore.pagedUsers)
 const currentPage = ref(0)
 
 const ALL_ROLES_INFO = [
-  { value: 'STUDENT',     description: 'Acesso de estudante' },
-  { value: 'TEACHER',     description: 'Acesso de professor' },
-  { value: 'COORDINATOR', description: 'Acesso de coordenador' },
-  { value: 'ASISTENT',    description: 'Acesso de assistente' },
-  { value: 'DIRECTOR',    description: 'Acesso de director' },
-  { value: 'ADMIN',       description: 'Acesso administrativo completo' },
+  { value: Role.STUDENT,     description: 'Acesso de estudante' },
+  { value: Role.TEACHER,     description: 'Acesso de professor' },
+  { value: Role.COORDINATOR, description: 'Acesso de coordenador' },
+  { value: Role.ASISTENT,    description: 'Acesso de assistente' },
+  { value: Role.DIRECTOR,    description: 'Acesso de director' },
+  { value: Role.ADMIN,       description: 'Acesso administrativo completo' },
 ]
 
 const toggleableRoles = computed(() => {
@@ -574,7 +575,7 @@ const openEdit = (user: UserResponse) => {
   formData.username = user.username
   formData.email = user.email
   formData.password = ''
-  formData.selectedRoles = user.roles.filter(r => r !== 'USER')
+  formData.selectedRoles = user.roles.filter((r: string) => r !== 'USER')
   formData.teacherType = user.teacherType ?? null
   
   formErrors.username = false
