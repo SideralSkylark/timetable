@@ -1,4 +1,6 @@
 import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios'
+import { useToast } from '@/composables/useToast'
+import type { ErrorResponse } from './responses/errorResponse'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
@@ -15,7 +17,7 @@ const failedQueue: {
 }[] = []
 
 function processQueue(error: any, token: string | null = null) {
-  failedQueue.forEach(({ resolve, reject, config }) => {
+  failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error)
     else resolve(token)
   })
@@ -24,10 +26,14 @@ function processQueue(error: any, token: string | null = null) {
 
 api.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError) => {
+  async (error: AxiosError<ErrorResponse>) => {
     const originalRequest = error.config
+    const toast = useToast()
 
     if (!error.response || (originalRequest as any)?._retry) {
+      if (!error.response) {
+        toast.error('Não foi possível ligar ao servidor. Verifique a sua ligação.')
+      }
       return Promise.reject(error)
     }
 
@@ -37,6 +43,7 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    // Handle 401 Refresh Token logic
     if (error.response.status === 401) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -61,6 +68,26 @@ api.interceptors.response.use(
       } finally {
         isRefreshing = false
       }
+    }
+
+    // Global Error Messages
+    const message = error.response.data?.message || 'Ocorreu um erro inesperado.'
+    
+    switch (error.response.status) {
+      case 403:
+        toast.error('Não tem permissão para realizar esta ação.')
+        break
+      case 404:
+        toast.error('O recurso solicitado não foi encontrado.')
+        break
+      case 500:
+        toast.error('Erro interno do servidor. Tente novamente mais tarde.')
+        break
+      case 400:
+        // Optional: you might want to handle validation errors differently
+        // but showing a generic error toast for 400 is often helpful
+        if (message) toast.error(message)
+        break
     }
 
     return Promise.reject(error)

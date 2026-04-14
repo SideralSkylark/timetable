@@ -624,9 +624,9 @@ import { useTimetableStore } from '@/stores/timetable'
 import { useCourseStore } from '@/stores/course'
 import { useToast } from '@/composables/useToast'
 import { permutationService, type ValidSlot, type CohortSwapCandidate } from '@/services/permutationService'
-import type { LessonAssignment } from '@/services/dto/timetable'
-import PageHeader from '@/component/ui/PageHeader.vue'
-import FilterBar from '@/component/ui/FilterBar.vue'
+import type { LessonAssignment, CohortInfo } from '@/services/dto/timetable'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import FilterBar from '@/components/ui/FilterBar.vue'
 import { CalendarDays, ChevronDown, Zap, Loader2, CheckCircle, XCircle, ArrowRightLeft, ArrowRight, X, Send, Globe } from 'lucide-vue-next'
 
 const auth = useAuthStore()
@@ -704,7 +704,7 @@ const yearLegend = [
 const allLessons = computed(() => timetableStore.solution?.lessonAssignments ?? [])
 const availableCohorts = computed(() => {
   const seen = new Set<number>()
-  const result: { id: number; displayName: string }[] = []
+  const result: CohortInfo[] = []
   for (const l of allLessons.value) {
     if (!seen.has(l.cohort.id)) { seen.add(l.cohort.id); result.push(l.cohort) }
   }

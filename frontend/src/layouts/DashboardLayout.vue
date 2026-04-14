@@ -8,6 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import Sidebar from '@/component/layout/Sidebar.vue'
+import Sidebar from '@/components/layout/Sidebar.vue'
 import { RouterView } from 'vue-router'
 </script>

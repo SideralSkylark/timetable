@@ -75,7 +75,7 @@
           <label class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Semestre</label>
           <div class="flex items-center gap-1 h-8">
             <button
-              v-for="opt in semesterOptions" :key="opt.value"
+              v-for="opt in semesterOptions" :key="opt.label"
               type="button"
               @click="filters.semester = opt.value"
               :class="filters.semester === opt.value
@@ -452,10 +452,10 @@ import { useCourseStore } from '@/stores/course'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import type { CohortListResponse } from '@/services/dto/cohort'
-import Pagination from '@/component/ui/Pagination.vue'
-import PageHeader from '@/component/ui/PageHeader.vue'
-import FilterBar from '@/component/ui/FilterBar.vue'
-import DeleteConfirmBanner from '@/component/ui/DeleteConfirmBanner.vue'
+import Pagination from '@/components/ui/Pagination.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import FilterBar from '@/components/ui/FilterBar.vue'
+import DeleteConfirmBanner from '@/components/ui/DeleteConfirmBanner.vue'
 import {
   Users as UsersIcon,
   Plus,
@@ -720,8 +720,9 @@ async function openCreateModal() {
   await courseStore.fetchAllCoursesSimple()
 
   if (isCoordinator.value && !isAdmin.value && !isDirector.value && !isAssistant.value) {
-    if (creatableCourses.value.length === 1) {
-      form.courseId = creatableCourses.value[0].id
+    const firstCourse = creatableCourses.value[0]
+    if (firstCourse) {
+      form.courseId = firstCourse.id
     }
   }
 

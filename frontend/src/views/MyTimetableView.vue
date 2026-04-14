@@ -114,8 +114,8 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { timetableService } from '@/services/timetableService'
 import type { LessonAssignment, TimetableSolution } from '@/services/dto/timetable'
-import PageHeader from '@/component/ui/PageHeader.vue'
-import FilterBar from '@/component/ui/FilterBar.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import FilterBar from '@/components/ui/FilterBar.vue'
 import { CalendarCheck, ChevronDown, Loader2 } from 'lucide-vue-next'
 
 const auth = useAuthStore()

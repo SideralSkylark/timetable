@@ -6,7 +6,7 @@ import type { UserResponse } from './dto/user'
 
 const USER_KEY = 'user'
 
-class AuthService {
+export const authService = {
   async login(email: string, password: string): Promise<UserResponse> {
     const { data } = await api.post<ApiResponse<LoginResponse>>(
       '/v1/auth/login',
@@ -23,7 +23,7 @@ class AuthService {
 
     localStorage.setItem(USER_KEY, JSON.stringify(user))
     return user
-  }
+  },
 
   async register(username: string, email: string, password: string): Promise<RegisterResponse> {
     const { data } = await api.post<ApiResponse<RegisterResponse>>(
@@ -31,7 +31,7 @@ class AuthService {
       { username, email, password } as RegisterRequest
     )
     return data.data
-  }
+  },
 
   async logout(): Promise<void> {
     try {
@@ -39,16 +39,14 @@ class AuthService {
     } finally {
       localStorage.removeItem(USER_KEY)
     }
-  }
+  },
 
   getCurrentUser(): UserResponse | null {
     const stored = localStorage.getItem(USER_KEY)
     return stored ? JSON.parse(stored) : null
-  }
+  },
 
   isAuthenticated(): boolean {
     return !!this.getCurrentUser()
-  }
+  },
 }
-
-export default new AuthService()

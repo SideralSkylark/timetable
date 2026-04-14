@@ -554,8 +554,8 @@ import { teacherService } from '@/services/teacherService'
 import { useUserStore } from '@/stores/user'
 import { useToast } from '@/composables/useToast'
 import type { CourseListResponse, CoordinatorOption } from '@/services/dto/course'
-import PageHeader from '@/component/ui/PageHeader.vue'
-import FilterBar from '@/component/ui/FilterBar.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import FilterBar from '@/components/ui/FilterBar.vue'
 import {
   GraduationCap, Plus, Edit, Edit2, Trash2,
   ChevronDown, ChevronRight, BookOpen, User,
