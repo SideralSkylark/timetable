@@ -10,8 +10,10 @@
     ]"
   >
     <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
-    <slot v-else name="icon" />
-    <slot />
+    <template v-else>
+      <slot name="icon" />
+      <slot />
+    </template>
   </button>
 </template>
 
