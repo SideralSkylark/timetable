@@ -171,17 +171,30 @@
 
         <!-- Delete confirmation banner (per course) -->
         <div v-if="confirmDeleteCourseId === course.id"
-          class="flex items-center justify-between bg-red-50 border-t border-red-100 px-5 py-3">
-          <span class="text-sm text-red-700">Tem a certeza que quer eliminar este curso?</span>
-          <div class="flex gap-2">
-            <button @click="confirmDeleteCourseId = null"
-              class="px-3 py-1.5 text-xs border border-gray-200 text-gray-500 rounded-md hover:bg-white transition">
-              Cancelar
-            </button>
-            <button @click="handleDeleteCourse(course.id)"
-              class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium">
-              Eliminar
-            </button>
+          class="bg-red-50 border-t border-red-100 px-5 py-4">
+          <div class="flex flex-col gap-3">
+            <div class="flex items-start gap-3">
+              <div class="bg-red-100 p-2 rounded-lg shrink-0">
+                <Trash2 class="w-4 h-4 text-red-600" />
+              </div>
+              <div>
+                <p class="text-sm font-bold text-red-800">Eliminar curso e todos os seus dados?</p>
+                <p class="text-xs text-red-700 leading-relaxed mt-0.5">
+                  Esta acção é irreversível. Irá eliminar permanentemente este curso, 
+                  <b>todas as suas disciplinas, turmas e horários agendados</b>.
+                </p>
+              </div>
+            </div>
+            <div class="flex gap-2 self-end">
+              <button @click="confirmDeleteCourseId = null"
+                class="px-4 py-1.5 text-xs border border-gray-200 text-gray-500 rounded-md hover:bg-white transition font-medium">
+                Cancelar
+              </button>
+              <button @click="handleDeleteCourse(course.id)"
+                class="px-4 py-1.5 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition font-bold shadow-sm shadow-red-200">
+                Confirmar Eliminação do Curso
+              </button>
+            </div>
           </div>
         </div>
 
