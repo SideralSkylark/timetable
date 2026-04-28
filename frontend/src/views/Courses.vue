@@ -117,12 +117,11 @@
           <div v-if="course.expanded" class="w-[3px] h-8 rounded-r bg-blue-800 flex-shrink-0 mr-3 -ml-5"></div>
           <div v-else class="w-[3px] h-8 flex-shrink-0 mr-3 -ml-5"></div>
           
-          <div class="flex items-center gap-3 flex-1 min-w-0">
-            <button @click="toggleCourse(course)"
-              class="text-gray-300 hover:text-blue-900 transition shrink-0">
+          <div @click="toggleCourse(course)" class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+            <div class="text-gray-300 group-hover:text-blue-900 transition shrink-0">
               <ChevronDown v-if="course.expanded" class="w-4 h-4" />
               <ChevronRight v-else class="w-4 h-4" />
-            </button>
+            </div>
             <div class="bg-blue-50 p-2 rounded-md shrink-0">
               <BookOpen class="w-4 h-4 text-blue-900" />
             </div>
